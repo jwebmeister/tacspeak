@@ -23,7 +23,7 @@ kaldi_active_grammar.disable_donation_message()
 # --------------------------------------------------------------------------
 # Set up basic logging.
 
-if True:
+if False:
     # Debugging logging for reporting trouble
     logging.basicConfig(level=10)
     logging.getLogger('grammar.decode').setLevel(20)
@@ -107,14 +107,14 @@ def main():
         # model_dir='kaldi_model',  # default model directory
         # vad_aggressiveness=3,  # default aggressiveness of VAD
         # vad_padding_start_ms=150,  # default ms of required silence before VAD
-        # vad_padding_end_ms=150,  # default ms of required silence after VAD
+        vad_padding_end_ms=250,  # default ms of required silence after VAD
         # vad_complex_padding_end_ms=500,  # default ms of required silence after VAD for complex utterances
         # input_device_index=None,  # set to an int to choose a non-default microphone
         # lazy_compilation=True,  # set to True to parallelize & speed up loading
         # retain_dir=None,  # set to a writable directory path to retain recognition metadata and/or audio data
         # retain_audio=None,  # set to True to retain speech data wave files in the retain_dir (if set)
         listen_key=0x10,
-        listen_key_toggle=-1,
+        listen_key_toggle=0,
         auto_add_to_user_lexicon=False,
     )
 
