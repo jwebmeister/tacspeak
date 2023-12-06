@@ -1,193 +1,146 @@
-from __future__ import print_function
-import logging
-import os
+"""
+Command-module loader for tacspeak.
 
-import dragonfly
-from dragonfly import (CompoundRule, MappingRule, RuleRef, Repetition, RecognitionObserver,
-                       Function, Choice, IntegerRef, Grammar, Alternative, Literal, Text)
-from dragonfly.engines.backend_kaldi.dictation import UserDictation as Dictation
+It scans the ``./tacspeak/grammar`` folder and loads any ``_*.py``.
+"""
+
+from __future__ import print_function
+
+import logging
+import os.path
+import sys
+
+from dragonfly import get_engine
+from dragonfly import Grammar, MappingRule, Function, Dictation, FuncContext
+from dragonfly.loader import CommandModuleDirectory
 from dragonfly.log import setup_log
 
-import kaldi_active_grammar
+# --------------------------------------------------------------------------
+# Set up basic logging.
+
+if False:
+    # Debugging logging for reporting trouble
+    logging.basicConfig(level=10)
+    logging.getLogger('grammar.decode').setLevel(20)
+    logging.getLogger('grammar.begin').setLevel(20)
+    logging.getLogger('compound').setLevel(20)
+    logging.getLogger('kaldi.compiler').setLevel(10)
+else:
+    setup_log()
+
+
+# --------------------------------------------------------------------------
+# User notification / rudimentary UI. MODIFY AS DESIRED
+
+# For message in ('sleep', 'wake')
+def notify(message):
+    if message == 'sleep':
+        print("Sleeping...")
+        # get_engine().speak("Sleeping")
+    elif message == 'wake':
+        print("Awake...")
+        # get_engine().speak("Awake")
+
+
+# --------------------------------------------------------------------------
+# Sleep/wake grammar. (This can be unused or removed if you don't want it.)
+
+sleeping = False
+
+def load_sleep_wake_grammar(initial_awake):
+    sleep_grammar = Grammar("sleep")
+
+    def sleep(force=False):
+        global sleeping
+        if not sleeping or force:
+            sleeping = True
+            sleep_grammar.set_exclusiveness(True)
+        notify('sleep')
+
+    def wake(force=False):
+        global sleeping
+        if sleeping or force:
+            sleeping = False
+            sleep_grammar.set_exclusiveness(False)
+        notify('wake')
+
+    class SleepRule(MappingRule):
+        mapping = {
+            "start listening":  Function(wake) + Function(lambda: get_engine().start_saving_adaptation_state()),
+            "stop listening":   Function(lambda: get_engine().stop_saving_adaptation_state()) + Function(sleep),
+            "halt listening":   Function(lambda: get_engine().stop_saving_adaptation_state()) + Function(sleep),
+        }
+    sleep_grammar.add_rule(SleepRule())
+
+    sleep_noise_rule = MappingRule(
+        name = "sleep_noise_rule",
+        mapping = { "<text>": Function(lambda text: False and print(text)) },
+        extras = [ Dictation("text") ],
+        context = FuncContext(lambda: sleeping),
+    )
+    sleep_grammar.add_rule(sleep_noise_rule)
+
+    sleep_grammar.load()
+
+    if initial_awake:
+        wake(force=True)
+    else:
+        sleep(force=True)
+
+
+# --------------------------------------------------------------------------
+# Main event driving loop.
 
 def main():
+    logging.basicConfig(level=logging.INFO)
 
-    kaldi_active_grammar.disable_donation_message()
+    path = os.path.join(os.getcwd(), "tacspeak/grammar/")
 
-    if False:
-        logging.basicConfig(level=10)
-        logging.getLogger('grammar.decode').setLevel(20)
-        logging.getLogger('compound').setLevel(20)
-        # logging.getLogger('kaldi').setLevel(30)
-        logging.getLogger('engine').setLevel(10)
-        logging.getLogger('kaldi').setLevel(10)
-    else:
-        # logging.basicConfig(level=20)
-        setup_log()
-
-    colors = {
-        "current": "current",
-        "gold": "gold",
-        "blue": "blue",
-        "red": "red",
-    }
-    tools = {
-        "c2": "c2",
-        "shotgun": "shotgun",
-        "shotty": "shotgun",
-        "ram": "ram",
-        "battering ram": "ram",
-        "ram it": "ram",
-        "kick": "kick",
-        "kick down": "kick",
-        "kick it": "kick",
-        "kick it down": "kick",
-        "open": "open",
-    }
-    grenades = {
-        "bang": "flashbang",
-        "flashbang": "flashbang",
-        "cs": "gas",
-        "gas": "gas",
-        "stinger": "stinger",
-        "none": "none"
-    }
-    launcher_grenades = grenades
-
-
-    class SelectTeam(dragonfly.CompoundRule):
-        spec = "[<color>] team"
-        extras = [dragonfly.Choice("color", ["current", "blue", "red", "gold"])]
-        defaults = {"color": "current"}
-
-        def _process_recognition(self, node, extras):
-            color = extras["color"]
-            print("%s team" % color)
-
-
-    class SelectColor(dragonfly.CompoundRule):
-        spec = "<color>"
-        extras = [dragonfly.Choice("color", ["blue", "red", "gold"])]
-
-        def _process_recognition(self, node, extras):
-            color = extras["color"]
-            print("%s team" % color)
-
-
-    class BreachAndClear(dragonfly.CompoundRule):
-        spec = "[<color>] [team] [<tool>] [the door] [(throw | deploy)] [(<grenade> | fourtymil <launcher> | launch <launcher> | launcher <launcher>)] [and] (breach and clear | clear) [it]"
-        extras = [
-            dragonfly.Choice("color", colors),
-            dragonfly.Choice("tool", tools),
-            dragonfly.Choice("grenade", grenades),
-            dragonfly.Choice("launcher", launcher_grenades),
-        ]
-        defaults = {
-            "color": "current",
-            "tool": "open",
-            "grenade": "none",
-            "launcher": "none",
-        }
-
-        def _process_recognition(self, node, extras):
-            color = extras["color"]
-            tool = extras["tool"]
-            grenade = extras["grenade"]
-            launcher = extras["launcher"]
-            deployed_nade = ""
-            if grenade != "none":
-                deployed_nade = grenade
-            if launcher != "none":
-                deployed_nade = deployed_nade + "40mm " + launcher
-            fmt_deployed_nade = ""
-            if len(deployed_nade) > 0:
-                fmt_deployed_nade = " deploy " + deployed_nade
-            print("{0} team {1} the door{2} breach and clear".format(
-                color, tool, fmt_deployed_nade))
-
-    class YellFreeze(dragonfly.BasicRule):
-        element = Alternative((
-            Literal("freeze"),
-            Literal("hands"),
-            Literal("drop"),
-        ))
-
-        def _process_recognition(self, node, extras):
-            print("{0}".format(self.value(node)))
-
-
-    # Load engine before instantiating rules/grammars!
     # Set any configuration options here as keyword arguments.
-    engine = dragonfly.get_engine("kaldi",
-                                model_dir='kaldi_model',
-                                # tmp_dir='kaldi_tmp',  # default for temporary directory
-                                # vad_aggressiveness=3,  # default aggressiveness of VAD
-                                # vad_padding_ms=300,  # default ms of required silence surrounding VAD
-                                # input_device_index=None,  # set to an int to choose a non-default microphone
-                                # cloud_dictation=None,  # set to 'gcloud' to use cloud dictation
-                                listen_key=0x10,
-                                listen_key_toggle=True,
-                                auto_add_to_user_lexicon=False,
-                                )
+    # See Kaldi engine documentation for all available options and more info.
+    engine = get_engine('kaldi',
+        # model_dir='kaldi_model',  # default model directory
+        # vad_aggressiveness=3,  # default aggressiveness of VAD
+        # vad_padding_start_ms=150,  # default ms of required silence before VAD
+        # vad_padding_end_ms=150,  # default ms of required silence after VAD
+        # vad_complex_padding_end_ms=500,  # default ms of required silence after VAD for complex utterances
+        # input_device_index=None,  # set to an int to choose a non-default microphone
+        # lazy_compilation=True,  # set to True to parallelize & speed up loading
+        # retain_dir=None,  # set to a writable directory path to retain recognition metadata and/or audio data
+        # retain_audio=None,  # set to True to retain speech data wave files in the retain_dir (if set)
+        listen_key=0x10,
+        listen_key_toggle=True,
+        auto_add_to_user_lexicon=False,
+    )
+
     # Call connect() now that the engine configuration is set.
     engine.connect()
 
-    grammar = Grammar(name="mygrammar")
-    grammar.add_rule(SelectTeam())
-    grammar.add_rule(SelectColor())
-    grammar.add_rule(BreachAndClear())
-    grammar.add_rule(YellFreeze())
-    grammar.load()
+    # Load grammars.
+    load_sleep_wake_grammar(True)
+    directory = CommandModuleDirectory(path)
+    directory.load()
 
-    # quickgrammar = QuickGrammar(name="quickgrammar")
-    # quickgrammar.add_rule(SelectTeam())
-    # quickgrammar.add_rule(SelectColor())
-    # quickgrammar.add_rule(BreachAndClear())
-    # quickgrammar.add_rule(YellFreeze())
-    # quickgrammar.load()
+    # Define recognition callback functions.
+    def on_begin():
+        print("Speech start detected.")
 
-     
-    class RecognitionObserverTester(RecognitionObserver):
+    def on_recognition(words):
+        message = u"Recognized: %s" % u" ".join(words)
 
-        def __init__(self):
-            RecognitionObserver.__init__(self)
-            self.waiting = False
-            self.words = None
-            self.frozen = False
+    def on_failure():
+        print("Sorry, what was that?")
 
-        def on_begin(self):
-            self.waiting = True
+    # Start the engine's main recognition loop
+    engine.prepare_for_recognition()
+    try:
+        print("Listening...")
+        engine.do_recognition(on_begin, on_recognition, on_failure)
+    except KeyboardInterrupt:
+        pass
 
-        def on_partial_recognition(self, words, rule):
-            self.words = words
-            if (not self.frozen) and isinstance(rule, kaldi_active_grammar.KaldiRule) and rule.name == "mygrammar::YellFreeze":
-                print("Freeze dirtbag!")
-                self.frozen = True
-            # print("rule_type={0}".format(type(rule)))
-            # print("rule={0}".format(rule))
-
-        def on_recognition(self, words, results):
-            self.waiting = False
-            self.words = words
-            # print("words={0}".format(words))
-            # print("rule={0}".format(rule))
-            # print("node={0}".format(node))
-            # print("results={0}".format(results))
-
-        def on_failure(self, results):
-            self.waiting = False
-            self.words = False
-        
-        def on_end(self, results):
-            self.waiting = False
-            self.words = False
-            self.frozen = False
-
-    test_recobs = RecognitionObserverTester()
-    test_recobs.register()
-    
-    print("Listening...")
-    engine.do_recognition()
+    # Disconnect from the engine, freeing its resources.
+    engine.disconnect()
 
 
 if __name__ == "__main__":
