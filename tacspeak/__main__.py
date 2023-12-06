@@ -76,25 +76,6 @@ def main():
 
     class BreachAndClear(dragonfly.CompoundRule):
         spec = "[<color>] [team] [<tool>] [the door] [(throw | deploy)] [(<grenade> | fourtymil <launcher> | launch <launcher> | launcher <launcher>)] [and] (breach and clear | clear) [it]"
-        colors = {
-            "current": "current",
-            "gold": "gold",
-            "blue": "blue",
-            "red": "red",
-        }
-        tools = {
-            "c2": "c2",
-            "shotgun": "shotgun",
-            "shotty": "shotgun",
-            "ram": "ram",
-            "battering ram": "ram",
-            "ram it": "ram",
-            "kick": "kick",
-            "kick down": "kick",
-            "kick it": "kick",
-            "kick it down": "kick",
-            "open": "open",
-        }
         extras = [
             dragonfly.Choice("color", colors),
             dragonfly.Choice("tool", tools),
@@ -144,6 +125,9 @@ def main():
                                 # vad_padding_ms=300,  # default ms of required silence surrounding VAD
                                 # input_device_index=None,  # set to an int to choose a non-default microphone
                                 # cloud_dictation=None,  # set to 'gcloud' to use cloud dictation
+                                listen_key=0x10,
+                                listen_key_toggle=True,
+                                auto_add_to_user_lexicon=False,
                                 )
     # Call connect() now that the engine configuration is set.
     engine.connect()
