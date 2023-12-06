@@ -17,10 +17,10 @@ import kaldi_active_grammar
 
 grammar_context = AppContext(executable="notepad")
 grammar = Grammar("ReadyOrNot", 
-                  context=grammar_context,
+                  # context=grammar_context,
                   )
 grammar_priority = Grammar("ReadyOrNot_priority", 
-                  context=grammar_context,
+                  # context=grammar_context,
                   )
 
 # ---------------------------------------------------------------------------
@@ -133,7 +133,7 @@ class FreezeRecob(RecognitionObserver):
 
     def on_partial_recognition(self, words, rule):
         self.words = words
-        if (not self.frozen) and isinstance(rule, kaldi_active_grammar.KaldiRule) and rule.name == "ReadyOrNot::YellFreeze":
+        if (not self.frozen) and isinstance(rule, kaldi_active_grammar.KaldiRule) and rule.name == "ReadyOrNot_priority::YellFreeze":
             print("Freeze dirtbag!")
             self.frozen = True
         # print("rule_type={0}".format(type(rule)))
