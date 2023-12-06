@@ -19,6 +19,9 @@ grammar_context = AppContext(executable="notepad")
 grammar = Grammar("ReadyOrNot", 
                   context=grammar_context,
                   )
+grammar_priority = Grammar("ReadyOrNot_priority", 
+                  context=grammar_context,
+                  )
 
 # ---------------------------------------------------------------------------
 # Rules which will be added to our grammar
@@ -160,7 +163,7 @@ class FreezeRecob(RecognitionObserver):
 grammar.add_rule(SelectTeam())
 grammar.add_rule(SelectColor())
 grammar.add_rule(BreachAndClear())
-grammar.add_rule(YellFreeze())
+grammar_priority.add_rule(YellFreeze())
 
 freeze_recob = FreezeRecob()
 
@@ -169,13 +172,17 @@ freeze_recob = FreezeRecob()
 # to unload them.
 
 grammar.load()
+grammar_priority.load()
 freeze_recob.register()
 
 # Unload function which will be called at unload time.
 def unload():
     global grammar
+    global grammar_priority
     global freeze_recob
     if grammar: grammar.unload()
     grammar = None
+    if grammar_priority: grammar_priority.unload()
+    grammar_priority = None
     freeze_recob.unregister()
     freeze_recob = None

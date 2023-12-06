@@ -11,14 +11,19 @@ import os.path
 import sys
 
 from dragonfly import get_engine
-from dragonfly import Grammar, MappingRule, Function, Dictation, FuncContext
+from dragonfly import Grammar, MappingRule, Function, FuncContext
+from dragonfly.engines.backend_kaldi.dictation import UserDictation as Dictation
 from dragonfly.loader import CommandModuleDirectory
 from dragonfly.log import setup_log
+
+import kaldi_active_grammar
+
+kaldi_active_grammar.disable_donation_message()
 
 # --------------------------------------------------------------------------
 # Set up basic logging.
 
-if False:
+if True:
     # Debugging logging for reporting trouble
     logging.basicConfig(level=10)
     logging.getLogger('grammar.decode').setLevel(20)
@@ -48,7 +53,7 @@ def notify(message):
 sleeping = False
 
 def load_sleep_wake_grammar(initial_awake):
-    sleep_grammar = Grammar("sleep")
+    sleep_grammar = Grammar("sleep_priority")
 
     def sleep(force=False):
         global sleeping
@@ -109,7 +114,7 @@ def main():
         # retain_dir=None,  # set to a writable directory path to retain recognition metadata and/or audio data
         # retain_audio=None,  # set to True to retain speech data wave files in the retain_dir (if set)
         listen_key=0x10,
-        listen_key_toggle=True,
+        listen_key_toggle=-1,
         auto_add_to_user_lexicon=False,
     )
 
@@ -117,19 +122,22 @@ def main():
     engine.connect()
 
     # Load grammars.
-    load_sleep_wake_grammar(True)
+    # load_sleep_wake_grammar(True)
     directory = CommandModuleDirectory(path)
     directory.load()
 
     # Define recognition callback functions.
     def on_begin():
-        print("Speech start detected.")
+        """"""
+        # print("Speech start detected.")
 
     def on_recognition(words):
+        """"""
         message = u"Recognized: %s" % u" ".join(words)
 
     def on_failure():
-        print("Sorry, what was that?")
+        """"""
+        # print("Sorry, what was that?")
 
     # Start the engine's main recognition loop
     engine.prepare_for_recognition()

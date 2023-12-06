@@ -1,4 +1,4 @@
-dragonfly[kaldi] @ git+https://github.com/jwebmeister/dragonfly.git
-# ../dragonfly/[kaldi]
+# dragonfly[kaldi] @ git+https://github.com/jwebmeister/dragonfly.git
+../dragonfly/[kaldi]
 kaldi-active-grammar[g2p_en]
 cx_Freeze
