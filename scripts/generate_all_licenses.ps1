@@ -1,0 +1,2 @@
+pip-licenses --format=plain-vertical --with-license-file --with-notice-file --with-description --with-urls --with-authors --with-system --no-license-path --output-file=licenses/pkg_licenses_notices.txt
+pip-licenses --format=markdown --with-description --with-urls --with-authors --with-system --output-file=licenses/pkg_licenses_summary.md
