@@ -6,7 +6,7 @@
 
 import argparse
 import os
-import kaldi_active_grammar
+from kaldi_active_grammar import Compiler
 from tacspeak.__main__ import main as tacspeak_main
 
 
@@ -17,7 +17,7 @@ def main():
                         help='recompile the model in `model_dir` (default is kaldi_model/), for changes to user_lexicon.txt')
     args = parser.parse_args()
     if args.model_dir is not None and os.path.isdir(args.model_dir):
-        compiler = kaldi_active_grammar.Compiler(args.model_dir)
+        compiler = Compiler(args.model_dir)
         print("Compiling dictation graph (approx. 15 minutes)...")
         compiler.compile_agf_dictation_fst()
     else:

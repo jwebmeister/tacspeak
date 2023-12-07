@@ -61,7 +61,7 @@ include_files.append(("licenses/pkg_licenses_summary.md", "licenses/pkg_licenses
 # Dependencies are automatically detected, but it might need fine tuning.
 build_exe_options = {
     "packages": ["pkg_resources"],
-    "include_files": include_files
+    "include_files": include_files,
 }
 
 setup(
