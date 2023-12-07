@@ -99,7 +99,7 @@ def load_sleep_wake_grammar(initial_awake):
 def main():
     logging.basicConfig(level=logging.INFO)
 
-    path = os.path.join(os.getcwd(), "tacspeak/grammar/")
+    path = os.path.join(os.getcwd(), os.path.relpath("tacspeak/grammar/"))
 
     # Set any configuration options here as keyword arguments.
     # See Kaldi engine documentation for all available options and more info.

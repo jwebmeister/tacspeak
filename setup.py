@@ -1,3 +1,4 @@
+import os
 import sys
 from os.path import join, basename
 import pkg_resources
@@ -17,10 +18,40 @@ def collect_dist_info(packages):
         dirs.append((distrib.egg_info, join('Lib', basename(distrib.egg_info))))
     return dirs
 
+def grammar_modules():
+    src_dst_dirs = []
+
+    try:
+        path = os.path.dirname(__file__)
+    except NameError:
+        path = os.getcwd()
+
+    grammar_path = os.path.join(path, os.path.relpath("tacspeak/grammar/"))
+    for filename in os.listdir(grammar_path):
+        file_path = os.path.abspath(os.path.join(grammar_path, filename))
+
+        # Only apply _*.py to files, not directories.
+        is_file = os.path.isfile(file_path)
+        if not is_file:
+            continue
+        if is_file and not (os.path.basename(file_path).startswith("_") and
+                            os.path.splitext(file_path)[1] == ".py"):
+            continue
+        src_dst = (file_path, 
+                   os.path.join(os.path.relpath("tacspeak/grammar/"), os.path.basename(file_path))
+            )
+        src_dst_dirs.append(src_dst)
+
+    return src_dst_dirs
+
+include_files = []
+include_files.extend(collect_dist_info("webrtcvad_wheels"))
+include_files.extend(grammar_modules())
+
 # Dependencies are automatically detected, but it might need fine tuning.
 build_exe_options = {
     "packages": ["pkg_resources"],
-    "include_files": collect_dist_info("webrtcvad_wheels")
+    "include_files": include_files
 }
 
 setup(
