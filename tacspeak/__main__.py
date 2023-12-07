@@ -1,5 +1,11 @@
+#
+# This file is part of Tacspeak.
+# (c) Copyright 2023 by Joshua Webb
+# Licensed under the AGPL-3.0; see LICENSE.txt file.
+#
+
 """
-Command-module loader for tacspeak.
+Command-module loader for Tacspeak.
 
 It scans the ``./tacspeak/grammar`` folder and loads any ``_*.py``.
 """

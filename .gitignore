@@ -3,8 +3,6 @@ tmp/
 build/
 kaldi_model/*
 !kaldi_model/user_lexicon.txt
-!kaldi_model/LICENSE.txt
-!kaldi_model/AUTHORS.txt
 !kaldi_model/README.md
 to-uninstall.txt
 setup_log.txt

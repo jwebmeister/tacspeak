@@ -22,8 +22,6 @@ Details of the unmodified source version below:
 - pypi: https://pypi.org/project/kaldi-active-grammar/
 - Author: David Zurow
 - Author-email: daanzu@gmail.com
-- Authors: AUTHORS.txt
-- License-File: LICENSE.txt
 
 
 [gh-jwebmeister]: https://github.com/jwebmeister
