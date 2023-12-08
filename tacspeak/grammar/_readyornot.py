@@ -54,6 +54,8 @@ ingame_key_bindings = {
     "cmd_hold": "shift",
     "cmd_default": "z",
     "cmd_menu": "mouse_middle",
+    "interact": "f",
+    "yell": "f",
 }
 
 def debug_print_key(device, key):
@@ -140,6 +142,9 @@ def action_hold(direction):
         return Function(debug_print_key, device=device, key=f'{ingame_key_bindings["cmd_hold"]}:{direction}') 
     else:
         return Key(f'{ingame_key_bindings["cmd_hold"]}:{direction}')
+    
+def cmd_yell():
+    return map_ingame_key_bindings["yell"]
 
 def cmd_select_team(color):
     if color != "current":
@@ -295,7 +300,7 @@ class YellFreeze(BasicRule):
     ))
 
     def _process_recognition(self, node, extras):
-        print("{0}".format(self.value(node)))
+        cmd_yell().execute()
 
 #---------------------------------------------------------------------------
 # Recognition Observer - for mid-utterance recognition
