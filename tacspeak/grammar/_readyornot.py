@@ -112,18 +112,18 @@ map_stack_tools = {
 }
 
 # 1.0 speculative
-map_stack_split = {
+map_stack_splits = {
     "split": "split",
     "left": "left",
     "right": "right",
 }
-map_formation = {
+map_formations = {
     "single file": "single",
     "double file": "double",
     "diamond": "diamond",
     "wedge": "wedge",
 }
-map_npc_interact = {
+map_npc_interacts = {
     "restrain [(them | him | her)]": "restrain",
     "(move | come) (here | forward)": "move here",
     "(move | come) [to] my position": "move my position",
@@ -222,6 +222,25 @@ class SelectColor(CompoundRule):
     def _process_recognition(self, node, extras):
         color = extras["color"]
         cmd_select_team(color).execute()
+
+
+class FallIn(CompoundRule):
+    spec = "[<color>] [team] (fall in | regroup | form) [<formation>]"
+    extras = [
+        Choice("color", map_colors),
+        Choice("formation", map_formations),
+        ]
+    defaults = {
+        "color": "current",
+        "formation": "single",
+                }
+
+    def _process_recognition(self, node, extras):
+        color = extras["color"]
+        formation = extras["formation"]
+        
+        # todo!
+
 
 class BreachAndClear(CompoundRule):
     spec1 = "[<color>] [team] [<hold>] [<tool>] [the door] [you] [[(throw | deploy | use)] <grenade>] [and] (breach and clear | clear) [it]"
