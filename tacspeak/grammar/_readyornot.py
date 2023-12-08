@@ -113,6 +113,14 @@ map_hold = {
     "hold for my mark": "hold",
     "hold for my command": "hold",
 }
+map_stack_tool = {
+    "stack up": "stack",
+    "mirror": "mirror",
+    "mirror under": "mirror",
+    "disarm": "disarm",
+    "disarm trap": "disarm",
+    "wedge": "wedge",
+}
 
 NULL_ACTION = Function(lambda: print("NULL_ACTION") if DEBUG_NOCMD_PRINT_ONLY else None)
 
@@ -237,6 +245,29 @@ class OpenDoor(CompoundRule):
         print(f"{color} team {hold} open the door")
 
 
+class StackUp(CompoundRule):
+    spec1 = "[<color>] [team] [<hold>] stack up [on] [the] [door] [use] [<stack_tool>] [(the door | it)]"
+    spec2 = "[<color>] [team] [<hold>] [use] <stack_tool> [((on | the) door | it)]"
+    spec = f"(({spec1}) | ({spec2}))"
+    extras = [
+        Choice("color", map_colors),
+        Choice("hold", map_hold),
+        Choice("stack_tool", map_stack_tool),
+    ]
+    defaults = {
+        "color": "current",
+        "hold": "go",
+        "stack_tool": "stack",
+    }
+
+    def _process_recognition(self, node, extras):
+        color = extras["color"]
+        hold = extras["hold"]
+        stack_tool = extras["stack_tool"]
+
+        print(f"{color} team {hold} stack up {stack_tool}")
+
+
 class YellFreeze(BasicRule):
     element = Alternative((
         Literal("freeze"),
@@ -287,6 +318,7 @@ grammar.add_rule(SelectTeam())
 grammar.add_rule(SelectColor())
 grammar.add_rule(BreachAndClear())
 grammar.add_rule(OpenDoor())
+grammar.add_rule(StackUp())
 grammar_priority.add_rule(YellFreeze())
 
 freeze_recob = FreezeRecob()
