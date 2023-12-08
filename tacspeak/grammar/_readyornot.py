@@ -9,7 +9,7 @@ from dragonfly import (BasicRule, CompoundRule, MappingRule, RuleRef, Repetition
                        Function, Choice, IntegerRef, Grammar, Alternative, Literal, Text,
                        AppContext)
 from dragonfly.engines.backend_kaldi.dictation import UserDictation as Dictation
-from dragonfly.actions import (Key, Mouse, DynStrActionBase)
+from dragonfly.actions import (Key, Mouse)
 
 import kaldi_active_grammar
 
@@ -68,9 +68,11 @@ else:
                                else Key(f'{v}:down/{min_delay}, {v}:up') 
                                for k, v in ingame_key_bindings.items()}
 
+# key bindings
+print("-- Ready or Not keybindings --")
 for (k,v) in map_ingame_key_bindings.items():
     print(f'{k}:{v}')
-
+print("-- Ready or Not keybindings --")
 
 # spoken phrase to value mappings
 map_colors = {
@@ -112,17 +114,24 @@ map_hold = {
     "hold for my command": "hold",
 }
 
+NULL_ACTION = Function(lambda: print("NULL_ACTION") if DEBUG_NOCMD_PRINT_ONLY else None)
+
+# press down or up on hold command key, direction="up"|"down"
+def action_hold(direction):
+    if DEBUG_NOCMD_PRINT_ONLY:
+        device = 'm' if 'mouse_' in ingame_key_bindings["cmd_hold"] else 'kb'
+        return Function(debug_print_key, device=device, key=f'{ingame_key_bindings["cmd_hold"]}:{direction}') 
+    else:
+        return Key(f'{ingame_key_bindings["cmd_hold"]}:{direction}')
+
 def cmd_select_team(color):
     if color != "current":
         return map_ingame_key_bindings[color]
     else:
-        return DynStrActionBase()
+        return NULL_ACTION
 
 def cmd_breach_and_clear(color, hold, tool, grenade, launcher):
-
-    # todo! need to fix, doesn't act in order
-    actions = DynStrActionBase()
-    actions += cmd_select_team(color)
+    actions = cmd_select_team(color)
     actions += map_ingame_key_bindings["cmd_menu"]
     if tool == "open":
         actions += map_ingame_key_bindings["cmd_2"]
@@ -137,11 +146,7 @@ def cmd_breach_and_clear(color, hold, tool, grenade, launcher):
                 actions += map_ingame_key_bindings["cmd_3"]
     # start hold for command
     if hold == "hold":
-        print("should shift:down print here")
-        if DEBUG_NOCMD_PRINT_ONLY:
-            Function(debug_print_key, device='kb', key=f'{ingame_key_bindings["cmd_hold"]}:down') 
-        else:
-            actions += Key(f'{ingame_key_bindings["cmd_hold"]}:down')
+        actions += action_hold("down")
     match grenade:
         case "none":
             actions += map_ingame_key_bindings["cmd_1"]
@@ -153,11 +158,7 @@ def cmd_breach_and_clear(color, hold, tool, grenade, launcher):
             actions += map_ingame_key_bindings["cmd_4"]
     # end hold for command
     if hold == "hold":
-        print("should shift:down print here")
-        if DEBUG_NOCMD_PRINT_ONLY:
-            Function(debug_print_key, device='kb', key=f'{ingame_key_bindings["cmd_hold"]}:up') 
-        else:
-            actions += Key(f'{ingame_key_bindings["cmd_hold"]}:up')
+        actions += action_hold("up")
     actions.execute()
     
 
@@ -180,7 +181,9 @@ class SelectColor(CompoundRule):
         cmd_select_team(color).execute()
 
 class BreachAndClear(CompoundRule):
-    spec = "[<color>] [team] [<hold>] [<tool>] [the door] [([(throw | deploy | use)] <grenade> | [deploy] fourtymil <launcher>)] [and] (breach and clear | clear) [it]"
+    spec1 = "[<color>] [team] [<hold>] [<tool>] [the door] [([(throw | deploy | use)] <grenade> | [deploy] fourtymil <launcher>)] [and] (breach and clear | clear) [it]"
+    spec2 = "[<color>] [team] [<hold>] [<tool>] [the door] [and] (breach and clear | clear) [it] [with] (<grenade> | fourtymil <launcher>) [grenade]"
+    spec = f"(({spec1}) | ({spec2}))"
     extras = [
         Choice("color", map_colors),
         Choice("hold", map_hold),
@@ -283,6 +286,7 @@ class FreezeRecob(RecognitionObserver):
 grammar.add_rule(SelectTeam())
 grammar.add_rule(SelectColor())
 grammar.add_rule(BreachAndClear())
+grammar.add_rule(OpenDoor())
 grammar_priority.add_rule(YellFreeze())
 
 freeze_recob = FreezeRecob()
