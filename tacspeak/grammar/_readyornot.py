@@ -60,11 +60,11 @@ def debug_print_key(device, key):
     print(f'({device}_{key})')
 
 if DEBUG_NOCMD_PRINT_ONLY:
-    map_ingame_key_bindings = {k: Function(debug_print_key, device='m', key=v) if "mouse_" in v 
+    map_ingame_key_bindings = {k: Function(debug_print_key, device='m', key=v.replace("mouse_", "")) if "mouse_" in v 
                                else Function(debug_print_key, device='kb', key=v) 
                                for k, v in ingame_key_bindings.items()}
 else:
-    map_ingame_key_bindings = {k: Mouse(f'{v}:down/{min_delay}, {v}:up') if "mouse_" in v 
+    map_ingame_key_bindings = {k: Mouse(f'{v.replace("mouse_", "")}:down/{min_delay}, {v.replace("mouse_", "")}:up') if "mouse_" in v 
                                else Key(f'{v}:down/{min_delay}, {v}:up') 
                                for k, v in ingame_key_bindings.items()}
 
@@ -91,11 +91,11 @@ map_breach_tools = {
 }
 map_grenades = {
     "none": "none",
-    "(bang | flashbang)": "flashbang",
+    "(bang | flashbang | flash)": "flashbang",
     "stinger": "stinger",
     "(cs | gas | cs gas)": "gas",
     "(fourtymil | launcher)": "launcher",
-    "((leader | lead | i) will [(throw | use | deploy)] | wait for my) (grenade | flashbang | bang | stinger | cs | gas) [grenade]": "leader",
+    "((leader | lead | i) will [(throw | use | deploy)] | wait for my) (grenade | flashbang | bang | flash | stinger | cs | gas) [grenade]": "leader",
 }
 map_hold = {
     "go": "go",
