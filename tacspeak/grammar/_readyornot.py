@@ -9,7 +9,7 @@ from dragonfly import (BasicRule, CompoundRule, MappingRule, RuleRef, Repetition
                        Function, Choice, IntegerRef, Grammar, Alternative, Literal, Text,
                        AppContext)
 from dragonfly.engines.backend_kaldi.dictation import UserDictation as Dictation
-from dragonfly.actions import (Key, Mouse)
+from dragonfly.actions import (Key, Mouse, DynStrActionBase)
 
 import kaldi_active_grammar
 
@@ -36,7 +36,8 @@ min_delay = 3.3  # 100/(30 fps) = 3.3 (/100 seconds between frames)
 
 # map of action to in-game key bindings
 # https://dragonfly.readthedocs.io/en/latest/actions.html#key-names
-ingame_key_bindings_kb = {
+# https://dragonfly.readthedocs.io/en/latest/actions.html#mouse-specification-format
+ingame_key_bindings = {
     "gold": "f5",
     "blue": "f6",
     "red": "f7",
@@ -50,23 +51,22 @@ ingame_key_bindings_kb = {
     "cmd_8": "8",
     "cmd_9": "9",
     "cmd_back": "tab",
-    "hold_cmd": "shift",
-    "default_cmd": "z",
-}
-
-ingame_key_bindings_mouse = {
-    "cmd_menu": "middle",
+    "cmd_hold": "shift",
+    "cmd_default": "z",
+    "cmd_menu": "mouse_middle",
 }
 
 def debug_print_key(device, key):
     print(f'({device}_{key})')
 
 if DEBUG_NOCMD_PRINT_ONLY:
-    map_ingame_key_bindings = {k: Function(debug_print_key, device='kb', key=v) for k, v in ingame_key_bindings_kb.items()}
-    map_ingame_key_bindings.update({k: Function(debug_print_key, device='m', key=v) for k, v in ingame_key_bindings_mouse.items()})
+    map_ingame_key_bindings = {k: Function(debug_print_key, device='m', key=v) if "mouse_" in v 
+                               else Function(debug_print_key, device='kb', key=v) 
+                               for k, v in ingame_key_bindings.items()}
 else:
-    map_ingame_key_bindings = {k: Key(f'{v}:down/{min_delay}, {v}:up') for k, v in ingame_key_bindings_kb.items()}
-    map_ingame_key_bindings.update({k: Mouse(f'{v}:down/{min_delay}, {v}:up') for k, v in ingame_key_bindings_mouse.items()})
+    map_ingame_key_bindings = {k: Mouse(f'{v}:down/{min_delay}, {v}:up') if "mouse_" in v 
+                               else Key(f'{v}:down/{min_delay}, {v}:up') 
+                               for k, v in ingame_key_bindings.items()}
 
 for (k,v) in map_ingame_key_bindings.items():
     print(f'{k}:{v}')
@@ -96,9 +96,9 @@ map_grenades = {
     "none": "none",
     "bang": "flashbang",
     "flashbang": "flashbang",
+    "stinger": "stinger",
     "cs": "gas",
     "gas": "gas",
-    "stinger": "stinger",
 }
 map_launcher_grenades = map_grenades
 map_hold = {
@@ -113,7 +113,53 @@ map_hold = {
 }
 
 def cmd_select_team(color):
-    map_ingame_key_bindings[color]
+    if color != "current":
+        return map_ingame_key_bindings[color]
+    else:
+        return DynStrActionBase()
+
+def cmd_breach_and_clear(color, hold, tool, grenade, launcher):
+
+    # todo! need to fix, doesn't act in order
+    actions = DynStrActionBase()
+    actions += cmd_select_team(color)
+    actions += map_ingame_key_bindings["cmd_menu"]
+    if tool == "open":
+        actions += map_ingame_key_bindings["cmd_2"]
+    else:
+        actions += map_ingame_key_bindings["cmd_3"]
+        match tool:
+            case "kick":
+                actions += map_ingame_key_bindings["cmd_1"]
+            case "shotgun":
+                actions += map_ingame_key_bindings["cmd_2"]
+            case "c2":
+                actions += map_ingame_key_bindings["cmd_3"]
+    # start hold for command
+    if hold == "hold":
+        print("should shift:down print here")
+        if DEBUG_NOCMD_PRINT_ONLY:
+            Function(debug_print_key, device='kb', key=f'{ingame_key_bindings["cmd_hold"]}:down') 
+        else:
+            actions += Key(f'{ingame_key_bindings["cmd_hold"]}:down')
+    match grenade:
+        case "none":
+            actions += map_ingame_key_bindings["cmd_1"]
+        case "flashbang":
+            actions += map_ingame_key_bindings["cmd_2"]
+        case "stinger":
+            actions += map_ingame_key_bindings["cmd_3"]
+        case "gas":
+            actions += map_ingame_key_bindings["cmd_4"]
+    # end hold for command
+    if hold == "hold":
+        print("should shift:down print here")
+        if DEBUG_NOCMD_PRINT_ONLY:
+            Function(debug_print_key, device='kb', key=f'{ingame_key_bindings["cmd_hold"]}:up') 
+        else:
+            actions += Key(f'{ingame_key_bindings["cmd_hold"]}:up')
+    actions.execute()
+    
 
 class SelectTeam(CompoundRule):
     spec = "[<color>] team"
@@ -122,7 +168,7 @@ class SelectTeam(CompoundRule):
 
     def _process_recognition(self, node, extras):
         color = extras["color"]
-        map_ingame_key_bindings[color].execute()
+        cmd_select_team(color).execute()
 
 
 class SelectColor(CompoundRule):
@@ -131,8 +177,7 @@ class SelectColor(CompoundRule):
 
     def _process_recognition(self, node, extras):
         color = extras["color"]
-        map_ingame_key_bindings[color].execute()
-
+        cmd_select_team(color).execute()
 
 class BreachAndClear(CompoundRule):
     spec = "[<color>] [team] [<hold>] [<tool>] [the door] [([(throw | deploy | use)] <grenade> | [deploy] fourtymil <launcher>)] [and] (breach and clear | clear) [it]"
@@ -168,6 +213,25 @@ class BreachAndClear(CompoundRule):
             fmt_deployed_nade = " deploy " + deployed_nade
 
         print(f"{color} team {hold} {tool} the door{fmt_deployed_nade} breach and clear")
+        cmd_breach_and_clear(color, hold, tool, grenade, launcher)
+
+
+class OpenDoor(CompoundRule):
+    spec = "[<color>] [team] [<hold>] open [the] door"
+    extras = [
+        Choice("color", map_colors),
+        Choice("hold", map_hold),
+    ]
+    defaults = {
+        "color": "current",
+        "hold": "go",
+    }
+
+    def _process_recognition(self, node, extras):
+        color = extras["color"]
+        hold = extras["hold"]
+
+        print(f"{color} team {hold} open the door")
 
 
 class YellFreeze(BasicRule):
@@ -203,8 +267,6 @@ class FreezeRecob(RecognitionObserver):
     def on_recognition(self, words, results):
         self.words = words
         # print("words={0}".format(words))
-        # print("rule={0}".format(rule))
-        # print("node={0}".format(node))
         # print("results={0}".format(results))
 
     def on_failure(self, results):
