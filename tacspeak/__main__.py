@@ -119,8 +119,8 @@ def main():
         # lazy_compilation=True,  # set to True to parallelize & speed up loading
         # retain_dir=None,  # set to a writable directory path to retain recognition metadata and/or audio data
         # retain_audio=None,  # set to True to retain speech data wave files in the retain_dir (if set)
-        listen_key=0x10,
-        listen_key_toggle=0,
+        listen_key=0x10, # 0x10=SHIFT key, see https://learn.microsoft.com/en-us/windows/win32/inputdev/virtual-key-codes
+        listen_key_toggle=0, # 0 for toggle mode off; 1 for toggle mode on; 2 for global toggle on (use VAD); -1 for toggle mode off but allow priority grammar even when key not pressed
         auto_add_to_user_lexicon=False,
     )
 
