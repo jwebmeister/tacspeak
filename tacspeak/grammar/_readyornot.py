@@ -17,12 +17,12 @@ import kaldi_active_grammar
 # Create this module's grammar and the context under which it'll be active.
 
 grammar_context = AppContext(executable="notepad")
-grammar = Grammar("ReadyOrNot", 
+grammar = Grammar("ReadyOrNot",
                   # context=grammar_context,
                   )
-grammar_priority = Grammar("ReadyOrNot_priority", 
-                  # context=grammar_context,
-                  )
+grammar_priority = Grammar("ReadyOrNot_priority",
+                           # context=grammar_context,
+                           )
 
 # ---------------------------------------------------------------------------
 # Rules which will be added to our grammar
@@ -30,7 +30,7 @@ grammar_priority = Grammar("ReadyOrNot_priority",
 # Will map keybindings to print()
 DEBUG_NOCMD_PRINT_ONLY = True
 
-# the minimum time between keys state changes (e.g. pressed then released), 
+# the minimum time between keys state changes (e.g. pressed then released),
 # it's to make sure key presses are registered in-game
 min_delay = 3.3  # 100/(30 fps) = 3.3 (/100 seconds between frames)
 
@@ -58,21 +58,23 @@ ingame_key_bindings = {
     "yell": "f",
 }
 
+
 def debug_print_key(device, key):
     print(f'({device}_{key})')
 
+
 if DEBUG_NOCMD_PRINT_ONLY:
-    map_ingame_key_bindings = {k: Function(debug_print_key, device='m', key=v.replace("mouse_", "")) if "mouse_" in v 
-                               else Function(debug_print_key, device='kb', key=v) 
+    map_ingame_key_bindings = {k: Function(debug_print_key, device='m', key=v.replace("mouse_", "")) if "mouse_" in v
+                               else Function(debug_print_key, device='kb', key=v)
                                for k, v in ingame_key_bindings.items()}
 else:
-    map_ingame_key_bindings = {k: Mouse(f'{v.replace("mouse_", "")}:down/{min_delay}, {v.replace("mouse_", "")}:up') if "mouse_" in v 
-                               else Key(f'{v}:down/{min_delay}, {v}:up') 
+    map_ingame_key_bindings = {k: Mouse(f'{v.replace("mouse_", "")}:down/{min_delay}, {v.replace("mouse_", "")}:up') if "mouse_" in v
+                               else Key(f'{v}:down/{min_delay}, {v}:up')
                                for k, v in ingame_key_bindings.items()}
 
 # key bindings
 print("-- Ready or Not keybindings --")
-for (k,v) in map_ingame_key_bindings.items():
+for (k, v) in map_ingame_key_bindings.items():
     print(f'{k}:{v}')
 print("-- Ready or Not keybindings --")
 
@@ -133,25 +135,31 @@ map_npc_interacts = {
     "move to [the] exit": "move to exit",
 }
 
-NULL_ACTION = Function(lambda: print("NULL_ACTION") if DEBUG_NOCMD_PRINT_ONLY else None)
+NULL_ACTION = Function(lambda: print("NULL_ACTION")
+                       if DEBUG_NOCMD_PRINT_ONLY else None)
 
 # press down or up on hold command key, direction="up"|"down"
+
+
 def action_hold(direction):
     if DEBUG_NOCMD_PRINT_ONLY:
         device = 'm' if 'mouse_' in ingame_key_bindings["cmd_hold"] else 'kb'
-        return Function(debug_print_key, device=device, key=f'{ingame_key_bindings["cmd_hold"]}:{direction}') 
+        return Function(debug_print_key, device=device, key=f'{ingame_key_bindings["cmd_hold"]}:{direction}')
     else:
         return Key(f'{ingame_key_bindings["cmd_hold"]}:{direction}')
-    
+
+
 def cmd_yell():
     return map_ingame_key_bindings["yell"]
+
 
 def cmd_select_team(color):
     if color != "current":
         return map_ingame_key_bindings[color]
     else:
         return NULL_ACTION
-    
+
+
 def cmd_open_door(color, hold):
     actions = cmd_select_team(color)
     actions += map_ingame_key_bindings["cmd_menu"]
@@ -203,7 +211,7 @@ def cmd_breach_and_clear(color, hold, tool, grenade):
     if hold == "hold":
         actions += action_hold("up")
     actions.execute()
-    
+
 
 class SelectTeam(CompoundRule):
     spec = "[<color>] team"
@@ -229,16 +237,16 @@ class FallIn(CompoundRule):
     extras = [
         Choice("color", map_colors),
         Choice("formation", map_formations),
-        ]
+    ]
     defaults = {
         "color": "current",
         "formation": "single",
-                }
+    }
 
     def _process_recognition(self, node, extras):
         color = extras["color"]
         formation = extras["formation"]
-        
+
         # todo!
 
 
@@ -321,8 +329,9 @@ class YellFreeze(BasicRule):
     def _process_recognition(self, node, extras):
         cmd_yell().execute()
 
-#---------------------------------------------------------------------------
+# ---------------------------------------------------------------------------
 # Recognition Observer - for mid-utterance recognition
+
 
 class FreezeRecob(RecognitionObserver):
 
@@ -347,13 +356,13 @@ class FreezeRecob(RecognitionObserver):
 
     def on_failure(self, results):
         self.words = False
-    
+
     def on_end(self, results):
         self.words = False
         self.frozen = False
 
 
-#---------------------------------------------------------------------------
+# ---------------------------------------------------------------------------
 # Add rules to grammar and create RecognitionObserver instances
 
 grammar.add_rule(SelectTeam())
@@ -365,8 +374,8 @@ grammar_priority.add_rule(YellFreeze())
 
 freeze_recob = FreezeRecob()
 
-#---------------------------------------------------------------------------
-# Load the grammar instance, register RecognitionObservers, and define how 
+# ---------------------------------------------------------------------------
+# Load the grammar instance, register RecognitionObservers, and define how
 # to unload them.
 
 grammar.load()
@@ -374,13 +383,17 @@ grammar_priority.load()
 freeze_recob.register()
 
 # Unload function which will be called at unload time.
+
+
 def unload():
     global grammar
     global grammar_priority
     global freeze_recob
-    if grammar: grammar.unload()
+    if grammar:
+        grammar.unload()
     grammar = None
-    if grammar_priority: grammar_priority.unload()
+    if grammar_priority:
+        grammar_priority.unload()
     grammar_priority = None
     freeze_recob.unregister()
     freeze_recob = None
