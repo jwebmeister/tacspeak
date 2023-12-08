@@ -81,45 +81,54 @@ map_colors = {
     "blue": "blue",
     "red": "red",
 }
-map_tools = {
+map_breach_tools = {
     "open": "open",
+    "kick [it] [down]": "kick",
+    "(shotgun | shotty)": "shotgun",
     "c2": "c2",
-    "shotgun": "shotgun",
-    "shotty": "shotgun",
-    "ram": "ram",
-    "battering ram": "ram",
-    "ram it": "ram",
-    "kick": "kick",
-    "kick down": "kick",
-    "kick it": "kick",
-    "kick it down": "kick",
+    "[battering] ram [it]": "ram",
+    "((leader | lead | i) will | wait for my) (open | breach | prep | kick | shotgun | shotty | [prep] c2 | [battering] ram )": "leader",
 }
 map_grenades = {
     "none": "none",
-    "bang": "flashbang",
-    "flashbang": "flashbang",
+    "(bang | flashbang)": "flashbang",
     "stinger": "stinger",
-    "cs": "gas",
-    "gas": "gas",
+    "(cs | gas | cs gas)": "gas",
+    "(fourtymil | launcher)": "launcher",
+    "((leader | lead | i) will [(throw | use | deploy)] | wait for my) (grenade | flashbang | bang | stinger | cs | gas) [grenade]": "leader",
 }
-map_launcher_grenades = map_grenades
 map_hold = {
     "go": "go",
     "hold": "hold",
-    "on my mark": "hold",
-    "on my order": "hold",
-    "on my command": "hold",
-    "hold for my order": "hold",
-    "hold for my mark": "hold",
-    "hold for my command": "hold",
+    "(on | hold for) my (mark | order | command)": "hold",
 }
-map_stack_tool = {
+map_stack_tools = {
     "stack up": "stack",
-    "mirror": "mirror",
-    "mirror under": "mirror",
-    "disarm": "disarm",
-    "disarm trap": "disarm",
+    "mirror [under]": "mirror",
+    "disarm [trap]": "disarm",
     "wedge": "wedge",
+}
+
+# 1.0 speculative
+map_stack_split = {
+    "split": "split",
+    "left": "left",
+    "right": "right",
+}
+map_formation = {
+    "single file": "single",
+    "double file": "double",
+    "diamond": "diamond",
+    "wedge": "wedge",
+}
+map_npc_interact = {
+    "restrain [(them | him | her)]": "restrain",
+    "(move | come) (here | forward)": "move here",
+    "(move | come) [to] my position": "move my position",
+    "stop [there]": "move stop",
+    "deploy": "deploy",
+    "turn around [and stay still]": "turn around",
+    "move to [the] exit": "move to exit",
 }
 
 NULL_ACTION = Function(lambda: print("NULL_ACTION") if DEBUG_NOCMD_PRINT_ONLY else None)
@@ -137,8 +146,21 @@ def cmd_select_team(color):
         return map_ingame_key_bindings[color]
     else:
         return NULL_ACTION
+    
+def cmd_open_door(color, hold):
+    actions = cmd_select_team(color)
+    actions += map_ingame_key_bindings["cmd_menu"]
+    # start hold for command
+    if hold == "hold":
+        actions += action_hold("down")
+    actions += map_ingame_key_bindings["cmd_4"]
+    # end hold for command
+    if hold == "hold":
+        actions += action_hold("up")
+    actions.execute()
 
-def cmd_breach_and_clear(color, hold, tool, grenade, launcher):
+
+def cmd_breach_and_clear(color, hold, tool, grenade):
     actions = cmd_select_team(color)
     actions += map_ingame_key_bindings["cmd_menu"]
     if tool == "open":
@@ -152,6 +174,10 @@ def cmd_breach_and_clear(color, hold, tool, grenade, launcher):
                 actions += map_ingame_key_bindings["cmd_2"]
             case "c2":
                 actions += map_ingame_key_bindings["cmd_3"]
+            case "ram":
+                actions += map_ingame_key_bindings["cmd_4"]
+            case "leader":
+                actions += map_ingame_key_bindings["cmd_5"]
     # start hold for command
     if hold == "hold":
         actions += action_hold("down")
@@ -164,6 +190,10 @@ def cmd_breach_and_clear(color, hold, tool, grenade, launcher):
             actions += map_ingame_key_bindings["cmd_3"]
         case "gas":
             actions += map_ingame_key_bindings["cmd_4"]
+        case "launcher":
+            actions += map_ingame_key_bindings["cmd_5"]
+        case "leader":
+            actions += map_ingame_key_bindings["cmd_6"]
     # end hold for command
     if hold == "hold":
         actions += action_hold("up")
@@ -189,22 +219,20 @@ class SelectColor(CompoundRule):
         cmd_select_team(color).execute()
 
 class BreachAndClear(CompoundRule):
-    spec1 = "[<color>] [team] [<hold>] [<tool>] [the door] [([(throw | deploy | use)] <grenade> | [deploy] fourtymil <launcher>)] [and] (breach and clear | clear) [it]"
-    spec2 = "[<color>] [team] [<hold>] [<tool>] [the door] [and] (breach and clear | clear) [it] [with] (<grenade> | fourtymil <launcher>) [grenade]"
+    spec1 = "[<color>] [team] [<hold>] [<tool>] [the door] [you] [[(throw | deploy | use)] <grenade>] [and] (breach and clear | clear) [it]"
+    spec2 = "[<color>] [team] [<hold>] [<tool>] [the door] [you] [and] (breach and clear | clear) [it] [with] <grenade> [grenade]"
     spec = f"(({spec1}) | ({spec2}))"
     extras = [
         Choice("color", map_colors),
         Choice("hold", map_hold),
-        Choice("tool", map_tools),
+        Choice("tool", map_breach_tools),
         Choice("grenade", map_grenades),
-        Choice("launcher", map_launcher_grenades),
     ]
     defaults = {
         "color": "current",
         "hold": "go",
         "tool": "open",
         "grenade": "none",
-        "launcher": "none",
     }
 
     def _process_recognition(self, node, extras):
@@ -212,19 +240,9 @@ class BreachAndClear(CompoundRule):
         hold = extras["hold"]
         tool = extras["tool"]
         grenade = extras["grenade"]
-        launcher = extras["launcher"]
 
-        deployed_nade = ""
-        if grenade != "none":
-            deployed_nade = grenade
-        if launcher != "none":
-            deployed_nade = deployed_nade + "40mm " + launcher
-        fmt_deployed_nade = ""
-        if len(deployed_nade) > 0:
-            fmt_deployed_nade = " deploy " + deployed_nade
-
-        print(f"{color} team {hold} {tool} the door{fmt_deployed_nade} breach and clear")
-        cmd_breach_and_clear(color, hold, tool, grenade, launcher)
+        print(f"{color} team {hold} {tool} the door {grenade} breach and clear")
+        cmd_breach_and_clear(color, hold, tool, grenade)
 
 
 class OpenDoor(CompoundRule):
@@ -246,26 +264,26 @@ class OpenDoor(CompoundRule):
 
 
 class StackUp(CompoundRule):
-    spec1 = "[<color>] [team] [<hold>] stack up [on] [the] [door] [use] [<stack_tool>] [(the door | it)]"
-    spec2 = "[<color>] [team] [<hold>] [use] <stack_tool> [((on | the) door | it)]"
+    spec1 = "[<color>] [team] [<hold>] stack up [on] [the] [door] [use] [the] [<tool>] [(the door | it)]"
+    spec2 = "[<color>] [team] [<hold>] [use] <tool> [((on | the) door | it)]"
     spec = f"(({spec1}) | ({spec2}))"
     extras = [
         Choice("color", map_colors),
         Choice("hold", map_hold),
-        Choice("stack_tool", map_stack_tool),
+        Choice("tool", map_stack_tools),
     ]
     defaults = {
         "color": "current",
         "hold": "go",
-        "stack_tool": "stack",
+        "tool": "stack",
     }
 
     def _process_recognition(self, node, extras):
         color = extras["color"]
         hold = extras["hold"]
-        stack_tool = extras["stack_tool"]
+        tool = extras["tool"]
 
-        print(f"{color} team {hold} stack up {stack_tool}")
+        print(f"{color} team {hold} stack up {tool}")
 
 
 class YellFreeze(BasicRule):
