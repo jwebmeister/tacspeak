@@ -72,13 +72,13 @@ else:
                                else Key(f'{v}:down/{min_delay}, {v}:up')
                                for k, v in ingame_key_bindings.items()}
 
-# key bindings
+# print key bindings
 print("-- Ready or Not keybindings --")
 for (k, v) in map_ingame_key_bindings.items():
     print(f'{k}:{v}')
 print("-- Ready or Not keybindings --")
 
-# spoken phrase to value mappings
+# mappings of spoken phrases to values
 map_colors = {
     "current": "current",
     "gold": "gold",
@@ -112,8 +112,7 @@ map_stack_tools = {
     "disarm [trap]": "disarm",
     "wedge": "wedge",
 }
-
-# 1.0 speculative
+# WIP - additional 1.0 mappings
 map_stack_splits = {
     "split": "split",
     "left": "left",
@@ -135,12 +134,12 @@ map_npc_interacts = {
     "move to [the] exit": "move to exit",
 }
 
+# used to chain actions together, e.g. (NULL_ACTION + Key(...) + Mouse(...)).execute()
 NULL_ACTION = Function(lambda: print("NULL_ACTION")
                        if DEBUG_NOCMD_PRINT_ONLY else None)
 
-# press down or up on hold command key, direction="up"|"down"
 
-
+# press "down" or release "up" the hold command key (on execution), direction="up"|"down"
 def action_hold(direction):
     if DEBUG_NOCMD_PRINT_ONLY:
         device = 'm' if 'mouse_' in ingame_key_bindings["cmd_hold"] else 'kb'
@@ -148,18 +147,34 @@ def action_hold(direction):
     else:
         return Key(f'{ingame_key_bindings["cmd_hold"]}:{direction}')
 
-
+# Press & release yell key (on execution)
 def cmd_yell():
     return map_ingame_key_bindings["yell"]
 
-
+# Press & release select color team key (on execution), or return NULL_ACTION
 def cmd_select_team(color):
     if color != "current":
         return map_ingame_key_bindings[color]
     else:
         return NULL_ACTION
 
+# Press & release command keys for team to fall in (on execution) - assumes player is not looking at person or door
+def cmd_fall_in(color, hold, formation):
+    actions = cmd_select_team(color)
+    actions += map_ingame_key_bindings["cmd_menu"]
+    # start hold for command
+    if hold == "hold":
+        actions += action_hold("down")
+    actions += map_ingame_key_bindings["cmd_2"]
 
+    # todo! add formations for 1.0
+
+    # end hold for command
+    if hold == "hold":
+        actions += action_hold("up")
+    actions.execute()
+
+# Press & release command keys for team to open door (on execution)
 def cmd_open_door(color, hold):
     actions = cmd_select_team(color)
     actions += map_ingame_key_bindings["cmd_menu"]
@@ -172,7 +187,32 @@ def cmd_open_door(color, hold):
         actions += action_hold("up")
     actions.execute()
 
+# Press & release command keys for team to stack up and/or use tool (on execution)
+def cmd_stack_up(color, hold, tool):
+    actions = cmd_select_team(color)
+    actions += map_ingame_key_bindings["cmd_menu"]
+    actions += map_ingame_key_bindings["cmd_1"]
 
+    # todo! add split for 1.0
+
+    # start hold for command
+    if hold == "hold":
+        actions += action_hold("down")
+    match tool:
+        case "stack":
+            actions += map_ingame_key_bindings["cmd_1"]
+        case "mirror":
+            actions += map_ingame_key_bindings["cmd_2"]
+        case "disarm":
+            actions += map_ingame_key_bindings["cmd_3"]
+        case "wedge":
+            actions += map_ingame_key_bindings["cmd_4"]
+    # end hold for command
+    if hold == "hold":
+        actions += action_hold("up")
+    actions.execute()
+
+# Press & release command keys for team to breach & clear (on execution)
 def cmd_breach_and_clear(color, hold, tool, grenade):
     actions = cmd_select_team(color)
     actions += map_ingame_key_bindings["cmd_menu"]
@@ -212,7 +252,7 @@ def cmd_breach_and_clear(color, hold, tool, grenade):
         actions += action_hold("up")
     actions.execute()
 
-
+# Speech recognise select color team
 class SelectTeam(CompoundRule):
     spec = "[<color>] team"
     extras = [Choice("color", map_colors)]
@@ -220,36 +260,41 @@ class SelectTeam(CompoundRule):
 
     def _process_recognition(self, node, extras):
         color = extras["color"]
+        print(f"{color}")
         cmd_select_team(color).execute()
 
-
+# Speech recognise select color team
 class SelectColor(CompoundRule):
     spec = "<color>"
     extras = [Choice("color", ["blue", "red", "gold"])]
 
     def _process_recognition(self, node, extras):
         color = extras["color"]
+        print(f"{color}")
         cmd_select_team(color).execute()
 
-
+# Speech recognise team fall in
 class FallIn(CompoundRule):
-    spec = "[<color>] [team] (fall in | regroup | form) [<formation>]"
+    spec = "[<color>] [team] [<hold>] (fall in | regroup | form [up]) [<formation>]"
     extras = [
         Choice("color", map_colors),
+        Choice("hold", map_hold),
         Choice("formation", map_formations),
     ]
     defaults = {
         "color": "current",
+        "hold": "go",
         "formation": "single",
     }
 
     def _process_recognition(self, node, extras):
         color = extras["color"]
+        hold = extras["hold"]
         formation = extras["formation"]
+        print(f"{color} team {hold} fall in {formation}")
+        cmd_fall_in(color, hold, formation).execute()
 
-        # todo!
-
-
+# Speech recognise team breach and clear
 class BreachAndClear(CompoundRule):
     spec1 = "[<color>] [team] [<hold>] [<tool>] [the door] [you] [[(throw | deploy | use)] <grenade>] [and] (breach and clear | clear) [it]"
     spec2 = "[<color>] [team] [<hold>] [<tool>] [the door] [you] [and] (breach and clear | clear) [it] [with] <grenade> [grenade]"
@@ -272,11 +317,10 @@ class BreachAndClear(CompoundRule):
         hold = extras["hold"]
         tool = extras["tool"]
         grenade = extras["grenade"]
-
         print(f"{color} team {hold} {tool} the door {grenade} breach and clear")
         cmd_breach_and_clear(color, hold, tool, grenade)
 
-
+# Speech recognise team open door
 class OpenDoor(CompoundRule):
     spec = "[<color>] [team] [<hold>] open [the] door"
     extras = [
@@ -291,11 +335,12 @@ class OpenDoor(CompoundRule):
     def _process_recognition(self, node, extras):
         color = extras["color"]
         hold = extras["hold"]
-
         print(f"{color} team {hold} open the door")
+        cmd_open_door(color, hold).execute()
 
-
+# Speech recognise team stack up on door
 class StackUp(CompoundRule):
+    # todo! update with split stack for 1.0
     spec1 = "[<color>] [team] [<hold>] stack up [on] [the] [door] [use] [the] [<tool>] [(the door | it)]"
     spec2 = "[<color>] [team] [<hold>] [use] <tool> [((on | the) door | it)]"
     spec = f"(({spec1}) | ({spec2}))"
@@ -314,10 +359,10 @@ class StackUp(CompoundRule):
         color = extras["color"]
         hold = extras["hold"]
         tool = extras["tool"]
-
         print(f"{color} team {hold} stack up {tool}")
+        cmd_stack_up(color, hold, tool)
 
-
+# Speech recognise yell at NPC
 class YellFreeze(BasicRule):
     element = Alternative((
         Literal("freeze"),
@@ -346,7 +391,7 @@ class FreezeRecob(RecognitionObserver):
     def on_partial_recognition(self, words, rule):
         self.words = words
         if (not self.frozen) and isinstance(rule, kaldi_active_grammar.KaldiRule) and rule.name == "ReadyOrNot_priority::YellFreeze":
-            print("Freeze dirtbag!")
+            cmd_yell().execute()
             self.frozen = True
 
     def on_recognition(self, words, results):
