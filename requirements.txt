@@ -4,4 +4,4 @@ kaldi-active-grammar~=3.1.0
 
 # dev only
 cx_Freeze~=6.15.11
-# pip-licenses~=4.3.3
+pip-licenses~=4.3.3
