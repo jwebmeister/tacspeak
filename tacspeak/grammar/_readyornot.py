@@ -16,7 +16,7 @@ import kaldi_active_grammar
 # ---------------------------------------------------------------------------
 # Create this module's grammar and the context under which it'll be active.
 
-grammar_context = AppContext(executable="notepad")
+grammar_context = AppContext(executable="ReadyOrNot")
 grammar = Grammar("ReadyOrNot",
                   # context=grammar_context,
                   )
@@ -87,6 +87,7 @@ map_colors = {
 }
 map_breach_tools = {
     "open": "open",
+    "move [in]": "open",
     "kick [it] [down]": "kick",
     "(shotgun | shotty)": "shotgun",
     "c2": "c2",
@@ -112,7 +113,18 @@ map_stack_tools = {
     "disarm [trap]": "disarm",
     "wedge": "wedge",
 }
-# WIP - additional 1.0 mappings
+map_deployables = {
+    "(bang | flashbang | flash)": "flashbang",
+    "stinger": "stinger",
+    "(cs | gas | cs gas)": "gas",
+    "chem light": "chemlight",
+    "shield": "shield",
+}
+map_npc_team_interacts = {
+    "restrain [(them | him | her)]": "restrain",
+}
+
+# WIP - 1.0 mappings
 map_stack_splits = {
     "split": "split",
     "left": "left",
@@ -124,42 +136,166 @@ map_formations = {
     "diamond": "diamond",
     "wedge": "wedge",
 }
-map_npc_interacts = {
-    "restrain [(them | him | her)]": "restrain",
+map_npc_player_interacts = {
     "(move | come) (here | forward)": "move here",
     "(move | come) [to] my position": "move my position",
     "stop [there]": "move stop",
-    "deploy": "deploy",
     "turn around [and stay still]": "turn around",
     "move to [the] exit": "move to exit",
 }
+map_npc_deployables = {
+    "(bang | flashbang | flash)": "flashbang",
+    "stinger": "stinger",
+    "(cs | gas | cs gas)": "gas",
+    "(fourtymil | launcher)": "launcher",
+    "[pepper] spray": "spray",
+    "taser": "taser",
+}
+# map_npc_team_interacts.update({f"(deploy | use) [the] {k}": v for k, v in map_deployables.items()}) # don't use this will conflict with cmd not looking at target
+# map_npc_team_interacts.update({f"(deploy | use) [the] {k}": v for k, v in map_npc_deployables.items()}) # WIP - for 1.0
+
 
 # used to chain actions together, e.g. (NULL_ACTION + Key(...) + Mouse(...)).execute()
 NULL_ACTION = Function(lambda: print("NULL_ACTION")
                        if DEBUG_NOCMD_PRINT_ONLY else None)
 
-
-# press "down" or release "up" the hold command key (on execution), direction="up"|"down"
 def action_hold(direction):
+    """
+    press "down" or release "up" the hold command key (on execution)
+    - direction="up"|"down"
+    """
     if DEBUG_NOCMD_PRINT_ONLY:
         device = 'm' if 'mouse_' in ingame_key_bindings["cmd_hold"] else 'kb'
         return Function(debug_print_key, device=device, key=f'{ingame_key_bindings["cmd_hold"]}:{direction}')
     else:
         return Key(f'{ingame_key_bindings["cmd_hold"]}:{direction}')
 
-# Press & release yell key (on execution)
+
+def cmd_use_deployable(color, hold, deployable):
+    """
+    Press & release command keys for the team to use deployable (on execution) 
+    - assumes player is not looking at person or door
+    """
+    actions = cmd_select_team(color)
+    actions += map_ingame_key_bindings["cmd_menu"]
+    actions += map_ingame_key_bindings["cmd_4"]
+    # start hold for command
+    if hold == "hold":
+        actions += action_hold("down")
+    match deployable:
+        case "flashbang":
+            actions += map_ingame_key_bindings["cmd_1"]
+        case "stinger":
+            actions += map_ingame_key_bindings["cmd_2"]
+        case "gas":
+            actions += map_ingame_key_bindings["cmd_3"]
+        case "chemlight":
+            actions += map_ingame_key_bindings["cmd_4"]
+        case "shield":
+            actions += map_ingame_key_bindings["cmd_5"]
+    # end hold for command
+    if hold == "hold":
+        actions += action_hold("up")
+    return actions
+
+
+# WIP - speculative for 1.0
+def cmd_npc_player_interact(hold, interaction):
+    """
+    Press & release command keys for player to interact with target (on execution) 
+    - assumes player is looking at person
+    """
+    actions = map_ingame_key_bindings["cmd_menu"]
+    # todo! check if hold command is possible in 1.0?
+    # start hold for command
+    if hold == "hold":
+        actions += action_hold("down")
+    match interaction:
+        case "move here":
+            actions += map_ingame_key_bindings["cmd_2"]
+            actions += map_ingame_key_bindings["cmd_1"]
+        case "move my position":
+            actions += map_ingame_key_bindings["cmd_2"]
+            actions += map_ingame_key_bindings["cmd_2"]
+        case "move stop":
+            actions += map_ingame_key_bindings["cmd_2"]
+            actions += map_ingame_key_bindings["cmd_3"]
+        case "turn around":
+            actions += map_ingame_key_bindings["cmd_4"]
+        case "move to exit":
+            actions += map_ingame_key_bindings["cmd_5"]
+    # todo! check if hold command is possible in 1.0?
+    # end hold for command
+    if hold == "hold":
+        actions += action_hold("up")
+    return actions
+
+
+def cmd_npc_team_interact(color, hold, interaction):
+    """
+    Press & release command keys for the team to interact with target (on execution) 
+    - assumes player is looking at person
+    """
+    actions = cmd_select_team(color)
+    actions += map_ingame_key_bindings["cmd_menu"]
+    # start hold for command
+    if hold == "hold":
+        actions += action_hold("down")
+    match interaction:
+        case "restrain":
+            actions += map_ingame_key_bindings["cmd_1"]
+        # todo! update deployables for 1.0
+        case "deploy flashbang":
+            actions += map_ingame_key_bindings["cmd_5"]
+            actions += map_ingame_key_bindings["cmd_1"]
+        case "deploy stinger":
+            actions += map_ingame_key_bindings["cmd_5"]
+            actions += map_ingame_key_bindings["cmd_2"]
+        case "deploy gas":
+            actions += map_ingame_key_bindings["cmd_5"]
+            actions += map_ingame_key_bindings["cmd_3"]
+        case "deploy chemlight":
+            actions += map_ingame_key_bindings["cmd_5"]
+            actions += map_ingame_key_bindings["cmd_4"]
+        case "deploy shield":
+            actions += map_ingame_key_bindings["cmd_5"]
+            actions += map_ingame_key_bindings["cmd_5"]
+        case "deploy launcher":
+            # todo! update for 1.0
+            print(f"todo: {interaction}")
+        case "deploy spray":
+            # todo! update for 1.0
+            print(f"todo: {interaction}")
+        case "deploy taser":
+            # todo! update for 1.0
+            print(f"todo: {interaction}")
+    # end hold for command
+    if hold == "hold":
+        actions += action_hold("up")
+    return actions
+
 def cmd_yell():
+    """
+    Press & release yell key (on execution)
+    """
     return map_ingame_key_bindings["yell"]
 
-# Press & release select color team key (on execution), or return NULL_ACTION
+
 def cmd_select_team(color):
+    """
+    Press & release select color team key (on execution), or return NULL_ACTION
+    """
     if color != "current":
         return map_ingame_key_bindings[color]
     else:
         return NULL_ACTION
 
-# Press & release command keys for team to fall in (on execution) - assumes player is not looking at person or door
+
 def cmd_fall_in(color, hold, formation):
+    """
+    Press & release command keys for team to fall in (on execution) 
+    - assumes player is not looking at person or door
+    """
     actions = cmd_select_team(color)
     actions += map_ingame_key_bindings["cmd_menu"]
     # start hold for command
@@ -172,23 +308,33 @@ def cmd_fall_in(color, hold, formation):
     # end hold for command
     if hold == "hold":
         actions += action_hold("up")
-    actions.execute()
+    return actions
 
-# Press & release command keys for team to open door (on execution)
-def cmd_open_door(color, hold):
+
+def cmd_open_or_close_door(color, hold, open_or_close):
+    """
+    Press & release command keys for team to open or close door (on execution)
+    """
     actions = cmd_select_team(color)
     actions += map_ingame_key_bindings["cmd_menu"]
     # start hold for command
     if hold == "hold":
         actions += action_hold("down")
-    actions += map_ingame_key_bindings["cmd_4"]
+    match open_or_close:
+        case "open":
+            actions += map_ingame_key_bindings["cmd_4"]
+        case "close":
+            actions += map_ingame_key_bindings["cmd_3"]
     # end hold for command
     if hold == "hold":
         actions += action_hold("up")
-    actions.execute()
+    return actions
 
-# Press & release command keys for team to stack up and/or use tool (on execution)
+
 def cmd_stack_up(color, hold, tool):
+    """
+    Press & release command keys for team to stack up and/or use tool (on execution)
+    """
     actions = cmd_select_team(color)
     actions += map_ingame_key_bindings["cmd_menu"]
     actions += map_ingame_key_bindings["cmd_1"]
@@ -210,10 +356,13 @@ def cmd_stack_up(color, hold, tool):
     # end hold for command
     if hold == "hold":
         actions += action_hold("up")
-    actions.execute()
+    return actions
 
-# Press & release command keys for team to breach & clear (on execution)
+
 def cmd_breach_and_clear(color, hold, tool, grenade):
+    """
+    Press & release command keys for team to breach & clear (on execution)
+    """
     actions = cmd_select_team(color)
     actions += map_ingame_key_bindings["cmd_menu"]
     if tool == "open":
@@ -250,10 +399,61 @@ def cmd_breach_and_clear(color, hold, tool, grenade):
     # end hold for command
     if hold == "hold":
         actions += action_hold("up")
-    actions.execute()
+    return actions
 
-# Speech recognise select color team
+
+class NpcTeamInteract(CompoundRule):
+    """
+    Speech recognise command team to interact with NPC target
+    """
+    spec = "[<color>] [team] [<hold>] <interaction>"
+    extras = [
+        Choice("color", map_colors),
+        Choice("hold", map_hold),
+        Choice("interaction", map_npc_team_interacts),
+    ]
+    defaults = {
+        "color": "current",
+        "hold": "go",
+        "interaction": "restrain",
+    }
+
+    def _process_recognition(self, node, extras):
+        color = extras["color"]
+        hold = extras["hold"]
+        interaction = extras["interaction"]
+        print(f"{color} team {hold} {interaction} target")
+        cmd_npc_team_interact(color, hold, interaction).execute()
+
+
+class UseDeployable(CompoundRule):
+    """
+    Speech recognise command team to interact with NPC target
+    """
+    spec = "[<color>] [team] [<hold>] (use | deploy) <deployable>"
+    extras = [
+        Choice("color", map_colors),
+        Choice("hold", map_hold),
+        Choice("deployable", map_deployables),
+    ]
+    defaults = {
+        "color": "current",
+        "hold": "go",
+        "deployable": "flashbang",
+    }
+
+    def _process_recognition(self, node, extras):
+        color = extras["color"]
+        hold = extras["hold"]
+        deployable = extras["deployable"]
+        print(f"{color} team {hold} deploy {deployable}")
+        cmd_use_deployable(color, hold, deployable).execute()
+
+
 class SelectTeam(CompoundRule):
+    """
+    Speech recognise select color team
+    """
     spec = "[<color>] team"
     extras = [Choice("color", map_colors)]
     defaults = {"color": "current"}
@@ -263,8 +463,11 @@ class SelectTeam(CompoundRule):
         print(f"{color}")
         cmd_select_team(color).execute()
 
-# Speech recognise select color team
+
 class SelectColor(CompoundRule):
+    """
+    Speech recognise select color team
+    """
     spec = "<color>"
     extras = [Choice("color", ["blue", "red", "gold"])]
 
@@ -273,8 +476,11 @@ class SelectColor(CompoundRule):
         print(f"{color}")
         cmd_select_team(color).execute()
 
-# Speech recognise team fall in
+
 class FallIn(CompoundRule):
+    """
+    Speech recognise team fall in
+    """
     spec = "[<color>] [team] [<hold>] (fall in | regroup | form [up]) [<formation>]"
     extras = [
         Choice("color", map_colors),
@@ -294,8 +500,11 @@ class FallIn(CompoundRule):
         print(f"{color} team {hold} fall in {formation}")
         cmd_fall_in(color, hold, formation).execute()
 
-# Speech recognise team breach and clear
+
 class BreachAndClear(CompoundRule):
+    """
+    Speech recognise team breach and clear
+    """
     spec1 = "[<color>] [team] [<hold>] [<tool>] [the door] [you] [[(throw | deploy | use)] <grenade>] [and] (breach and clear | clear) [it]"
     spec2 = "[<color>] [team] [<hold>] [<tool>] [the door] [you] [and] (breach and clear | clear) [it] [with] <grenade> [grenade]"
     spec = f"(({spec1}) | ({spec2}))"
@@ -318,28 +527,37 @@ class BreachAndClear(CompoundRule):
         tool = extras["tool"]
         grenade = extras["grenade"]
         print(f"{color} team {hold} {tool} the door {grenade} breach and clear")
-        cmd_breach_and_clear(color, hold, tool, grenade)
+        cmd_breach_and_clear(color, hold, tool, grenade).execute()
 
-# Speech recognise team open door
-class OpenDoor(CompoundRule):
-    spec = "[<color>] [team] [<hold>] open [the] door"
+
+class OpenOrCloseDoor(CompoundRule):
+    """
+    Speech recognise team open (or close) door
+    """
+    spec = "[<color>] [team] [<hold>] <open_or_close> [the] door"
     extras = [
         Choice("color", map_colors),
         Choice("hold", map_hold),
+        Choice("open_or_close", ["open", "close"]),
     ]
     defaults = {
         "color": "current",
         "hold": "go",
+        "open_or_close": "open",
     }
 
     def _process_recognition(self, node, extras):
         color = extras["color"]
         hold = extras["hold"]
-        print(f"{color} team {hold} open the door")
-        cmd_open_door(color, hold).execute()
+        open_or_close = extras["open_or_close"]
+        print(f"{color} team {hold} {open_or_close} the door")
+        cmd_open_or_close_door(color, hold, open_or_close).execute()
 
-# Speech recognise team stack up on door
+
 class StackUp(CompoundRule):
+    """
+    Speech recognise team stack up on door
+    """
     # todo! update with split stack for 1.0
     spec1 = "[<color>] [team] [<hold>] stack up [on] [the] [door] [use] [the] [<tool>] [(the door | it)]"
     spec2 = "[<color>] [team] [<hold>] [use] <tool> [((on | the) door | it)]"
@@ -360,10 +578,13 @@ class StackUp(CompoundRule):
         hold = extras["hold"]
         tool = extras["tool"]
         print(f"{color} team {hold} stack up {tool}")
-        cmd_stack_up(color, hold, tool)
+        cmd_stack_up(color, hold, tool).execute()
 
-# Speech recognise yell at NPC
+
 class YellFreeze(BasicRule):
+    """
+    Speech recognise yell at NPC
+    """
     element = Alternative((
         Literal("freeze"),
         Literal("hands"),
@@ -379,7 +600,9 @@ class YellFreeze(BasicRule):
 
 
 class FreezeRecob(RecognitionObserver):
-
+    """
+    Observer of partial recognition of yell commands
+    """
     def __init__(self):
         RecognitionObserver.__init__(self)
         self.words = None
@@ -413,8 +636,10 @@ class FreezeRecob(RecognitionObserver):
 grammar.add_rule(SelectTeam())
 grammar.add_rule(SelectColor())
 grammar.add_rule(BreachAndClear())
-grammar.add_rule(OpenDoor())
+grammar.add_rule(OpenOrCloseDoor())
 grammar.add_rule(StackUp())
+grammar.add_rule(NpcTeamInteract())
+grammar.add_rule(UseDeployable())
 grammar_priority.add_rule(YellFreeze())
 
 freeze_recob = FreezeRecob()
