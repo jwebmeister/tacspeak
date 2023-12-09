@@ -640,6 +640,7 @@ grammar.add_rule(OpenOrCloseDoor())
 grammar.add_rule(StackUp())
 grammar.add_rule(NpcTeamInteract())
 grammar.add_rule(UseDeployable())
+grammar.add_rule(FallIn())
 grammar_priority.add_rule(YellFreeze())
 
 freeze_recob = FreezeRecob()
