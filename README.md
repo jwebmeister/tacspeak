@@ -12,7 +12,7 @@ Tacspeak has been designed specifically for **recognising speech commands while 
 
 **Lightweight** - it runs on CPU, with ~2GB RAM.
 
-**Modular** - you can build your own set of voice commands for additional games, or modify [existing ones](https://github.com/jwebmeister/tacspeak/tree/main/tacspeak/grammar).
+**Modular** - you can build your own set of voice commands for additional games, or modify [existing ones](tacspeak/grammar).
 
 **Open source** - you can modify any part of Tacspeak for yourself, and/or contribute back to the project and help build it as part of the community.
 
@@ -21,7 +21,7 @@ Tacspeak has been designed specifically for **recognising speech commands while 
 Tacspeak is built atop the excellent [Dragonfly](https://github.com/dictation-toolbox/dragonfly) speech recognition framework for Python. 
 - Note: Tacspeak uses a modified version of Dragonfly located at [jwebmeister/dragonfly](https://github.com/jwebmeister/dragonfly).
 - Please see the Dragonfly [docs](http://dragonfly.readthedocs.org/en/latest/) for information on building grammars and rules (i.e. voice commands). 
-- Please also see the existing [examples](https://github.com/jwebmeister/tacspeak/tree/main/tacspeak/grammar) of Tacspeak grammar modules.
+- Please also see the existing [examples](tacspeak/grammar) of Tacspeak grammar modules.
 
 Also built atop the excellent [Kaldi Active Grammar](https://github.com/daanzu/kaldi-active-grammar/), which provides the [Kaldi](https://github.com/kaldi-asr/kaldi) engine backend and model for Dragonfly.
 
@@ -30,25 +30,26 @@ Also built atop the excellent [Kaldi Active Grammar](https://github.com/daanzu/k
 - OS: Windows 10/11, 64-bit
 - ~2GB+ disk space for model plus temporary storage and cache.
 - ~2GB+ RAM.
+- Only supports English language speech recognition, as provided via [Kaldi Active Grammar](https://github.com/daanzu/kaldi-active-grammar).
 
 ## Install instructions
 
 ### Simple - packaged executable
 
 1. Download and install [Microsoft Visual C++ Redistributable](https://aka.ms/vs/17/release/vc_redist.x64.exe)
-2. Download the [latest release](https://github.com/jwebmeister/tacspeak/releases/latest/), including both (they are separate downloads):
+2. Download the [latest release](https://github.com/jwebmeister/tacspeak/releases/latest/), including both (they are separate downloads and/or releases):
     - the Tacspeak application .zip (includes runtime executable)
     - a pre-trained Kaldi model .zip.
 3. Extract the Tacspeak application .zip into a folder, and extract the Kaldi model .zip into the same folder, 
     - e.g. `Tacspeak/` and `Tacspeak/kaldi_model/`, 
     - (Note: there should be a folder `Tacspeak/Tacspeak/` after extraction).
-4. Run the executable `Tacspeak/cli.exe` :)
+4. Run the executable `Tacspeak/tacspeak.exe` :)
 
 ### Complex - Python
 
 #### Prerequisites: 
 
-- Installed Python 3.11
+- Python 3.11 installed
 
 #### Steps:
 
@@ -56,8 +57,8 @@ Also built atop the excellent [Kaldi Active Grammar](https://github.com/daanzu/k
 2. Download a pre-trained Kaldi model .zip from the [latest release](https://github.com/jwebmeister/tacspeak/releases/latest/) and extract into the cloned project folder, e.g. `Tacspeak/kaldi_model/`.
 3. Open the `Tacspeak/` folder in PowerShell (or equivalent).
 4. Strongly recommended to use a virtual environment, e.g. 
-    - create within `Tacspeak` folder: `python -m venv ".\.venv"`
-    - activate within `Tacspeak` folder: `.\.venv\Scripts\Activate.ps1`
+    - create within `Tacspeak` folder: `python -m venv "./.venv"`
+    - activate within `Tacspeak` folder: `./.venv/Scripts/Activate.ps1`
 5. Install required packages via pip
     - `pip install -r requirements.txt`
 6. Done! Should now be able to run Tacspeak via `python ./cli.py`
@@ -66,10 +67,10 @@ Also built atop the excellent [Kaldi Active Grammar](https://github.com/daanzu/k
 
 ### Prerequisites: 
 
-1. Installed [Microsoft Visual C++ Redistributable](https://aka.ms/vs/17/release/vc_redist.x64.exe)
-2. Installed Python 3.11
+1. [Microsoft Visual C++ Redistributable](https://aka.ms/vs/17/release/vc_redist.x64.exe) installed
+2. Python 3.11 installed
 3. A compatible compiler for cx_freeze installed, 
-    - Only tested using Visual Studio 2022, [MSVC](https://visualstudio.microsoft.com/downloads/)
+    - Only tested Visual Studio 2022, [MSVC](https://visualstudio.microsoft.com/downloads/)
 
 ### Steps
 
@@ -77,8 +78,8 @@ Also built atop the excellent [Kaldi Active Grammar](https://github.com/daanzu/k
 2. Download a pre-trained Kaldi model .zip from the [latest release](https://github.com/jwebmeister/tacspeak/releases/latest/) and extract into the cloned project folder, e.g. `Tacspeak/kaldi_model/`.
 3. Open the `Tacspeak/` folder in PowerShell (or equivalent).
 4. Strongly recommended to use a virtual environment, e.g. 
-    - create within `Tacspeak` folder: `python -m venv ".\.venv"`
-    - activate within `Tacspeak` folder: `.\.venv\Scripts\Activate.ps1`
+    - create within `Tacspeak` folder: `python -m venv "./.venv"`
+    - activate within `Tacspeak` folder: `./.venv/Scripts/Activate.ps1`
 5. Install required packages via pip
     - `pip install -r requirements.txt`
 6. Build via setup.py
@@ -92,9 +93,9 @@ What I learned from my research and testing:
 - most state-of-the-art Automatic Speech Recognition (ASR) systems are not fit for the purpose of speech command recognition while gaming. They:
     - take too long, e.g. 1-3 seconds.
     - take too much memory, e.g. 2-4 GB of VRAM (textures pop-in in-game). 
-    - take too much CPU/GPU processing power, e.g. 20-40% utilisation.
+    - take too much CPU/GPU processing power.
     - are designed for wider applications beyond speech *command* recognition, e.g. free-form dictation.
-- there are decades-old ASR's that are fit-for-purpose, but their software toolchain and build process has grown too-far out-of-date.
+- there are decades-old ASR's that are fit-for-purpose, but their software toolchain and build process are too unwieldy.
 - on paper, the Windows Speech Recognition engine should be perfect for my use-case, it just hates me (and everyone else).
 - I needed a customisable speech recognition framework to fit my specific use-case.
 
