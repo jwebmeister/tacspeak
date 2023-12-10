@@ -18,17 +18,17 @@ import kaldi_active_grammar
 
 grammar_context = AppContext(executable="ReadyOrNot")
 grammar = Grammar("ReadyOrNot",
-                  # context=grammar_context,
+                  context=grammar_context,
                   )
 grammar_priority = Grammar("ReadyOrNot_priority",
-                           # context=grammar_context,
+                           context=grammar_context,
                            )
 
 # ---------------------------------------------------------------------------
 # Rules which will be added to our grammar
 
 # Will map keybindings to print()
-DEBUG_NOCMD_PRINT_ONLY = True
+DEBUG_NOCMD_PRINT_ONLY = False
 
 # the minimum time between keys state changes (e.g. pressed then released),
 # it's to make sure key presses are registered in-game
@@ -171,6 +171,8 @@ def action_hold(direction):
         return Key(f'{ingame_key_bindings["cmd_hold"]}:{direction}')
 
 
+# todo! need to add team move order!
+
 def cmd_use_deployable(color, hold, deployable):
     """
     Press & release command keys for the team to use deployable (on execution) 
@@ -289,6 +291,20 @@ def cmd_select_team(color):
         return map_ingame_key_bindings[color]
     else:
         return NULL_ACTION
+
+
+def cmd_execute_or_cancel_held_order(color, execute_or_cancel):
+    """
+    Press & release command keys for team to execute held order
+    """
+    actions = cmd_select_team(color)
+    actions += map_ingame_key_bindings["cmd_menu"]
+    match execute_or_cancel:
+        case "execute":
+            actions += map_ingame_key_bindings["cmd_1"]
+        case "cancel":
+            actions += map_ingame_key_bindings["cmd_2"]
+    return actions
 
 
 def cmd_fall_in(color, hold, formation):
@@ -476,6 +492,26 @@ class SelectColor(CompoundRule):
         print(f"{color}")
         cmd_select_team(color).execute()
 
+class ExecuteOrCancelHeldOrder(CompoundRule):
+    """
+    Speech recognise team execute or cancel a held order
+    """
+    spec = "[<color>] [team] <execute_or_cancel> [held] [order]"
+    extras = [
+        Choice("color", map_colors),
+        Choice("execute_or_cancel", ["execute", "cancel"]),
+    ]
+    defaults = {
+        "color": "current",
+        "execute_or_cancel": "execute",
+    }
+
+    def _process_recognition(self, node, extras):
+        color = extras["color"]
+        execute_or_cancel = extras["execute_or_cancel"]
+        print(f"{color} team {execute_or_cancel} held order")
+        cmd_execute_or_cancel_held_order(color, execute_or_cancel).execute()
+
 
 class FallIn(CompoundRule):
     """
@@ -593,6 +629,7 @@ class YellFreeze(BasicRule):
     ))
 
     def _process_recognition(self, node, extras):
+        print("Freeze!")
         cmd_yell().execute()
 
 # ---------------------------------------------------------------------------
@@ -614,6 +651,7 @@ class FreezeRecob(RecognitionObserver):
     def on_partial_recognition(self, words, rule):
         self.words = words
         if (not self.frozen) and isinstance(rule, kaldi_active_grammar.KaldiRule) and rule.name == "ReadyOrNot_priority::YellFreeze":
+            print("Freeze!")
             cmd_yell().execute()
             self.frozen = True
 
@@ -641,6 +679,7 @@ grammar.add_rule(StackUp())
 grammar.add_rule(NpcTeamInteract())
 grammar.add_rule(UseDeployable())
 grammar.add_rule(FallIn())
+grammar.add_rule(ExecuteOrCancelHeldOrder())
 grammar_priority.add_rule(YellFreeze())
 
 freeze_recob = FreezeRecob()
