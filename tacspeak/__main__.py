@@ -22,10 +22,6 @@ from dragonfly.engines.backend_kaldi.dictation import UserDictation as Dictation
 from dragonfly.loader import CommandModuleDirectory
 from dragonfly.log import setup_log
 
-import kaldi_active_grammar
-
-kaldi_active_grammar.disable_donation_message()
-
 # --------------------------------------------------------------------------
 # Set up basic logging.
 
