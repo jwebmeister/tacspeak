@@ -10,9 +10,9 @@ Tacspeak has been designed specifically for **recognising speech commands while 
 
 **Fast** - typically on the order of 10-200ms, depending on complexity.
 
-**Lightweight** - it runs on the CPU, with a little RAM.
+**Lightweight** - it runs on CPU, with ~2GB RAM.
 
-**Modular** - you can build your own set of voice commands for additional games, or modify existing ones. See [examples](https://github.com/jwebmeister/tacspeak/tree/main/tacspeak/grammar).
+**Modular** - you can build your own set of voice commands for additional games, or modify [existing ones](https://github.com/jwebmeister/tacspeak/tree/main/tacspeak/grammar).
 
 **Open source** - you can modify any part of Tacspeak for yourself, and/or contribute back to the project and help build it as part of the community.
 
@@ -23,7 +23,7 @@ Tacspeak is built atop the excellent [Dragonfly](https://github.com/dictation-to
 - Please see the Dragonfly [docs](http://dragonfly.readthedocs.org/en/latest/) for information on building grammars and rules (i.e. voice commands). 
 - Please also see the existing [examples](https://github.com/jwebmeister/tacspeak/tree/main/tacspeak/grammar) of Tacspeak grammar modules.
 
-Also built atop the excellent [Kaldi Active Grammar](https://github.com/daanzu/kaldi-active-grammar/), which provides the Kaldi engine backed and model for Dragonfly.
+Also built atop the excellent [Kaldi Active Grammar](https://github.com/daanzu/kaldi-active-grammar/), which provides the [Kaldi](https://github.com/kaldi-asr/kaldi) engine backend and model for Dragonfly.
 
 ## Requirements
 
@@ -33,11 +33,56 @@ Also built atop the excellent [Kaldi Active Grammar](https://github.com/daanzu/k
 
 ## Install instructions
 
-todo
+### Simple - packaged executable
+
+1. Download and install [Microsoft Visual C++ Redistributable](https://aka.ms/vs/17/release/vc_redist.x64.exe)
+2. Download the [latest release](https://github.com/jwebmeister/tacspeak/releases/latest/), including both (they are separate downloads):
+    - the Tacspeak application .zip (includes runtime executable)
+    - a pre-trained Kaldi model .zip.
+3. Extract the Tacspeak application .zip into a folder, and extract the Kaldi model .zip into the same folder, 
+    - e.g. `Tacspeak/` and `Tacspeak/kaldi_model/`, 
+    - (Note: there should be a folder `Tacspeak/Tacspeak/` after extraction).
+4. Run the executable `Tacspeak/cli.exe` :)
+
+### Complex - Python
+
+#### Prerequisites: 
+
+- Installed Python 3.11
+
+#### Steps:
+
+1. Clone this repo into a folder, e.g. `Tacspeak/`.
+2. Download a pre-trained Kaldi model .zip from the [latest release](https://github.com/jwebmeister/tacspeak/releases/latest/) and extract into the cloned project folder, e.g. `Tacspeak/kaldi_model/`.
+3. Open the `Tacspeak/` folder in PowerShell (or equivalent).
+4. Strongly recommended to use a virtual environment, e.g. 
+    - create within `Tacspeak` folder: `python -m venv ".\.venv"`
+    - activate within `Tacspeak` folder: `.\.venv\Scripts\Activate.ps1`
+5. Install required packages via pip
+    - `pip install -r requirements.txt`
+6. Done! Should now be able to run Tacspeak via `python ./cli.py`
 
 ## Build instructions
 
-todo
+### Prerequisites: 
+
+1. Installed [Microsoft Visual C++ Redistributable](https://aka.ms/vs/17/release/vc_redist.x64.exe)
+2. Installed Python 3.11
+3. A compatible compiler for cx_freeze installed, 
+    - Only tested using Visual Studio 2022, [MSVC](https://visualstudio.microsoft.com/downloads/)
+
+### Steps
+
+1. Clone this repo into a folder, e.g. `Tacspeak/`.
+2. Download a pre-trained Kaldi model .zip from the [latest release](https://github.com/jwebmeister/tacspeak/releases/latest/) and extract into the cloned project folder, e.g. `Tacspeak/kaldi_model/`.
+3. Open the `Tacspeak/` folder in PowerShell (or equivalent).
+4. Strongly recommended to use a virtual environment, e.g. 
+    - create within `Tacspeak` folder: `python -m venv ".\.venv"`
+    - activate within `Tacspeak` folder: `.\.venv\Scripts\Activate.ps1`
+5. Install required packages via pip
+    - `pip install -r requirements.txt`
+6. Build via setup.py
+    - `python setup.py build`
 
 ## Motivation
 
@@ -69,8 +114,6 @@ You can also consider supporting the projects Tacspeak are built upon, [dictatio
 Any and all donations are very much appreciated and help encourage development.
 
 [![Donate](https://img.shields.io/badge/donate-GitHub-pink.svg)](https://github.com/sponsors/jwebmeister) [![Donate](https://img.shields.io/badge/donate-PayPal-green.svg)](https://paypal.me/jwebmeister)
-
-Please feel free to reach out to me, contact info [@jwebmeister](https://github.com/jwebmeister).
 
 ## Author
 
