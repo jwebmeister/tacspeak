@@ -15,7 +15,7 @@ Kaldi Active Grammar version 3.1.0 [medium model][kag-medium-model], is required
 
 The file `<project folder>/kaldi_model/user_lexicon.txt` has been created by [JWebmeister][gh-jwebmeister], intended to be combined with the [v3.1.0 medium model files][kag-medium-model] and re-compiled using Kaldi Active Grammar (or via the Tacspeak.exe --recompile-model).
 
-### Complex Install instructions:
+### Complex install instructions:
 
 #### Option 1
 1. In PowerShell: cd to Tacspeak folder (containing Tacspeak.exe or cli.py)

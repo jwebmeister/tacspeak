@@ -18,10 +18,10 @@ from kaldi_active_grammar import KaldiRule
 
 grammar_context = AppContext(executable="ReadyOrNot")
 grammar = Grammar("ReadyOrNot",
-                  # context=grammar_context,
+                  context=grammar_context,
                   )
 grammar_priority = Grammar("ReadyOrNot_priority",
-                           # context=grammar_context,
+                           context=grammar_context,
                            )
 
 # ---------------------------------------------------------------------------
@@ -29,7 +29,7 @@ grammar_priority = Grammar("ReadyOrNot_priority",
 # Users should be able to look here first for customisation
 
 # Will map keybindings to print()
-DEBUG_NOCMD_PRINT_ONLY = True
+DEBUG_NOCMD_PRINT_ONLY = False
 
 # the minimum time between keys state changes (e.g. pressed then released),
 # it's to make sure key presses are registered in-game

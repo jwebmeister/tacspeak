@@ -19,7 +19,7 @@ Tacspeak has been designed specifically for **recognising speech commands while 
 ---
 
 Tacspeak is built atop the excellent [Dragonfly](https://github.com/dictation-toolbox/dragonfly) speech recognition framework for Python. 
-- Note: Tacspeak uses a modified version of Dragonfly located at [jwebmeister/dragonfly](https://github.com/jwebmeister/dragonfly).
+- Note: Tacspeak uses a *modified version* of Dragonfly located at [jwebmeister/dragonfly](https://github.com/jwebmeister/dragonfly).
 - Please see the Dragonfly [docs](http://dragonfly.readthedocs.org/en/latest/) for information on building grammars and rules (i.e. voice commands). 
 - Please also see the existing [examples](tacspeak/grammar) of Tacspeak grammar modules.
 
@@ -48,16 +48,24 @@ It is highly recommended to review and adjust  `./tacspeak/user_settings.py` to 
 
 Open `./tacspeak/user_settings.py` in a text editor, change the settings, then save and overwrite the file.  There are comments explaining most of the important settings.
 
-By default (you'll likely want to change these):
+By default (you might want to change these):
 - `listen_key`=`0x10` (the Shift key), and 
 - `listen_key_toggle`=`0` (active only while key is pressed)
 
-### User defined voice commands and words
+### Modules - modification and creation
 
-- Note: Tacspeak uses a modified version of Dragonfly located at [jwebmeister/dragonfly](https://github.com/jwebmeister/dragonfly).
-- Please see the Dragonfly [docs](http://dragonfly.readthedocs.org/en/latest/) for information on building grammars and rules (i.e. voice commands). 
-- Please also see the existing [examples](tacspeak/grammar) of Tacspeak grammar modules.
-- Words not defined within the existing model *can* be added, but it will involve recompiling the model. See [kaldi_model/README.md](kaldi_model/README.md) for more information.
+It is likely you will want to modify or customise some of the [existing Tacspeak grammar modules](tacspeak/grammar) (if not also add your own!), which you can do by editing the `./tacspeak/grammar/_*.py` file corresponding to the application you're interested in.  
+
+As an example, in the [Ready or Not](tacspeak\grammar\_readyornot.py) module you can change `ingame_key_bindings` to align the Tacspeak module with your in-game keybindings.  You could also change the words and/or sentences used for recognising speech commands, for example, adding "smoke it out" as an alternative to "breach and clear".
+
+Additional notes:
+- Please see the existing [examples](tacspeak/grammar) of Tacspeak grammar modules.
+- Please see the Dragonfly [docs](http://dragonfly.readthedocs.org/en/latest/) for information on building grammars, rules, and actions (i.e. voice commands). 
+- Note: Tacspeak uses a *modified version* of Dragonfly located at [jwebmeister/dragonfly](https://github.com/jwebmeister/dragonfly). Review the source and/or commits of the fork to understand its differences to the original project and the corresponding docs.
+
+### Model and user lexicon modification
+
+Words not defined within the existing model *can* be added, but it will involve recompiling the model. See [kaldi_model/README.md](kaldi_model/README.md) for more information.
 
 ### Important advice
 
