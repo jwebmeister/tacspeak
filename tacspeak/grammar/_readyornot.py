@@ -120,6 +120,11 @@ map_deployables = {
     "chem light": "chemlight",
     "shield": "shield",
 }
+map_execute_or_cancels = {
+    "execute": "execute", 
+    "cancel": "cancel", 
+    "go [go] [go]": "execute",
+}
 map_npc_team_interacts = {
     "restrain [(them | him | her)]": "restrain",
 }
@@ -171,7 +176,41 @@ def action_hold(direction):
         return Key(f'{ingame_key_bindings["cmd_hold"]}:{direction}')
 
 
-# todo! need to add team move order!
+def cmd_team_move_there(color, hold):
+    """
+    Press & release command keys for the team to move to location
+    - assumes player is not looking at person or door
+    """
+    actions = cmd_select_team(color)
+    actions += map_ingame_key_bindings["cmd_menu"]
+    # todo! check if hold command is possible?
+    # start hold for command
+    if hold == "hold":
+        actions += action_hold("down")
+    actions += map_ingame_key_bindings["cmd_1"]
+    # end hold for command
+    if hold == "hold":
+        actions += action_hold("up")
+    return actions
+
+
+def cmd_pick_lock(color, hold):
+    """
+    Press & release command keys for the team to move to location
+    - assumes player is looking at door
+    """
+    actions = cmd_select_team(color)
+    actions += map_ingame_key_bindings["cmd_menu"]
+    # todo! check if hold command is possible?
+    # start hold for command
+    if hold == "hold":
+        actions += action_hold("down")
+    actions += map_ingame_key_bindings["cmd_2"]
+    # end hold for command
+    if hold == "hold":
+        actions += action_hold("up")
+    return actions
+
 
 def cmd_use_deployable(color, hold, deployable):
     """
@@ -492,14 +531,15 @@ class SelectColor(CompoundRule):
         print(f"{color}")
         cmd_select_team(color).execute()
 
+
 class ExecuteOrCancelHeldOrder(CompoundRule):
     """
     Speech recognise team execute or cancel a held order
     """
-    spec = "[<color>] [team] <execute_or_cancel> [held] [order]"
+    spec = "[<color>] [team] <execute_or_cancel> [([held] order | that)]"
     extras = [
         Choice("color", map_colors),
-        Choice("execute_or_cancel", ["execute", "cancel"]),
+        Choice("execute_or_cancel", map_execute_or_cancels),
     ]
     defaults = {
         "color": "current",
@@ -588,6 +628,48 @@ class OpenOrCloseDoor(CompoundRule):
         open_or_close = extras["open_or_close"]
         print(f"{color} team {hold} {open_or_close} the door")
         cmd_open_or_close_door(color, hold, open_or_close).execute()
+
+
+class TeamMoveThere(CompoundRule):
+    """
+    Speech recognise team move there
+    """
+    spec = "[<color>] [team] [<hold>] move (there | to my front | forward)"
+    extras = [
+        Choice("color", map_colors),
+        Choice("hold", map_hold),
+    ]
+    defaults = {
+        "color": "current",
+        "hold": "go",
+    }
+
+    def _process_recognition(self, node, extras):
+        color = extras["color"]
+        hold = extras["hold"]
+        print(f"{color} team {hold} move there")
+        cmd_team_move_there(color, hold).execute()
+
+
+class PickLock(CompoundRule):
+    """
+    Speech recognise team pick the lock
+    """
+    spec = "[<color>] [team] [<hold>] pick ([the] door | [the] lock | it)"
+    extras = [
+        Choice("color", map_colors),
+        Choice("hold", map_hold),
+    ]
+    defaults = {
+        "color": "current",
+        "hold": "go",
+    }
+
+    def _process_recognition(self, node, extras):
+        color = extras["color"]
+        hold = extras["hold"]
+        print(f"{color} team {hold} pick the lock")
+        cmd_pick_lock(color, hold).execute()
 
 
 class StackUp(CompoundRule):
@@ -680,6 +762,8 @@ grammar.add_rule(NpcTeamInteract())
 grammar.add_rule(UseDeployable())
 grammar.add_rule(FallIn())
 grammar.add_rule(ExecuteOrCancelHeldOrder())
+grammar.add_rule(TeamMoveThere())
+grammar.add_rule(PickLock())
 grammar_priority.add_rule(YellFreeze())
 
 freeze_recob = FreezeRecob()
