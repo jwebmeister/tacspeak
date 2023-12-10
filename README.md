@@ -32,6 +32,35 @@ Also built atop the excellent [Kaldi Active Grammar](https://github.com/daanzu/k
 - ~2GB+ RAM.
 - Only supports English language speech recognition, as provided via [Kaldi Active Grammar](https://github.com/daanzu/kaldi-active-grammar).
 
+## Simple install - packaged executable
+
+1. Download and install [Microsoft Visual C++ Redistributable](https://aka.ms/vs/17/release/vc_redist.x64.exe)
+2. Download the [latest release](https://github.com/jwebmeister/tacspeak/releases/latest/), including both (they are separate downloads and/or releases):
+    - the Tacspeak application .zip (includes runtime executable)
+    - a pre-trained Kaldi model .zip.
+3. Extract the Tacspeak application .zip into a folder, and extract the Kaldi model .zip into the same folder, 
+    - e.g. `Tacspeak/` and `Tacspeak/kaldi_model/`, 
+    - (Note: there should be a folder `Tacspeak/Tacspeak/` after extraction).
+4. Run the executable `Tacspeak/tacspeak.exe` :)
+
+## Complex install - Python
+
+### Prerequisites: 
+
+- Python 3.11 installed
+
+### Steps:
+
+1. Clone this repo into a folder, e.g. `Tacspeak/`.
+2. Download a pre-trained Kaldi model .zip from the [latest release](https://github.com/jwebmeister/tacspeak/releases/latest/) and extract into the cloned project folder, e.g. `Tacspeak/kaldi_model/` after extraction.
+3. Open the `Tacspeak/` folder in PowerShell (or equivalent).
+4. Strongly recommended to use a virtual environment, e.g. 
+    - create within `Tacspeak` folder: `python -m venv "./.venv"`
+    - activate within `Tacspeak` folder: `./.venv/Scripts/Activate.ps1`
+5. Install required packages via pip
+    - `pip install -r requirements.txt`
+6. Done! Should now be able to run Tacspeak via `python ./cli.py`
+
 ## Usage
 ### Basic
 Run `tacspeak.exe` (or `python ./cli.py`); it will..
@@ -72,35 +101,6 @@ Words not defined within the existing model *can* be added, but it will involve 
 *Please use caution and your own discretion in regards to utilising third-party files, specifically \*.py files.*
 
 Tacspeak automatically loads (and executes) `./tacspeak/user_settings.py` and all modules `./tacspeak/grammar/_*.py`, regardless of what code it contains.
-
-## Simple install - packaged executable
-
-1. Download and install [Microsoft Visual C++ Redistributable](https://aka.ms/vs/17/release/vc_redist.x64.exe)
-2. Download the [latest release](https://github.com/jwebmeister/tacspeak/releases/latest/), including both (they are separate downloads and/or releases):
-    - the Tacspeak application .zip (includes runtime executable)
-    - a pre-trained Kaldi model .zip.
-3. Extract the Tacspeak application .zip into a folder, and extract the Kaldi model .zip into the same folder, 
-    - e.g. `Tacspeak/` and `Tacspeak/kaldi_model/`, 
-    - (Note: there should be a folder `Tacspeak/Tacspeak/` after extraction).
-4. Run the executable `Tacspeak/tacspeak.exe` :)
-
-## Complex install - Python
-
-### Prerequisites: 
-
-- Python 3.11 installed
-
-### Steps:
-
-1. Clone this repo into a folder, e.g. `Tacspeak/`.
-2. Download a pre-trained Kaldi model .zip from the [latest release](https://github.com/jwebmeister/tacspeak/releases/latest/) and extract into the cloned project folder, e.g. `Tacspeak/kaldi_model/` after extraction.
-3. Open the `Tacspeak/` folder in PowerShell (or equivalent).
-4. Strongly recommended to use a virtual environment, e.g. 
-    - create within `Tacspeak` folder: `python -m venv "./.venv"`
-    - activate within `Tacspeak` folder: `./.venv/Scripts/Activate.ps1`
-5. Install required packages via pip
-    - `pip install -r requirements.txt`
-6. Done! Should now be able to run Tacspeak via `python ./cli.py`
 
 ## Build instructions
 
