@@ -10,7 +10,7 @@ Tacspeak has been designed specifically for **recognising speech commands while 
 
 **Fast** - typically on the order of 10-200ms, depending on complexity.
 
-**Lightweight** - it runs on CPU, with ~2GB RAM.
+**Lightweight** - it runs on spare CPU cores, with ~2GB RAM.
 
 **Modular** - you can build your own set of voice commands for additional games, or modify [existing ones](tacspeak/grammar).
 
@@ -23,7 +23,7 @@ Tacspeak is built atop the excellent [Dragonfly](https://github.com/dictation-to
 - Please see the Dragonfly [docs](http://dragonfly.readthedocs.org/en/latest/) for information on building grammars and rules (i.e. voice commands). 
 - Please also see the existing [examples](tacspeak/grammar) of Tacspeak grammar modules.
 
-Also built atop the excellent [Kaldi Active Grammar](https://github.com/daanzu/kaldi-active-grammar/), which provides the [Kaldi](https://github.com/kaldi-asr/kaldi) engine backend and model for Dragonfly.
+Also built atop the excellent [Kaldi Active Grammar](https://github.com/daanzu/kaldi-active-grammar/), which provides the [Kaldi](https://github.com/kaldi-asr/kaldi) (also excellent) engine backend and model for Dragonfly.
 
 ## Requirements
 
@@ -54,7 +54,7 @@ Also built atop the excellent [Kaldi Active Grammar](https://github.com/daanzu/k
 #### Steps:
 
 1. Clone this repo into a folder, e.g. `Tacspeak/`.
-2. Download a pre-trained Kaldi model .zip from the [latest release](https://github.com/jwebmeister/tacspeak/releases/latest/) and extract into the cloned project folder, e.g. `Tacspeak/kaldi_model/`.
+2. Download a pre-trained Kaldi model .zip from the [latest release](https://github.com/jwebmeister/tacspeak/releases/latest/) and extract into the cloned project folder, e.g. `Tacspeak/kaldi_model/` after extraction.
 3. Open the `Tacspeak/` folder in PowerShell (or equivalent).
 4. Strongly recommended to use a virtual environment, e.g. 
     - create within `Tacspeak` folder: `python -m venv "./.venv"`

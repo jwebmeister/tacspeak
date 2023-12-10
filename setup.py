@@ -59,6 +59,9 @@ include_files.append(("licenses/pkg_licenses_summary.md", "licenses/pkg_licenses
 include_files.append("kaldi_model/")
 include_files.append(("kaldi_model/README.md", "kaldi_model/README.md"))
 include_files.append(("kaldi_model/user_lexicon.txt", "kaldi_model/user_lexicon.txt"))
+include_files.append(("scripts/download_extract_model.ps1", "scripts/download_extract_model.ps1"))
+include_files.append(("scripts/move_extracted_model.ps1", "scripts/move_extracted_model.ps1"))
+include_files.append(("scripts/compile_dictation_graph.ps1", "scripts/compile_dictation_graph.ps1"))
 
 # Dependencies are automatically detected, but it might need fine tuning.
 build_exe_options = {

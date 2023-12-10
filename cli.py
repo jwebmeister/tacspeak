@@ -21,7 +21,7 @@ def main():
     args = parser.parse_args()
     if args.model_dir is not None and os.path.isdir(args.model_dir):
         compiler = Compiler(args.model_dir)
-        print("Compiling dictation graph (approx. 15 minutes)...")
+        print("Compiling dictation graph (approx. 30 minutes)...")
         compiler.compile_agf_dictation_fst()
     else:
         tacspeak_main()
