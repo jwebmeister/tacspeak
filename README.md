@@ -32,9 +32,40 @@ Also built atop the excellent [Kaldi Active Grammar](https://github.com/daanzu/k
 - ~2GB+ RAM.
 - Only supports English language speech recognition, as provided via [Kaldi Active Grammar](https://github.com/daanzu/kaldi-active-grammar).
 
-## Install instructions
+## Usage
+### Basic
+Run `tacspeak.exe` (or `python ./cli.py`); it will..
+- load `./tacspeak/user_settings.py`
+- load all modules `./tacspeak/grammar/_*.py`
+- start the speech engine
+- begin listening for commands, but it will...
+    - wait for a matching app context (defined in the `grammar` modules), then activate those relevant modules.
+    - wait for the `listen_key` to be activated if it's specified, and depending on toggle-mode.
 
-### Simple - packaged executable
+### User settings
+
+It is highly recommended to review and adjust  `./tacspeak/user_settings.py` to your liking.
+
+Open `./tacspeak/user_settings.py` in a text editor, change the settings, then save and overwrite the file.  There are comments explaining most of the important settings.
+
+By default (you'll likely want to change these):
+- `listen_key`=`0x10` (the Shift key), and 
+- `listen_key_toggle`=`0` (active only while key is pressed)
+
+### User defined voice commands and words
+
+- Note: Tacspeak uses a modified version of Dragonfly located at [jwebmeister/dragonfly](https://github.com/jwebmeister/dragonfly).
+- Please see the Dragonfly [docs](http://dragonfly.readthedocs.org/en/latest/) for information on building grammars and rules (i.e. voice commands). 
+- Please also see the existing [examples](tacspeak/grammar) of Tacspeak grammar modules.
+- Words not defined within the existing model *can* be added, but it will involve recompiling the model. See [kaldi_model/README.md](kaldi_model/README.md) for more information.
+
+### Important advice
+
+*Please use caution and your own discretion in regards to utilising third-party files, specifically \*.py files.*
+
+Tacspeak automatically loads (and executes) `./tacspeak/user_settings.py` and all modules `./tacspeak/grammar/_*.py`, regardless of what code it contains.
+
+## Simple install - packaged executable
 
 1. Download and install [Microsoft Visual C++ Redistributable](https://aka.ms/vs/17/release/vc_redist.x64.exe)
 2. Download the [latest release](https://github.com/jwebmeister/tacspeak/releases/latest/), including both (they are separate downloads and/or releases):
@@ -45,13 +76,13 @@ Also built atop the excellent [Kaldi Active Grammar](https://github.com/daanzu/k
     - (Note: there should be a folder `Tacspeak/Tacspeak/` after extraction).
 4. Run the executable `Tacspeak/tacspeak.exe` :)
 
-### Complex - Python
+## Complex install - Python
 
-#### Prerequisites: 
+### Prerequisites: 
 
 - Python 3.11 installed
 
-#### Steps:
+### Steps:
 
 1. Clone this repo into a folder, e.g. `Tacspeak/`.
 2. Download a pre-trained Kaldi model .zip from the [latest release](https://github.com/jwebmeister/tacspeak/releases/latest/) and extract into the cloned project folder, e.g. `Tacspeak/kaldi_model/` after extraction.
@@ -95,11 +126,11 @@ What I learned from my research and testing:
     - take too much memory, e.g. 2-4 GB of VRAM (textures pop-in in-game). 
     - take too much CPU/GPU processing power.
     - are designed for wider applications beyond speech *command* recognition, e.g. free-form dictation.
-- there are decades-old ASR's that are fit-for-purpose, but their software toolchain and build process are too unwieldy.
+- there are decades-old ASR's that are fit-for-purpose, but their tool and build chains were too unwieldy.
 - on paper, the Windows Speech Recognition engine should be perfect for my use-case, it just hates me (and everyone else).
 - I needed a customisable speech recognition framework to fit my specific use-case.
 
-Tacspeak isn't perfect, but it beats the competition by a fair margin, precisely because it can be customised to your specific commands, for your specific context.
+Tacspeak isn't perfect, but it is a very strong option, precisely because it can be so highly customised to your specific commands, for your specific application.
 
 ## Contributing
 
