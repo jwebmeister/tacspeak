@@ -43,27 +43,9 @@ Also built atop the excellent [Kaldi Active Grammar](https://github.com/daanzu/k
     - (Note: there should be a folder `Tacspeak/Tacspeak/` after extraction).
 4. Run the executable `Tacspeak/tacspeak.exe` :)
 
-## Complex install - Python
-
-### Prerequisites: 
-
-- Python 3.11 installed
-
-### Steps:
-
-1. Clone this repo into a folder, e.g. `Tacspeak/`.
-2. Download a pre-trained Kaldi model .zip from the [latest release](https://github.com/jwebmeister/tacspeak/releases/latest/) and extract into the cloned project folder, e.g. `Tacspeak/kaldi_model/` after extraction.
-3. Open the `Tacspeak/` folder in PowerShell (or equivalent).
-4. Strongly recommended to use a virtual environment, e.g. 
-    - create within `Tacspeak` folder: `python -m venv "./.venv"`
-    - activate within `Tacspeak` folder: `./.venv/Scripts/Activate.ps1`
-5. Install required packages via pip
-    - `pip install -r requirements.txt`
-6. Done! Should now be able to run Tacspeak via `python ./cli.py`
-
 ## Usage
 ### Basic
-Run `tacspeak.exe` (or `python ./cli.py`); it will..
+Run `tacspeak.exe` (or `python ./cli.py`) and it will..
 - load `./tacspeak/user_settings.py`
 - load all modules `./tacspeak/grammar/_*.py`
 - start the speech engine
@@ -101,6 +83,25 @@ Words not defined within the existing model *can* be added, but it will involve 
 *Please use caution and your own discretion in regards to utilising third-party files, specifically \*.py files.*
 
 Tacspeak automatically loads (and executes) `./tacspeak/user_settings.py` and all modules `./tacspeak/grammar/_*.py`, regardless of what code it contains.
+
+## Complex install - Python
+
+### Prerequisites: 
+
+- Python 3.11 installed
+
+### Steps:
+
+1. Clone this repo into a folder, e.g. `Tacspeak/`.
+2. Download a pre-trained Kaldi model .zip from the [latest release](https://github.com/jwebmeister/tacspeak/releases/latest/) and extract into the cloned project folder, e.g. `Tacspeak/kaldi_model/` after extraction.
+3. Open the `Tacspeak/` folder in PowerShell (or equivalent).
+4. Strongly recommended to use a virtual environment, e.g. 
+    - create within `Tacspeak` folder: `python -m venv "./.venv"`
+    - activate within `Tacspeak` folder: `./.venv/Scripts/Activate.ps1`
+5. Install required packages via pip
+    - `pip install -r requirements.txt`
+6. Done! Should now be able to run Tacspeak via `python ./cli.py`
+
 
 ## Build instructions
 
