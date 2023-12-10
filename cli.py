@@ -29,7 +29,7 @@ def main():
 def print_notices():
     text = """
     Tacspeak - speech recognition for gaming
-    (c) Copyright 2023 by Joshua Webb
+    © Copyright 2023 by Joshua Webb
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU Affero General Public License as

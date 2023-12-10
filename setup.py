@@ -4,8 +4,8 @@
 # Licensed under the AGPL-3.0; see LICENSE.txt file.
 #
 
+import os
 import sys
-from os.path import join, basename
 from pkg_resources import get_distribution
 from cx_Freeze import setup, Executable
 
@@ -20,12 +20,37 @@ def collect_dist_info(packages):
         distrib = get_distribution(pkg)
         for req in distrib.requires():
             dirs.extend(collect_dist_info(req.key))
-        dirs.append((distrib.egg_info, join('Lib', basename(distrib.egg_info))))
+        dirs.append((distrib.egg_info, os.path.join('Lib', os.path.basename(distrib.egg_info))))
     return dirs
+
+def grammar_modules():
+    """
+    Gets list of grammar modules (src_dir, dst_dir)
+    """
+    src_dst_dirs = []
+    try:
+        path = os.path.dirname(__file__)
+    except NameError:
+        path = os.getcwd()
+    grammar_path = os.path.join(path, os.path.relpath("tacspeak/grammar/"))
+    for filename in os.listdir(grammar_path):
+        file_path = os.path.abspath(os.path.join(grammar_path, filename))
+        # Only apply _*.py to files, not directories.
+        is_file = os.path.isfile(file_path)
+        if not is_file:
+            continue
+        if is_file and not (os.path.basename(file_path).startswith("_") and
+                            os.path.splitext(file_path)[1] == ".py"):
+            continue
+        src_dst = (file_path, 
+                   os.path.join(os.path.relpath("tacspeak/grammar/"), os.path.basename(file_path))
+            )
+        src_dst_dirs.append(src_dst)
+    return src_dst_dirs
 
 include_files = []
 include_files.extend(collect_dist_info("webrtcvad_wheels"))
-include_files.append(("tacspeak/grammar/", "tacspeak/grammar/"))
+include_files.extend(grammar_modules())
 include_files.append("README.md")
 include_files.append("LICENSE.txt")
 include_files.append(("licenses/pkg_licenses_notices.txt", "licenses/pkg_licenses_notices.txt"))
@@ -69,5 +94,8 @@ setup(
     version="0.1",
     description="tacspeak",
     options={"build_exe": build_exe_options},
-    executables=[Executable("cli.py")],
+    executables=[Executable(script="cli.py", 
+                            target_name="tacspeak", 
+                            copyright="© Copyright 2023 by Joshua Webb"
+                            )],
 )
