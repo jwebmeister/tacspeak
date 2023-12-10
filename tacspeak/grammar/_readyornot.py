@@ -11,7 +11,7 @@ from dragonfly import (BasicRule, CompoundRule, MappingRule, RuleRef, Repetition
 from dragonfly.engines.backend_kaldi.dictation import UserDictation as Dictation
 from dragonfly.actions import (Key, Mouse)
 
-import kaldi_active_grammar
+from kaldi_active_grammar import KaldiRule
 
 # ---------------------------------------------------------------------------
 # Create this module's grammar and the context under which it'll be active.
@@ -25,7 +25,8 @@ grammar_priority = Grammar("ReadyOrNot_priority",
                            )
 
 # ---------------------------------------------------------------------------
-# Rules which will be added to our grammar
+# Variables used by grammar, rules, recognition observers below
+# Users should be able to look here first for customisation
 
 # Will map keybindings to print()
 DEBUG_NOCMD_PRINT_ONLY = False
@@ -57,7 +58,6 @@ ingame_key_bindings = {
     "interact": "f",
     "yell": "f",
 }
-
 
 def debug_print_key(device, key):
     print(f'({device}_{key})')
@@ -159,6 +159,8 @@ map_npc_deployables = {
 # map_npc_team_interacts.update({f"(deploy | use) [the] {k}": v for k, v in map_deployables.items()}) # don't use this will conflict with cmd not looking at target
 # map_npc_team_interacts.update({f"(deploy | use) [the] {k}": v for k, v in map_npc_deployables.items()}) # WIP - for 1.0
 
+# ---------------------------------------------------------------------------
+# Rules which will be added to our grammar
 
 # used to chain actions together, e.g. (NULL_ACTION + Key(...) + Mouse(...)).execute()
 NULL_ACTION = Function(lambda: print("NULL_ACTION")
@@ -175,6 +177,43 @@ def action_hold(direction):
     else:
         return Key(f'{ingame_key_bindings["cmd_hold"]}:{direction}')
 
+# ------------------------------------------------------------------
+
+def cmd_select_team(color):
+    """
+    Press & release select color team key (on execution), or return NULL_ACTION
+    """
+    if color != "current":
+        return map_ingame_key_bindings[color]
+    else:
+        return NULL_ACTION
+
+class SelectTeam(CompoundRule):
+    """
+    Speech recognise select color team
+    """
+    spec = "[<color>] team"
+    extras = [Choice("color", map_colors)]
+    defaults = {"color": "current"}
+
+    def _process_recognition(self, node, extras):
+        color = extras["color"]
+        print(f"{color}")
+        cmd_select_team(color).execute()
+
+class SelectColor(CompoundRule):
+    """
+    Speech recognise select color team
+    """
+    spec = "<color>"
+    extras = [Choice("color", ["blue", "red", "gold"])]
+
+    def _process_recognition(self, node, extras):
+        color = extras["color"]
+        print(f"{color}")
+        cmd_select_team(color).execute()
+
+# ------------------------------------------------------------------
 
 def cmd_team_move_there(color, hold):
     """
@@ -193,6 +232,27 @@ def cmd_team_move_there(color, hold):
         actions += action_hold("up")
     return actions
 
+class TeamMoveThere(CompoundRule):
+    """
+    Speech recognise team move there
+    """
+    spec = "[<color>] [team] [<hold>] move (there | to my front | forward)"
+    extras = [
+        Choice("color", map_colors),
+        Choice("hold", map_hold),
+    ]
+    defaults = {
+        "color": "current",
+        "hold": "go",
+    }
+
+    def _process_recognition(self, node, extras):
+        color = extras["color"]
+        hold = extras["hold"]
+        print(f"{color} team {hold} move there")
+        cmd_team_move_there(color, hold).execute()
+
+# ------------------------------------------------------------------
 
 def cmd_pick_lock(color, hold):
     """
@@ -211,6 +271,27 @@ def cmd_pick_lock(color, hold):
         actions += action_hold("up")
     return actions
 
+class PickLock(CompoundRule):
+    """
+    Speech recognise team pick the lock
+    """
+    spec = "[<color>] [team] [<hold>] pick ([the] door | [the] lock | it)"
+    extras = [
+        Choice("color", map_colors),
+        Choice("hold", map_hold),
+    ]
+    defaults = {
+        "color": "current",
+        "hold": "go",
+    }
+
+    def _process_recognition(self, node, extras):
+        color = extras["color"]
+        hold = extras["hold"]
+        print(f"{color} team {hold} pick the lock")
+        cmd_pick_lock(color, hold).execute()
+
+# ------------------------------------------------------------------
 
 def cmd_use_deployable(color, hold, deployable):
     """
@@ -239,6 +320,30 @@ def cmd_use_deployable(color, hold, deployable):
         actions += action_hold("up")
     return actions
 
+class UseDeployable(CompoundRule):
+    """
+    Speech recognise command team to interact with NPC target
+    """
+    spec = "[<color>] [team] [<hold>] (use | deploy) <deployable>"
+    extras = [
+        Choice("color", map_colors),
+        Choice("hold", map_hold),
+        Choice("deployable", map_deployables),
+    ]
+    defaults = {
+        "color": "current",
+        "hold": "go",
+        "deployable": "flashbang",
+    }
+
+    def _process_recognition(self, node, extras):
+        color = extras["color"]
+        hold = extras["hold"]
+        deployable = extras["deployable"]
+        print(f"{color} team {hold} deploy {deployable}")
+        cmd_use_deployable(color, hold, deployable).execute()
+
+# ------------------------------------------------------------------
 
 # WIP - speculative for 1.0
 def cmd_npc_player_interact(hold, interaction):
@@ -271,6 +376,9 @@ def cmd_npc_player_interact(hold, interaction):
         actions += action_hold("up")
     return actions
 
+# todo! class NpcPlayerInteract
+
+# ------------------------------------------------------------------
 
 def cmd_npc_team_interact(color, hold, interaction):
     """
@@ -315,22 +423,30 @@ def cmd_npc_team_interact(color, hold, interaction):
         actions += action_hold("up")
     return actions
 
-def cmd_yell():
+class NpcTeamInteract(CompoundRule):
     """
-    Press & release yell key (on execution)
+    Speech recognise command team to interact with NPC target
     """
-    return map_ingame_key_bindings["yell"]
+    spec = "[<color>] [team] [<hold>] <interaction>"
+    extras = [
+        Choice("color", map_colors),
+        Choice("hold", map_hold),
+        Choice("interaction", map_npc_team_interacts),
+    ]
+    defaults = {
+        "color": "current",
+        "hold": "go",
+        "interaction": "restrain",
+    }
 
+    def _process_recognition(self, node, extras):
+        color = extras["color"]
+        hold = extras["hold"]
+        interaction = extras["interaction"]
+        print(f"{color} team {hold} {interaction} target")
+        cmd_npc_team_interact(color, hold, interaction).execute()
 
-def cmd_select_team(color):
-    """
-    Press & release select color team key (on execution), or return NULL_ACTION
-    """
-    if color != "current":
-        return map_ingame_key_bindings[color]
-    else:
-        return NULL_ACTION
-
+# ------------------------------------------------------------------
 
 def cmd_execute_or_cancel_held_order(color, execute_or_cancel):
     """
@@ -345,6 +461,27 @@ def cmd_execute_or_cancel_held_order(color, execute_or_cancel):
             actions += map_ingame_key_bindings["cmd_2"]
     return actions
 
+class ExecuteOrCancelHeldOrder(CompoundRule):
+    """
+    Speech recognise team execute or cancel a held order
+    """
+    spec = "[<color>] [team] <execute_or_cancel> [([held] order | that)]"
+    extras = [
+        Choice("color", map_colors),
+        Choice("execute_or_cancel", map_execute_or_cancels),
+    ]
+    defaults = {
+        "color": "current",
+        "execute_or_cancel": "execute",
+    }
+
+    def _process_recognition(self, node, extras):
+        color = extras["color"]
+        execute_or_cancel = extras["execute_or_cancel"]
+        print(f"{color} team {execute_or_cancel} held order")
+        cmd_execute_or_cancel_held_order(color, execute_or_cancel).execute()
+
+# ------------------------------------------------------------------
 
 def cmd_fall_in(color, hold, formation):
     """
@@ -365,6 +502,30 @@ def cmd_fall_in(color, hold, formation):
         actions += action_hold("up")
     return actions
 
+class FallIn(CompoundRule):
+    """
+    Speech recognise team fall in
+    """
+    spec = "[<color>] [team] [<hold>] (fall in | regroup | form [up]) [<formation>]"
+    extras = [
+        Choice("color", map_colors),
+        Choice("hold", map_hold),
+        Choice("formation", map_formations),
+    ]
+    defaults = {
+        "color": "current",
+        "hold": "go",
+        "formation": "single",
+    }
+
+    def _process_recognition(self, node, extras):
+        color = extras["color"]
+        hold = extras["hold"]
+        formation = extras["formation"]
+        print(f"{color} team {hold} fall in {formation}")
+        cmd_fall_in(color, hold, formation).execute()
+
+# ------------------------------------------------------------------
 
 def cmd_open_or_close_door(color, hold, open_or_close):
     """
@@ -385,6 +546,30 @@ def cmd_open_or_close_door(color, hold, open_or_close):
         actions += action_hold("up")
     return actions
 
+class OpenOrCloseDoor(CompoundRule):
+    """
+    Speech recognise team open (or close) door
+    """
+    spec = "[<color>] [team] [<hold>] <open_or_close> [the] door"
+    extras = [
+        Choice("color", map_colors),
+        Choice("hold", map_hold),
+        Choice("open_or_close", ["open", "close"]),
+    ]
+    defaults = {
+        "color": "current",
+        "hold": "go",
+        "open_or_close": "open",
+    }
+
+    def _process_recognition(self, node, extras):
+        color = extras["color"]
+        hold = extras["hold"]
+        open_or_close = extras["open_or_close"]
+        print(f"{color} team {hold} {open_or_close} the door")
+        cmd_open_or_close_door(color, hold, open_or_close).execute()
+
+# ------------------------------------------------------------------
 
 def cmd_stack_up(color, hold, tool):
     """
@@ -413,6 +598,33 @@ def cmd_stack_up(color, hold, tool):
         actions += action_hold("up")
     return actions
 
+class StackUp(CompoundRule):
+    """
+    Speech recognise team stack up on door
+    """
+    # todo! update with split stack for 1.0
+    spec1 = "[<color>] [team] [<hold>] stack up [on] [the] [door] [use] [the] [<tool>] [(the door | it)]"
+    spec2 = "[<color>] [team] [<hold>] [use] <tool> [((on | the) door | it)]"
+    spec = f"(({spec1}) | ({spec2}))"
+    extras = [
+        Choice("color", map_colors),
+        Choice("hold", map_hold),
+        Choice("tool", map_stack_tools),
+    ]
+    defaults = {
+        "color": "current",
+        "hold": "go",
+        "tool": "stack",
+    }
+
+    def _process_recognition(self, node, extras):
+        color = extras["color"]
+        hold = extras["hold"]
+        tool = extras["tool"]
+        print(f"{color} team {hold} stack up {tool}")
+        cmd_stack_up(color, hold, tool).execute()
+
+# ------------------------------------------------------------------
 
 def cmd_breach_and_clear(color, hold, tool, grenade):
     """
@@ -456,127 +668,6 @@ def cmd_breach_and_clear(color, hold, tool, grenade):
         actions += action_hold("up")
     return actions
 
-
-class NpcTeamInteract(CompoundRule):
-    """
-    Speech recognise command team to interact with NPC target
-    """
-    spec = "[<color>] [team] [<hold>] <interaction>"
-    extras = [
-        Choice("color", map_colors),
-        Choice("hold", map_hold),
-        Choice("interaction", map_npc_team_interacts),
-    ]
-    defaults = {
-        "color": "current",
-        "hold": "go",
-        "interaction": "restrain",
-    }
-
-    def _process_recognition(self, node, extras):
-        color = extras["color"]
-        hold = extras["hold"]
-        interaction = extras["interaction"]
-        print(f"{color} team {hold} {interaction} target")
-        cmd_npc_team_interact(color, hold, interaction).execute()
-
-
-class UseDeployable(CompoundRule):
-    """
-    Speech recognise command team to interact with NPC target
-    """
-    spec = "[<color>] [team] [<hold>] (use | deploy) <deployable>"
-    extras = [
-        Choice("color", map_colors),
-        Choice("hold", map_hold),
-        Choice("deployable", map_deployables),
-    ]
-    defaults = {
-        "color": "current",
-        "hold": "go",
-        "deployable": "flashbang",
-    }
-
-    def _process_recognition(self, node, extras):
-        color = extras["color"]
-        hold = extras["hold"]
-        deployable = extras["deployable"]
-        print(f"{color} team {hold} deploy {deployable}")
-        cmd_use_deployable(color, hold, deployable).execute()
-
-
-class SelectTeam(CompoundRule):
-    """
-    Speech recognise select color team
-    """
-    spec = "[<color>] team"
-    extras = [Choice("color", map_colors)]
-    defaults = {"color": "current"}
-
-    def _process_recognition(self, node, extras):
-        color = extras["color"]
-        print(f"{color}")
-        cmd_select_team(color).execute()
-
-
-class SelectColor(CompoundRule):
-    """
-    Speech recognise select color team
-    """
-    spec = "<color>"
-    extras = [Choice("color", ["blue", "red", "gold"])]
-
-    def _process_recognition(self, node, extras):
-        color = extras["color"]
-        print(f"{color}")
-        cmd_select_team(color).execute()
-
-
-class ExecuteOrCancelHeldOrder(CompoundRule):
-    """
-    Speech recognise team execute or cancel a held order
-    """
-    spec = "[<color>] [team] <execute_or_cancel> [([held] order | that)]"
-    extras = [
-        Choice("color", map_colors),
-        Choice("execute_or_cancel", map_execute_or_cancels),
-    ]
-    defaults = {
-        "color": "current",
-        "execute_or_cancel": "execute",
-    }
-
-    def _process_recognition(self, node, extras):
-        color = extras["color"]
-        execute_or_cancel = extras["execute_or_cancel"]
-        print(f"{color} team {execute_or_cancel} held order")
-        cmd_execute_or_cancel_held_order(color, execute_or_cancel).execute()
-
-
-class FallIn(CompoundRule):
-    """
-    Speech recognise team fall in
-    """
-    spec = "[<color>] [team] [<hold>] (fall in | regroup | form [up]) [<formation>]"
-    extras = [
-        Choice("color", map_colors),
-        Choice("hold", map_hold),
-        Choice("formation", map_formations),
-    ]
-    defaults = {
-        "color": "current",
-        "hold": "go",
-        "formation": "single",
-    }
-
-    def _process_recognition(self, node, extras):
-        color = extras["color"]
-        hold = extras["hold"]
-        formation = extras["formation"]
-        print(f"{color} team {hold} fall in {formation}")
-        cmd_fall_in(color, hold, formation).execute()
-
-
 class BreachAndClear(CompoundRule):
     """
     Speech recognise team breach and clear
@@ -605,99 +696,13 @@ class BreachAndClear(CompoundRule):
         print(f"{color} team {hold} {tool} the door {grenade} breach and clear")
         cmd_breach_and_clear(color, hold, tool, grenade).execute()
 
+# ------------------------------------------------------------------
 
-class OpenOrCloseDoor(CompoundRule):
+def cmd_yell():
     """
-    Speech recognise team open (or close) door
+    Press & release yell key (on execution)
     """
-    spec = "[<color>] [team] [<hold>] <open_or_close> [the] door"
-    extras = [
-        Choice("color", map_colors),
-        Choice("hold", map_hold),
-        Choice("open_or_close", ["open", "close"]),
-    ]
-    defaults = {
-        "color": "current",
-        "hold": "go",
-        "open_or_close": "open",
-    }
-
-    def _process_recognition(self, node, extras):
-        color = extras["color"]
-        hold = extras["hold"]
-        open_or_close = extras["open_or_close"]
-        print(f"{color} team {hold} {open_or_close} the door")
-        cmd_open_or_close_door(color, hold, open_or_close).execute()
-
-
-class TeamMoveThere(CompoundRule):
-    """
-    Speech recognise team move there
-    """
-    spec = "[<color>] [team] [<hold>] move (there | to my front | forward)"
-    extras = [
-        Choice("color", map_colors),
-        Choice("hold", map_hold),
-    ]
-    defaults = {
-        "color": "current",
-        "hold": "go",
-    }
-
-    def _process_recognition(self, node, extras):
-        color = extras["color"]
-        hold = extras["hold"]
-        print(f"{color} team {hold} move there")
-        cmd_team_move_there(color, hold).execute()
-
-
-class PickLock(CompoundRule):
-    """
-    Speech recognise team pick the lock
-    """
-    spec = "[<color>] [team] [<hold>] pick ([the] door | [the] lock | it)"
-    extras = [
-        Choice("color", map_colors),
-        Choice("hold", map_hold),
-    ]
-    defaults = {
-        "color": "current",
-        "hold": "go",
-    }
-
-    def _process_recognition(self, node, extras):
-        color = extras["color"]
-        hold = extras["hold"]
-        print(f"{color} team {hold} pick the lock")
-        cmd_pick_lock(color, hold).execute()
-
-
-class StackUp(CompoundRule):
-    """
-    Speech recognise team stack up on door
-    """
-    # todo! update with split stack for 1.0
-    spec1 = "[<color>] [team] [<hold>] stack up [on] [the] [door] [use] [the] [<tool>] [(the door | it)]"
-    spec2 = "[<color>] [team] [<hold>] [use] <tool> [((on | the) door | it)]"
-    spec = f"(({spec1}) | ({spec2}))"
-    extras = [
-        Choice("color", map_colors),
-        Choice("hold", map_hold),
-        Choice("tool", map_stack_tools),
-    ]
-    defaults = {
-        "color": "current",
-        "hold": "go",
-        "tool": "stack",
-    }
-
-    def _process_recognition(self, node, extras):
-        color = extras["color"]
-        hold = extras["hold"]
-        tool = extras["tool"]
-        print(f"{color} team {hold} stack up {tool}")
-        cmd_stack_up(color, hold, tool).execute()
-
+    return map_ingame_key_bindings["yell"]
 
 class YellFreeze(BasicRule):
     """
@@ -717,7 +722,6 @@ class YellFreeze(BasicRule):
 # ---------------------------------------------------------------------------
 # Recognition Observer - for mid-utterance recognition
 
-
 class FreezeRecob(RecognitionObserver):
     """
     Observer of partial recognition of yell commands
@@ -732,7 +736,7 @@ class FreezeRecob(RecognitionObserver):
 
     def on_partial_recognition(self, words, rule):
         self.words = words
-        if (not self.frozen) and isinstance(rule, kaldi_active_grammar.KaldiRule) and rule.name == "ReadyOrNot_priority::YellFreeze":
+        if (not self.frozen) and isinstance(rule, KaldiRule) and rule.name == "ReadyOrNot_priority::YellFreeze":
             print("Freeze!")
             cmd_yell().execute()
             self.frozen = True
@@ -748,7 +752,6 @@ class FreezeRecob(RecognitionObserver):
     def on_end(self, results):
         self.words = False
         self.frozen = False
-
 
 # ---------------------------------------------------------------------------
 # Add rules to grammar and create RecognitionObserver instances
@@ -777,8 +780,6 @@ grammar_priority.load()
 freeze_recob.register()
 
 # Unload function which will be called at unload time.
-
-
 def unload():
     global grammar
     global grammar_priority
