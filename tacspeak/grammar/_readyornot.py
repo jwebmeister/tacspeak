@@ -237,7 +237,7 @@ class TeamMoveThere(CompoundRule):
     """
     Speech recognise team move there
     """
-    spec = "[<color>] [team] [<hold>] move (there | to my front | forward)"
+    spec = "[<color>] [team] [<hold>] (move | go) (there | to my front | forward)"
     extras = [
         Choice("color", map_colors),
         Choice("hold", map_hold),
