@@ -18,10 +18,10 @@ from kaldi_active_grammar import KaldiRule
 
 grammar_context = AppContext(executable="ReadyOrNot")
 grammar = Grammar("ReadyOrNot",
-                  context=grammar_context,
+                  # context=grammar_context,
                   )
 grammar_priority = Grammar("ReadyOrNot_priority",
-                           context=grammar_context,
+                           # context=grammar_context,
                            )
 
 # ---------------------------------------------------------------------------
@@ -29,7 +29,7 @@ grammar_priority = Grammar("ReadyOrNot_priority",
 # Users should be able to look here first for customisation
 
 # Will map keybindings to print()
-DEBUG_NOCMD_PRINT_ONLY = False
+DEBUG_NOCMD_PRINT_ONLY = True
 
 # the minimum time between keys state changes (e.g. pressed then released),
 # it's to make sure key presses are registered in-game
@@ -124,6 +124,7 @@ map_execute_or_cancels = {
     "execute": "execute", 
     "cancel": "cancel", 
     "go [go] [go]": "execute",
+    "belay": "cancel", 
 }
 map_npc_team_interacts = {
     "restrain [(them | him | her)]": "restrain",
@@ -465,7 +466,7 @@ class ExecuteOrCancelHeldOrder(CompoundRule):
     """
     Speech recognise team execute or cancel a held order
     """
-    spec = "[<color>] [team] <execute_or_cancel> [([held] order | that)]"
+    spec = "[<color>] [team] <execute_or_cancel> [([that] [held] order | that [order])]"
     extras = [
         Choice("color", map_colors),
         Choice("execute_or_cancel", map_execute_or_cancels),
@@ -672,8 +673,8 @@ class BreachAndClear(CompoundRule):
     """
     Speech recognise team breach and clear
     """
-    spec1 = "[<color>] [team] [<hold>] [<tool>] [the door] [you] [[(throw | deploy | use)] <grenade>] [and] (breach and clear | clear) [it]"
-    spec2 = "[<color>] [team] [<hold>] [<tool>] [the door] [you] [and] (breach and clear | clear) [it] [with] <grenade> [grenade]"
+    spec1 = "[<color>] [team] [<hold>] [<tool>] [the door] [you] [[(throw | deploy | use)] <grenade>] [and] (breach (and clear | it) | clear) [it]"
+    spec2 = "[<color>] [team] [<hold>] [<tool>] [the door] [you] [and] (breach (and clear | it) | clear) [it] [with] <grenade> [grenade]"
     spec = f"(({spec1}) | ({spec2}))"
     extras = [
         Choice("color", map_colors),
