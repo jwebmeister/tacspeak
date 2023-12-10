@@ -36,6 +36,7 @@ include_files.append("kaldi_model/")
 build_exe_options = {
     "packages": [],
     "include_files": include_files,
+    "bin_path_excludes": "C:/Program Files/",
     "excludes": ["tkinter", 
                  "sqlite3",
                  # "asyncio",
