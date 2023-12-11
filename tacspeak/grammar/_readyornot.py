@@ -4,6 +4,7 @@
 # Licensed under the AGPL-3.0; see LICENSE.txt file.
 #
 
+import sys
 import dragonfly
 from dragonfly import (BasicRule, CompoundRule, MappingRule, RuleRef, Repetition, RecognitionObserver,
                        Function, Choice, IntegerRef, Grammar, Alternative, Literal, Text,
@@ -14,9 +15,21 @@ from dragonfly.actions import (Key, Mouse)
 from kaldi_active_grammar import KaldiRule
 
 # ---------------------------------------------------------------------------
-# Create this module's grammar and the context under which it'll be active.
+# Check DEBUG_MODE (from user_settings)
 
-grammar_context = AppContext(executable="ReadyOrNot")
+try:
+    DEBUG_MODE = (sys.modules["user_settings"]).DEBUG_MODE
+except NameError:
+    DEBUG_MODE = False
+
+# DEBUG_MODE = True # if you want to override
+
+# ---------------------------------------------------------------------------
+# Create this module's grammar and the context under which it'll be active.
+if DEBUG_MODE:
+    grammar_context = AppContext()
+else:
+    grammar_context = AppContext(executable="ReadyOrNot")
 grammar = Grammar("ReadyOrNot",
                   context=grammar_context,
                   )
@@ -29,7 +42,7 @@ grammar_priority = Grammar("ReadyOrNot_priority",
 # Users should be able to look here first for customisation
 
 # Will map keybindings to print()
-DEBUG_NOCMD_PRINT_ONLY = False
+DEBUG_NOCMD_PRINT_ONLY = DEBUG_MODE
 
 # the minimum time between keys state changes (e.g. pressed then released),
 # it's to make sure key presses are registered in-game

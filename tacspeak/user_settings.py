@@ -1,4 +1,5 @@
-kaldi_engine_settings = {
+DEBUG_MODE = False
+KALDI_ENGINE_SETTINGS = {
     "listen_key":0x05, # 0x10=SHIFT key, 0x05=X1 mouse button, 0x06=X2 mouse button, see https://learn.microsoft.com/en-us/windows/win32/inputdev/virtual-key-codes
     "listen_key_toggle":-1, # Recommended is 0 or -1. 0 for toggle mode off; 1 for toggle mode on; 2 for global toggle on (use VAD); -1 for toggle mode off but allow priority grammar even when key not pressed
     "vad_padding_end_ms":250, # ms of required silence after VAD

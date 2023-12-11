@@ -59,9 +59,10 @@ It is highly recommended to review and adjust  `./tacspeak/user_settings.py` to 
 
 Open `./tacspeak/user_settings.py` in a text editor, change the settings, then save and overwrite the file.  There are comments explaining most of the important settings.
 
-By default (you might want to change these):
-- `listen_key`=`0x10` (the Shift key), and 
+For example, you might want to change these:
+- `listen_key`=`0x10` (the Shift key) 
 - `listen_key_toggle`=`0` (active only while key is pressed)
+- `input_device_index`=`None` (should use default microphone)
 
 ### Modules - modification and creation
 

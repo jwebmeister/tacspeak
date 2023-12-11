@@ -24,33 +24,19 @@ from dragonfly.loader import CommandModuleDirectory, CommandModule
 from dragonfly.log import setup_log
 
 # --------------------------------------------------------------------------
-# Set up basic logging.
-
-if False:
-    # Debugging logging for reporting trouble
-    logging.basicConfig(level=10)
-    logging.getLogger('grammar.decode').setLevel(20)
-    logging.getLogger('grammar.begin').setLevel(20)
-    logging.getLogger('compound').setLevel(20)
-    logging.getLogger('kaldi.compiler').setLevel(10)
-else:
-    setup_log()
-
-
-# --------------------------------------------------------------------------
 # Main event driving loop.
 
 def main():
-    logging.basicConfig(level=logging.INFO)
-
     user_settings_path = os.path.join(os.getcwd(), os.path.relpath("tacspeak/user_settings.py"))
     user_settings = CommandModule(user_settings_path)
     user_settings.load()
     try:
-        kaldi_engine_settings = (sys.modules["user_settings"]).kaldi_engine_settings
+        DEBUG_MODE = (sys.modules["user_settings"]).DEBUG_MODE
+        KALDI_ENGINE_SETTINGS = (sys.modules["user_settings"]).KALDI_ENGINE_SETTINGS
     except NameError:
-        print("Failed to load `tacspeak/user_settings.py`:`kaldi_engine_settings`. Using default settings as fallback.")
-        kaldi_engine_settings = {
+        print("Failed to load `tacspeak/user_settings.py`. Using default settings as fallback.")
+        DEBUG_MODE = False
+        KALDI_ENGINE_SETTINGS = {
             "listen_key":0x10, # 0x10=SHIFT key, 0x05=X1 mouse button, 0x06=X2 mouse button, see https://learn.microsoft.com/en-us/windows/win32/inputdev/virtual-key-codes
             "listen_key_toggle":0, # 0 for toggle mode off; 1 for toggle mode on; 2 for global toggle on (use VAD); -1 for toggle mode off but allow priority grammar even when key not pressed
             "vad_padding_end_ms":250, # ms of required silence after VAD
@@ -77,10 +63,22 @@ def main():
             # "compiler_init_config":None, 
             # "decoder_init_config":None,
         }
+    
+    if DEBUG_MODE:
+        logging.basicConfig(level=10)
+        logging.getLogger('grammar.decode').setLevel(20)
+        logging.getLogger('grammar.begin').setLevel(20)
+        logging.getLogger('compound').setLevel(20)
+        logging.getLogger('engine').setLevel(10)
+        logging.getLogger('kaldi').setLevel(10)
+        logging.getLogger('kaldi.compiler').setLevel(10)
+    else:
+        setup_log()
+        logging.basicConfig(level=logging.INFO)
 
     # Set any configuration options here as keyword arguments.
     # See Kaldi engine documentation for all available options and more info.
-    engine = get_engine('kaldi',**kaldi_engine_settings)
+    engine = get_engine('kaldi',**KALDI_ENGINE_SETTINGS)
 
     # Call connect() now that the engine configuration is set.
     engine.connect()
