@@ -524,7 +524,7 @@ class FallIn(CompoundRule):
     """
     Speech recognise team fall in
     """
-    spec = "[<color>] [team] [<hold>] (fall in | regroup | form [up] | on me) [<formation>]"
+    spec = "[<color>] [team] [<hold>] (fall in [on me] | regroup [on me] | form [up] [on me] | [form up] on me) [<formation>]"
     extras = [
         Choice("color", map_colors),
         Choice("hold", map_hold),
@@ -690,10 +690,9 @@ class BreachAndClear(CompoundRule):
     """
     Speech recognise team breach and clear
     """
-    spec1 = "[<color>] [team] [<hold>] [<tool>] [the door] [you] [[(throw | deploy | use)] <grenade>] [and] (breach (and clear | it) | clear) [it]"
-    spec2 = "[<color>] [team] [<hold>] [<tool>] [the door] [you] [and] (breach (and clear | it) | clear) [it] [with] <grenade> [grenade]"
-    spec3 = "[<color>] [team] [<hold>] [<tool>] [the door] [you] <grenade> [and] clear [it])"
-    spec = f"(({spec1}) | ({spec2}) | ({spec3}))"
+    spec1 = "[<color>] [team] [<hold>] [<tool>] [the door] [you] [[(throw | deploy | use)] <grenade>] [and] (breach | clear | breach and clear) [it]"
+    spec2 = "[<color>] [team] [<hold>] [<tool>] [the door] [you] [and] (breach | clear | breach and clear) [it] [with] <grenade> [grenade]"
+    spec = f"(({spec1}) | ({spec2}))"
     extras = [
         Choice("color", map_colors),
         Choice("hold", map_hold),
