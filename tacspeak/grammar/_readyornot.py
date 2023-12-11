@@ -105,7 +105,7 @@ map_breach_tools = {
     "(shotgun | shotty)": "shotgun",
     "c2": "c2",
     "[battering] ram [it]": "ram",
-    "((leader | lead | i) will | wait for my) (open | breach | prep | kick | shotgun | shotty | [prep] c2 | [battering] ram )": "leader",
+    "((leader | lead) will | wait for my) (open | breach | prep | kick | shotgun | shotty | [prep] c2 | [battering] ram )": "leader",
 }
 map_grenades = {
     "none": "none",
@@ -113,7 +113,7 @@ map_grenades = {
     "stinger": "stinger",
     "(cs | gas | cs gas)": "gas",
     "(fourtymil | launcher)": "launcher",
-    "((leader | lead | i) will [(throw | use | deploy)] | wait for my) (grenade | flashbang | bang | flash | stinger | cs | gas) [grenade]": "leader",
+    "((leader | lead) will [(throw | use | deploy)] | wait for my) (grenade | flashbang | bang | flash | stinger | cs | gas) [grenade]": "leader",
 }
 map_hold = {
     "go": "go",
@@ -692,7 +692,8 @@ class BreachAndClear(CompoundRule):
     """
     spec1 = "[<color>] [team] [<hold>] [<tool>] [the door] [you] [[(throw | deploy | use)] <grenade>] [and] (breach (and clear | it) | clear) [it]"
     spec2 = "[<color>] [team] [<hold>] [<tool>] [the door] [you] [and] (breach (and clear | it) | clear) [it] [with] <grenade> [grenade]"
-    spec = f"(({spec1}) | ({spec2}))"
+    spec3 = "[<color>] [team] [<hold>] [<tool>] [the door] [you] <grenade> [and] clear [it])"
+    spec = f"(({spec1}) | ({spec2}) | ({spec3}))"
     extras = [
         Choice("color", map_colors),
         Choice("hold", map_hold),
