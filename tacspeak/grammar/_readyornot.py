@@ -140,11 +140,11 @@ map_execute_or_cancels = {
     "belay": "cancel", 
 }
 map_npc_team_interacts = {
-    "restrain [(them | him | her | target)]": "restrain",
-    "zip [(them | him | her | target) [up]]": "restrain",
-    "cuff [(them | him | her | target)]": "restrain",
-    "arrest [(them | him | her | target)]": "restrain",
-    "tie [(them | him | her | target) [up]]": "restrain",
+    "restrain [(them | him | her | [the] target)]": "restrain",
+    "zip [(them | him | her | [the] target) [up]]": "restrain",
+    "cuff [(them | him | her | [the] target)]": "restrain",
+    "arrest [(them | him | her | [the] target)]": "restrain",
+    "tie [(them | him | her | [the] target) [up]]": "restrain",
 }
 
 # WIP - 1.0 mappings
