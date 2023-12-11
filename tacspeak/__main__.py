@@ -65,7 +65,7 @@ def main():
         }
     
     if DEBUG_MODE:
-        setup_log()
+        # setup_log()
         logging.basicConfig(level=10)
         logging.getLogger('grammar.decode').setLevel(20)
         logging.getLogger('grammar.begin').setLevel(20)
