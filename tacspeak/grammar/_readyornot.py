@@ -102,18 +102,18 @@ map_breach_tools = {
     "open": "open",
     "move [in]": "open",
     "kick [it] [down]": "kick",
-    "(shotgun | shotty)": "shotgun",
-    "c2": "c2",
+    "(shotgun | shot e)": "shotgun",
+    "c two": "c2",
     "[battering] ram [it]": "ram",
-    "((leader | lead) will | wait for my) (open | breach | prep | kick | shotgun | shotty | [prep] c2 | [battering] ram )": "leader",
+    "((leader | lead) will | wait for my) (open | breach | prep | kick | shotgun | shot e | [prep] c two | [battering] ram )": "leader",
 }
 map_grenades = {
     "none": "none",
-    "(bang | flashbang | flash)": "flashbang",
+    "(bang | flash bang | flash)": "flashbang",
     "stinger": "stinger",
-    "(cs | gas | cs gas)": "gas",
-    "(fourtymil | launcher)": "launcher",
-    "((leader | lead) will [(throw | use | deploy)] | wait for my) (grenade | flashbang | bang | flash | stinger | cs | gas) [grenade]": "leader",
+    "(cs | gas | cs gas | see )": "gas",
+    "(fourty mil | launcher)": "launcher",
+    "((leader | lead) will [(throw | use | deploy)] | wait for my) (grenade | flash bang | bang | flash | stinger | cs | gas) [grenade]": "leader",
 }
 map_hold = {
     "go": "go",
@@ -127,7 +127,7 @@ map_stack_tools = {
     "wedge": "wedge",
 }
 map_deployables = {
-    "(bang | flashbang | flash)": "flashbang",
+    "(bang | flash bang | flash)": "flash bang",
     "stinger": "stinger",
     "(cs | gas | cs gas)": "gas",
     "chem light": "chemlight",
@@ -167,10 +167,10 @@ map_npc_player_interacts = {
     "move to [the] exit": "move to exit",
 }
 map_npc_deployables = {
-    "(bang | flashbang | flash)": "flashbang",
+    "(bang | flash bang | flash)": "flashbang",
     "stinger": "stinger",
     "(cs | gas | cs gas)": "gas",
-    "(fourtymil | launcher)": "launcher",
+    "(fourty mil | launcher)": "launcher",
     "[pepper] spray": "spray",
     "taser": "taser",
 }
