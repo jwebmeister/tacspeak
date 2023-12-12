@@ -55,6 +55,10 @@ ingame_key_bindings = {
     "gold": "f5",
     "blue": "f6",
     "red": "f7",
+    "member_alpha": "f13",
+    "member_bravo": "f14",
+    "member_charlie": "f15",
+    "member_delta": "f16",
     "cmd_1": "1",
     "cmd_2": "2",
     "cmd_3": "3",
@@ -222,6 +226,20 @@ map_team_member_focus = {
     "[on] (them | him | her | [the] target)": "target",
     "(un focus | release)": "unfocus",
 }
+
+def invert_squash_map(my_map):
+    """
+    Returns an inverted map, where keys are the original values, 
+    and values are the concatenation of the original keys as 
+    alternative choices. For example:
+        {'a':1,'b':1,'c':1} => {1: '(a | b | c)'}
+    """
+    inv_map = {}
+    for k, v in my_map.items():
+        inv_map[v] = inv_map.get(v, []) + [k]
+    for k, v in inv_map.items():
+        inv_map[k] = '(' + ' | '.join('(' + v + ')') + ')' if len(v) > 1 else ''.join(v)
+    return inv_map
 
 # ---------------------------------------------------------------------------
 # Rules which will be added to our grammar
@@ -844,11 +862,37 @@ class NpcTeamDeploy(CompoundRule):
 #     "(un focus | release)": "unfocus",
 # }
 
-class TeamMemberOptions(MappingRule):
+def cmd_team_member_options(team_member, option, additional_option):
+    """
+    Press & release command keys for interacting with individual team member (on execution) 
+    """
+    # todo!
+
+
+class TeamMemberOptions(CompoundRule):
     """
     Speech recognise commands to individual team member
     """
-    # todo!
+    spec = "<team_member> <option> [(<move_option> | <focus_option> | <other_team_member>)]"
+    extras=[
+        Choice("team_member", map_team_members),
+        Choice("option", map_team_member_options),
+        Choice("move_option", map_team_member_move),
+        Choice("focus_option", map_team_member_focus),
+        Choice("other_team_member", map_team_members),
+    ]
+
+    def _process_recognition(self, node, extras):
+        team_member = extras["team_member"]
+        option = extras["option"]
+        move_option = extras.get("move_option")
+        focus_option = extras.get("focus_option")
+        other_team_member = extras.get("other_team_member")
+        additional_option = ((move_option if move_option is not None else "") 
+            + (focus_option if focus_option is not None else "")
+            + (other_team_member if other_team_member is not None else ""))
+        print(f"{team_member} {option} {additional_option}")
+        cmd_team_member_options(team_member, option, additional_option).execute()
 
 # ------------------------------------------------------------------
 
