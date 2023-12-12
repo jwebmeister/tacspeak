@@ -55,10 +55,10 @@ ingame_key_bindings = {
     "gold": "f5",
     "blue": "f6",
     "red": "f7",
-    "member_alpha": "f13",
-    "member_bravo": "f14",
-    "member_charlie": "f15",
-    "member_delta": "f16",
+    "alpha": "f13",
+    "bravo": "f14",
+    "charlie": "f15",
+    "delta": "f16",
     "cmd_1": "1",
     "cmd_2": "2",
     "cmd_3": "3",
@@ -836,39 +836,50 @@ class NpcTeamDeploy(CompoundRule):
 
 # ------------------------------------------------------------------
 
-# map_team_members = {
-#     "alpha": "alpha",
-#     "bravo": "bravo",
-#     "charlie": "charlie",
-#     "delta": "delta",
-# }
-# map_team_member_options = {
-#     "move": "move",
-#     "(focus | watch)": "focus",
-#     "(un | release) (focus | watch)" : "unfocus",
-#     "stop (focusing | watching)" : "unfocus",
-#     "swap with": "swap",
-#     "search [the] (room | area)": "search",
-# }
-# map_team_member_move = {
-#     "([over] (here | there) | [to] my front | forward | [to] that (location | position))": "here",
-#     "[over] (here | there) then back": "here then back",
-# }
-# map_team_member_focus = {
-#     "([over] (here | there) | [my] front | forward | that (location | position))": "here",
-#     "([on] my position | [on] me)": "my position",
-#     "[on] [the] door [way]": "door",
-#     "[on] (them | him | her | [the] target)": "target",
-#     "(un focus | release)": "unfocus",
-# }
-
 def cmd_team_member_options(team_member, option, additional_option):
     """
     Press & release command keys for interacting with individual team member (on execution) 
     """
-    # todo!
-    NULL_ACTION
-
+    actions = map_ingame_key_bindings[team_member]
+    actions += map_ingame_key_bindings["cmd_menu"]
+    match option:
+        case "move":
+            actions += map_ingame_key_bindings["cmd_1"]
+            match additional_option:
+                case "here":
+                    actions += map_ingame_key_bindings["cmd_1"]
+                case "here then back":
+                    actions += map_ingame_key_bindings["cmd_2"]
+        case "focus":
+            actions += map_ingame_key_bindings["cmd_2"]
+            match additional_option:
+                case "here":
+                    actions += map_ingame_key_bindings["cmd_1"]
+                case "my position":
+                    actions += map_ingame_key_bindings["cmd_2"]
+                case "door":
+                    actions += map_ingame_key_bindings["cmd_3"]
+                case "target":
+                    actions += map_ingame_key_bindings["cmd_4"]
+                case "unfocus":
+                    actions += map_ingame_key_bindings["cmd_5"]
+        case "unfocus":
+            actions += map_ingame_key_bindings["cmd_2"]
+            actions += map_ingame_key_bindings["cmd_5"]
+        case "swap":
+            actions += map_ingame_key_bindings["cmd_3"]
+            match additional_option:
+                case "alpha":
+                    actions += map_ingame_key_bindings["cmd_1"]
+                case "bravo":
+                    actions += map_ingame_key_bindings["cmd_2"]
+                case "charlie":
+                    actions += map_ingame_key_bindings["cmd_3"]
+                case "delta":
+                    actions += map_ingame_key_bindings["cmd_1"]
+        case "search":
+            actions += map_ingame_key_bindings["cmd_4"]
+    return actions
 
 class TeamMemberOptions(CompoundRule):
     """
