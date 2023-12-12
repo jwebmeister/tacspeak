@@ -65,17 +65,26 @@ def main():
         }
     
     if DEBUG_MODE:
-        # setup_log()
-        logging.basicConfig(level=10)
+        def log_handlers():
+            log_file_path = os.path.join(os.path.expanduser("~"), ".dragonfly.log")
+            log_file_handler = logging.FileHandler(log_file_path)
+            log_file_formatter = logging.Formatter("%(asctime)s %(name)s (%(levelname)s): %(message)s")
+            log_file_handler.setFormatter(log_file_formatter)
+
+            log_stream_handler = logging.StreamHandler()
+            log_stream_formatter = logging.Formatter("%(name)s (%(levelname)s): %(message)s")
+            log_stream_handler.setFormatter(log_stream_formatter)
+            return [log_stream_handler, log_file_handler]
+
+        logging.basicConfig(level=10, handlers=log_handlers())
         logging.getLogger('grammar.decode').setLevel(20)
         logging.getLogger('grammar.begin').setLevel(20)
         logging.getLogger('compound').setLevel(20)
-        logging.getLogger('engine').setLevel(10)
-        logging.getLogger('kaldi').setLevel(10)
-        logging.getLogger('kaldi.compiler').setLevel(10)
+        logging.getLogger('engine').setLevel(15)
+        logging.getLogger('kaldi').setLevel(15)
+        logging.getLogger('kaldi.compiler').setLevel(15)
     else:
         setup_log()
-        logging.basicConfig(level=logging.INFO)
 
     # Set any configuration options here as keyword arguments.
     # See Kaldi engine documentation for all available options and more info.
