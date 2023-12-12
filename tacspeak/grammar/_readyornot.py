@@ -867,6 +867,7 @@ def cmd_team_member_options(team_member, option, additional_option):
     Press & release command keys for interacting with individual team member (on execution) 
     """
     # todo!
+    NULL_ACTION
 
 
 class TeamMemberOptions(CompoundRule):
@@ -967,6 +968,7 @@ grammar.add_rule(UseDeployable())
 grammar.add_rule(NpcPlayerInteract())
 grammar.add_rule(NpcTeamRestrain())
 grammar.add_rule(NpcTeamDeploy())
+grammar.add_rule(TeamMemberOptions())
 
 grammar_priority.add_rule(YellFreeze())
 
