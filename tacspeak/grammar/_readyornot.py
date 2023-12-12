@@ -144,8 +144,8 @@ map_door_scan = {
 }
 map_ground_options = {
     # note: deploy and fall in are separate options
-    "move ([over] there | [to] my front | forward | [to] that (location | position))": "move",
-    "cover ([over] there | [my] front | forward | that (location | position))": "cover",
+    "move ([over] (here | there) | [to] my front | forward | [to] that (location | position))": "move",
+    "cover ([over] (here | there) | [my] front | forward | that (location | position))": "cover",
     "(hold | halt) [position]": "halt",
     "search [the] area": "search",
     "(search for | collect) evidence": "search",
@@ -165,7 +165,7 @@ map_ground_deployables = {
     "shield": "shield",
 }
 map_npc_player_interacts = {
-    "move": "move",
+    "move [(here | there | to)]": "move here",
     "(move | come) to (me | my position)": "move my position",
     "come here": "move my position",
     "stop [(there | moving)]": "move stop",
@@ -197,7 +197,31 @@ map_npc_team_deployables = {
     "jab": "melee",
     "force": "melee",
 }
-# todo! player to team member interact
+map_team_members = {
+    "alpha": "alpha",
+    "bravo": "bravo",
+    "charlie": "charlie",
+    "delta": "delta",
+}
+map_team_member_options = {
+    "move": "move",
+    "(focus | watch)": "focus",
+    "(un | release) (focus | watch)" : "unfocus",
+    "stop (focusing | watching)" : "unfocus",
+    "swap with": "swap",
+    "search [the] (room | area)": "search",
+}
+map_team_member_move = {
+    "([over] (here | there) | [to] my front | forward | [to] that (location | position))": "here",
+    "[over] (here | there) then back": "here then back",
+}
+map_team_member_focus = {
+    "([over] (here | there) | [my] front | forward | that (location | position))": "here",
+    "([on] my position | [on] me)": "my position",
+    "[on] [the] door [way]": "door",
+    "[on] (them | him | her | [the] target)": "target",
+    "(un focus | release)": "unfocus",
+}
 
 # ---------------------------------------------------------------------------
 # Rules which will be added to our grammar
@@ -683,7 +707,7 @@ def cmd_npc_player_interact(interaction):
     """
     actions = map_ingame_key_bindings["cmd_menu"]
     match interaction:
-        case "move":
+        case "move here":
             actions += map_ingame_key_bindings["cmd_2"]
         case "move my position":
             actions += map_ingame_key_bindings["cmd_2"]
@@ -794,6 +818,40 @@ class NpcTeamDeploy(CompoundRule):
 
 # ------------------------------------------------------------------
 
+# map_team_members = {
+#     "alpha": "alpha",
+#     "bravo": "bravo",
+#     "charlie": "charlie",
+#     "delta": "delta",
+# }
+# map_team_member_options = {
+#     "move": "move",
+#     "(focus | watch)": "focus",
+#     "(un | release) (focus | watch)" : "unfocus",
+#     "stop (focusing | watching)" : "unfocus",
+#     "swap with": "swap",
+#     "search [the] (room | area)": "search",
+# }
+# map_team_member_move = {
+#     "([over] (here | there) | [to] my front | forward | [to] that (location | position))": "here",
+#     "[over] (here | there) then back": "here then back",
+# }
+# map_team_member_focus = {
+#     "([over] (here | there) | [my] front | forward | that (location | position))": "here",
+#     "([on] my position | [on] me)": "my position",
+#     "[on] [the] door [way]": "door",
+#     "[on] (them | him | her | [the] target)": "target",
+#     "(un focus | release)": "unfocus",
+# }
+
+class TeamMemberOptions(MappingRule):
+    """
+    Speech recognise commands to individual team member
+    """
+    # todo!
+
+# ------------------------------------------------------------------
+
 def cmd_yell():
     """
     Press & release yell key (on execution)
@@ -865,6 +923,7 @@ grammar.add_rule(UseDeployable())
 grammar.add_rule(NpcPlayerInteract())
 grammar.add_rule(NpcTeamRestrain())
 grammar.add_rule(NpcTeamDeploy())
+
 grammar_priority.add_rule(YellFreeze())
 
 freeze_recob = FreezeRecob()
