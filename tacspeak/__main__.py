@@ -96,7 +96,7 @@ def main():
         logging.getLogger('engine').setLevel(15)
         logging.getLogger('kaldi').setLevel(15)
         logging.getLogger('kaldi.compiler').setLevel(15)
-        logging.getLogger('kaldi.wrapper').setLevel(20)
+        logging.getLogger('kaldi.wrapper').setLevel(15)
         logging.getLogger('action.exec').setLevel(10)
     else:
         setup_loggers()
@@ -133,14 +133,11 @@ def main():
     def on_end():
         pass
 
-    def on_partial_recognition():
-        pass
-
     # Start the engine's main recognition loop
     engine.prepare_for_recognition()
     try:
         print("Ready to listen...")
-        engine.do_recognition(on_begin, on_recognition, on_failure, on_end, on_partial_recognition)
+        engine.do_recognition(on_begin, on_recognition, on_failure, on_end)
     except KeyboardInterrupt:
         pass
 
