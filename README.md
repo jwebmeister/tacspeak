@@ -8,9 +8,9 @@
 
 Tacspeak has been designed specifically for **recognising speech commands while playing games**, particularly system resource and FPS hungry games!
 
-**Fast** - typically on the order of 10-200ms, depending on complexity.
+**Fast** - typically on the order of 10-50ms, from detected speech end (VAD) to action.
 
-**Lightweight** - it runs on spare CPU cores, with ~2GB RAM.
+**Lightweight** - it runs on CPU, with ~2GB RAM.
 
 **Modular** - you can build your own set of voice commands for additional games, or modify [existing ones](tacspeak/grammar).
 
@@ -32,10 +32,10 @@ Also built atop the excellent [Kaldi Active Grammar](https://github.com/daanzu/k
 - ~2GB+ RAM.
 - Only supports English language speech recognition, as provided via [Kaldi Active Grammar](https://github.com/daanzu/kaldi-active-grammar).
 
-## Simple install - packaged executable
+## Basic install - packaged executable
 
 1. Download and install [Microsoft Visual C++ Redistributable](https://aka.ms/vs/17/release/vc_redist.x64.exe)
-2. Download the [latest release](https://github.com/jwebmeister/tacspeak/releases/latest/), including both (they are separate downloads and/or releases):
+2. Download the [latest release](https://github.com/jwebmeister/tacspeak/releases/latest/), including both (they are separate downloads and may be releases):
     - the Tacspeak application .zip (includes runtime executable)
     - a pre-trained Kaldi model .zip.
 3. Extract the Tacspeak application .zip into a folder, and extract the Kaldi model .zip into the same folder, 
@@ -53,39 +53,56 @@ Run `tacspeak.exe` (or `python ./cli.py`) and it will..
     - wait for a matching app context (defined in the `grammar` modules), then activate those relevant modules.
     - wait for the `listen_key` to be activated if it's specified, and depending on toggle-mode.
 
+Also:
+- Review and adjust  `./tacspeak/user_settings.py` to your liking. 
+    - see example [./tacspeak/user_settings.py](tacspeak\user_settings.py)
+- Review and adjust any module settings in `./tacspeak/grammar/_*.py`, e.g. keybindings. 
+    - see example [./tacspeak/grammar/_readyornot.py](tacspeak\grammar\_readyornot.py)
+- (Note: you will need to restart Tacspeak for changes to take effect.)
+
+### Important advisory
+
+*Please use caution and your own discretion when installing or using any third-party files, specifically \*.py files. Don't install or use files from untrustworthy sources.*
+
+Tacspeak automatically loads (and executes) `./tacspeak/user_settings.py` and all modules `./tacspeak/grammar/_*.py`, regardless of what code it contains.
+
 ### User settings
 
 It is highly recommended to review and adjust  `./tacspeak/user_settings.py` to your liking.
 
-Open `./tacspeak/user_settings.py` in a text editor, change the settings, then save and overwrite the file.  There are comments explaining most of the important settings.
+Open `./tacspeak/user_settings.py` in a text editor, change the settings, then save and overwrite the file.  There are comments in the file explaining most of the important settings.
 
 For example, you might want to change these:
-- `listen_key`=`0x10` (the Shift key) 
-- `listen_key_toggle`=`0` (active only while key is pressed)
-- `input_device_index`=`None` (should use default microphone)
+- `listen_key`=`0x10` 
+    - `0x10` = Shift key.
+    - `0x05` = mouse thumb button 1.
+    - See [here](https://learn.microsoft.com/en-us/windows/win32/inputdev/virtual-key-codes) for more info.
+- `listen_key_toggle`=`0` 
+    - Recommended is 0 or -1. 
+    - `0` for toggle mode off, listen only while key is pressed; must release key for command to be registered.
+    - `1` for toggle mode on, key press toggles listening on/off; must toggle off for command to be registered.
+    - `2` for global toggle on, uses Voice Activity Detector (VAD) to detect end of speech and register commands.
+    - `-1` for toggle mode off, but continue listening for priority grammar ("freeze!") even when key is not pressed.
+- `input_device_index`=`None`
+    - should use default microphone (as set within OS)
 
-### Modules - modification and creation
+### Grammar modules
 
 It is likely you will want to modify or customise some of the [existing Tacspeak grammar modules](tacspeak/grammar) (if not also add your own!), which you can do by editing the `./tacspeak/grammar/_*.py` file corresponding to the application you're interested in.  
 
-As an example, in the [Ready or Not](tacspeak\grammar\_readyornot.py) module you can change `ingame_key_bindings` to align the Tacspeak module with your in-game keybindings.  You could also change the words and/or sentences used for recognising speech commands, for example, adding "smoke it out" as an alternative to "breach and clear".
+As an example, in the [Ready or Not module](tacspeak\grammar\_readyornot.py) you can change `ingame_key_bindings` to align the Tacspeak module with your in-game keybindings.  
+You could also change the words and/or sentences used for recognising speech commands, for example, adding "smoke it out" as an alternative to "breach and clear".
 
 Additional notes:
 - Please see the existing [examples](tacspeak/grammar) of Tacspeak grammar modules.
 - Please see the Dragonfly [docs](http://dragonfly.readthedocs.org/en/latest/) for information on building grammars, rules, and actions (i.e. voice commands). 
 - Note: Tacspeak uses a *modified version* of Dragonfly located at [jwebmeister/dragonfly](https://github.com/jwebmeister/dragonfly). Review the source and/or commits of the fork to understand its differences to the original project and the corresponding docs.
 
-### Model and user lexicon modification
+### Models
 
-Words not defined within the existing model *can* be added, but it will involve recompiling the model. See [kaldi_model/README.md](kaldi_model/README.md) for more information.
+See [kaldi_model/README.md](kaldi_model/README.md) for more information.
 
-### Important advice
-
-*Please use caution and your own discretion in regards to utilising third-party files, specifically \*.py files.*
-
-Tacspeak automatically loads (and executes) `./tacspeak/user_settings.py` and all modules `./tacspeak/grammar/_*.py`, regardless of what code it contains.
-
-## Complex install - Python
+## Advanced install - Python
 
 ### Prerequisites: 
 
@@ -146,10 +163,11 @@ Tacspeak isn't perfect, but it is a very strong option, precisely because it can
 
 Issues, suggestions, and feature requests are welcome. 
 
-Pull requests are considered, but we'd like *some* (TBD) quality testing be done on grammar modules before they're brought into the project.  
-If you can help define what we mean by "some (TBD) quality testing"... trailblazers are welcome!
+Pull requests are considered, but be warned the project structure is in flux and there may be breaking changes to come.  
+We'd also like *some* (TBD) quality testing be done on grammar modules before they're brought into the project. If you can help define what we mean by "some (TBD) quality testing"... well, trailblazers are welcome!
 
-Tacspeak uses a modified version of Dragonfly located at [jwebmeister/dragonfly](https://github.com/jwebmeister/dragonfly).  This is where the heart of the beast (bugs) lives... please help slay it!
+Tacspeak uses a modified version of Dragonfly located at [jwebmeister/dragonfly](https://github.com/jwebmeister/dragonfly).  This is where the heart of the beast (bugs) lives... please help slay it!  
+Also, be warned the project structure is in flux and there may be breaking changes there too.
 
 You can also consider supporting the projects Tacspeak are built upon, [dictation-toolbox/dragonfly](https://github.com/dictation-toolbox/dragonfly) and [daanzu/kaldi-active-grammar](https://github.com/daanzu/kaldi-active-grammar).
 
