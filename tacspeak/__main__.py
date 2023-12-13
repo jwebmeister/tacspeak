@@ -21,7 +21,7 @@ from dragonfly import get_engine
 from dragonfly import Grammar, MappingRule, Function, FuncContext
 from dragonfly.engines.backend_kaldi.dictation import UserDictation as Dictation
 from dragonfly.loader import CommandModuleDirectory, CommandModule
-from dragonfly.log import setup_log
+from dragonfly.log import default_levels
 
 # --------------------------------------------------------------------------
 # Main event driving loop.
@@ -63,28 +63,43 @@ def main():
             # "compiler_init_config":None, 
             # "decoder_init_config":None,
         }
+
+    def log_handlers():
+        log_file_path = os.path.join(os.getcwd(), ".tacspeak.log")
+        log_file_handler = logging.FileHandler(log_file_path)
+        log_file_formatter = logging.Formatter("%(asctime)s %(name)s (%(levelname)s): %(message)s")
+        log_file_handler.setFormatter(log_file_formatter)
+
+        log_stream_handler = logging.StreamHandler()
+        log_stream_formatter = logging.Formatter("%(name)s (%(levelname)s): %(message)s")
+        log_stream_handler.setFormatter(log_stream_formatter)
+        return [log_stream_handler, log_file_handler]
+    
+    def setup_loggers(use_default_levels=True):
+        for name, levels in default_levels.items():
+            stderr_level, file_level = levels
+            handlers = log_handlers()
+            if use_default_levels:
+                handlers[0].setLevel(stderr_level)
+                handlers[1].setLevel(file_level)
+            logger = logging.getLogger(name)
+            logger.addHandler(handlers[0])
+            logger.addHandler(handlers[1])
+            logger.setLevel(min(stderr_level, file_level))
+            logger.propagate = False
     
     if DEBUG_MODE:
-        def log_handlers():
-            log_file_path = os.path.join(os.path.expanduser("~"), ".dragonfly.log")
-            log_file_handler = logging.FileHandler(log_file_path)
-            log_file_formatter = logging.Formatter("%(asctime)s %(name)s (%(levelname)s): %(message)s")
-            log_file_handler.setFormatter(log_file_formatter)
-
-            log_stream_handler = logging.StreamHandler()
-            log_stream_formatter = logging.Formatter("%(name)s (%(levelname)s): %(message)s")
-            log_stream_handler.setFormatter(log_stream_formatter)
-            return [log_stream_handler, log_file_handler]
-
-        logging.basicConfig(level=10, handlers=log_handlers())
+        setup_loggers(False)
         logging.getLogger('grammar.decode').setLevel(20)
         logging.getLogger('grammar.begin').setLevel(20)
         logging.getLogger('compound').setLevel(20)
         logging.getLogger('engine').setLevel(15)
         logging.getLogger('kaldi').setLevel(15)
         logging.getLogger('kaldi.compiler').setLevel(15)
+        logging.getLogger('kaldi.wrapper').setLevel(20)
+        logging.getLogger('action.exec').setLevel(10)
     else:
-        setup_log()
+        setup_loggers()
 
     # Set any configuration options here as keyword arguments.
     # See Kaldi engine documentation for all available options and more info.
@@ -98,11 +113,22 @@ def main():
     directory = CommandModuleDirectory(grammar_path)
     directory.load()
 
+    # Define recognition callback functions.
+    def on_begin():
+        pass
+
+    def on_recognition(words):
+        message = u"Recognized: %s" % u" ".join(words)
+        print(message)
+
+    def on_failure():
+        pass
+
     # Start the engine's main recognition loop
     engine.prepare_for_recognition()
     try:
         print("Ready to listen...")
-        engine.do_recognition()
+        engine.do_recognition(on_begin, on_recognition, on_failure)
     except KeyboardInterrupt:
         pass
 

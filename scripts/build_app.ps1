@@ -1,1 +1,1 @@
-python setup.py build | Out-File -FilePath .\setup_log.txt
+python setup.py build | Out-File -FilePath .\.setup_build.log
