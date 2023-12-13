@@ -363,7 +363,7 @@ class DoorOptions(CompoundRule):
     """
     Speech recognise team mirror under, wedge, cover, open, close the door
     """
-    spec = "[<color>] [team] [<hold>] <door_option> (the | that) door"
+    spec = "[<color>] [team] [<hold>] <door_option> [(the | that)] door"
     extras = [
         Choice("color", map_colors),
         Choice("hold", map_hold),
@@ -414,7 +414,7 @@ class StackUp(CompoundRule):
     spec_1 = "stack <side>"
     spec_2 = "(stack [up] | post up) [<side>]"
     spec_3 = "<side> stack"
-    spec_end = "[(on the door [way] | there | here)]"
+    spec_end = "[(on (the | that) door [way] | there | here)]"
     spec = f"{spec_start} ({spec_1} | {spec_2} | {spec_3}) {spec_end}"
     extras = [
         Choice("color", map_colors),
