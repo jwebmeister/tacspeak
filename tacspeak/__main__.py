@@ -113,22 +113,34 @@ def main():
     directory = CommandModuleDirectory(grammar_path)
     directory.load()
 
+    handlers = log_handlers()
+    log_recognition = logging.getLogger('on_recognition')
+    log_recognition.addHandler(handlers[0])
+    log_recognition.addHandler(handlers[1])
+    log_recognition.setLevel(20)
+
     # Define recognition callback functions.
     def on_begin():
         pass
 
-    def on_recognition(words):
-        message = u"Recognized: %s" % u" ".join(words)
-        print(message)
+    def on_recognition(words, results):
+        message = f"{results.kaldi_rule} | {' '.join(words)}"
+        log_recognition.log(20, message)
 
     def on_failure():
+        pass
+
+    def on_end():
+        pass
+
+    def on_partial_recognition():
         pass
 
     # Start the engine's main recognition loop
     engine.prepare_for_recognition()
     try:
         print("Ready to listen...")
-        engine.do_recognition(on_begin, on_recognition, on_failure)
+        engine.do_recognition(on_begin, on_recognition, on_failure, on_end, on_partial_recognition)
     except KeyboardInterrupt:
         pass
 
