@@ -144,13 +144,17 @@ map_door_grenades = {
     "((leader | lead) will [(throw | use | deploy)] | wait for my) (grenade | flash bang | bang | flash | stinger | cs | gas | cs gas | [the] fourty mil | [the] launcher) [grenade]": "leader",
 }
 map_door_scan = {
-    # todo! add "scan" for 1.0
+    "scan": "pie",
+    "slide": "slide",
+    "pie": "pie",
+    "peek": "peek",
 }
 map_ground_options = {
     # note: deploy and fall in are separate options
     "move ([over] (here | there) | [to] my front | forward | [to] that (location | position))": "move",
     "cover ([over] (here | there) | [my] front | forward | that (location | position))": "cover",
-    "(hold | halt) [position]": "halt",
+    "(hold | halt) [(position | movement)]": "halt",
+    "resume [movement]": "resume",
     "search [the] area": "search",
     "(search for | collect) evidence": "search",
 }
@@ -161,7 +165,6 @@ map_ground_fallin_formations = {
     "wedge": "wedge",
 }
 map_ground_deployables = {
-    # todo! check for 1.0
     "(bang | flash bang | flash)": "flash bang",
     "stinger": "stinger",
     "(cs | gas | cs gas)": "gas",
@@ -343,6 +346,15 @@ def cmd_door_options(color, hold, door_option):
     if hold == "hold":
         actions += action_hold("down")
     match door_option:
+        case "slide":
+            actions += map_ingame_key_bindings["cmd_4"]
+            actions += map_ingame_key_bindings["cmd_1"]
+        case "pie":
+            actions += map_ingame_key_bindings["cmd_4"]
+            actions += map_ingame_key_bindings["cmd_2"]
+        case "peek":
+            actions += map_ingame_key_bindings["cmd_4"]
+            actions += map_ingame_key_bindings["cmd_3"]
         case "mirror":
             actions += map_ingame_key_bindings["cmd_5"]
         case "wedge":
@@ -352,8 +364,7 @@ def cmd_door_options(color, hold, door_option):
         case "open":
             actions += map_ingame_key_bindings["cmd_8"]
         case "close":
-            # todo! check if this is correct in 1.0
-            actions += map_ingame_key_bindings["cmd_3"]
+            actions += map_ingame_key_bindings["cmd_8"]
     # end hold for command
     if hold == "hold":
         actions += action_hold("up")
@@ -363,11 +374,11 @@ class DoorOptions(CompoundRule):
     """
     Speech recognise team mirror under, wedge, cover, open, close the door
     """
-    spec = "[<color>] [team] [<hold>] <door_option> [(the | that)] door"
+    spec = "[<color>] [team] [<hold>] <door_option> [(the | that)] (door [way] | opening | room)"
     extras = [
         Choice("color", map_colors),
         Choice("hold", map_hold),
-        Choice("door_option", map_door_options),
+        Choice("door_option", map_door_options | map_door_scan),
     ]
     defaults = {
         "color": "current",
@@ -531,10 +542,10 @@ def cmd_pick_lock(color, hold):
     """
     actions = cmd_select_team(color)
     actions += map_ingame_key_bindings["cmd_menu"]
-    # todo! check if hold command is possible?
     # start hold for command
     if hold == "hold":
         actions += action_hold("down")
+    # todo! check in 1.0
     actions += map_ingame_key_bindings["cmd_2"]
     # end hold for command
     if hold == "hold":
@@ -570,7 +581,6 @@ def cmd_ground_options(color, hold, ground_option):
     """
     actions = cmd_select_team(color)
     actions += map_ingame_key_bindings["cmd_menu"]
-    # todo! check if hold command is possible?
     # start hold for command
     if hold == "hold":
         actions += action_hold("down")
@@ -580,6 +590,8 @@ def cmd_ground_options(color, hold, ground_option):
         case "cover":
             actions += map_ingame_key_bindings["cmd_3"]
         case "halt":
+            actions += map_ingame_key_bindings["cmd_4"]
+        case "resume":
             actions += map_ingame_key_bindings["cmd_4"]
         case "search":
             actions += map_ingame_key_bindings["cmd_6"]
@@ -677,7 +689,6 @@ def cmd_use_deployable(color, hold, deployable):
     if hold == "hold":
         actions += action_hold("down")
     match deployable:
-        # todo! check for 1.0
         case "flashbang":
             actions += map_ingame_key_bindings["cmd_1"]
         case "stinger":
