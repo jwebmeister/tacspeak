@@ -993,6 +993,17 @@ grammar.load()
 grammar_priority.load()
 freeze_recob.register()
 
+# ---------------------------------------------------------------------------
+if DEBUG_MODE:
+    with open(".debug_grammar_readyornot.txt", "w") as file:
+        file.write(grammar.get_complexity_string())
+        for rule in grammar.rules:
+            file.write(f"\n\n{rule.spec}")
+            for extra in rule.extras:
+                choice_name = extra.name
+                choice_keys = list(extra._choices.keys())
+                file.write(f"\n{choice_name}={choice_keys}")
+
 # Unload function which will be called at unload time.
 def unload():
     global grammar
