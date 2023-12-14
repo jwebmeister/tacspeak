@@ -16,8 +16,7 @@ Tacspeak has been designed specifically for **recognising speech commands while 
 
 **Open source** - you can modify any part of Tacspeak for yourself, and/or contribute back to the project and help build it as part of the community.
 
-[![Watch the video demo of me using Tacspeak while playing Ready or Not]
-(https://img.youtube.com/vi/qBL0bCt_VMo/0.jpg)](https://youtu.be/qBL0bCt_VMo)
+[![Watch the video demo of me using Tacspeak while playing Ready or Not](https://img.youtube.com/vi/qBL0bCt_VMo/0.jpg)](https://youtu.be/qBL0bCt_VMo)
 
 ---
 
