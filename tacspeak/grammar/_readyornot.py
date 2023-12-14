@@ -1013,6 +1013,7 @@ grammar.add_rule(NpcPlayerInteract())
 grammar.add_rule(NpcTeamRestrain())
 grammar.add_rule(NpcTeamDeploy())
 grammar.add_rule(TeamMemberOptions())
+grammar.add_rule(SelectTeamMember())
 
 grammar_priority.add_rule(YellFreeze())
 
