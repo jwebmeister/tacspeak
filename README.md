@@ -57,9 +57,9 @@ Run `tacspeak.exe` (or `python ./cli.py`) and it will...
 
 Also:
 - Review and adjust  `./tacspeak/user_settings.py` to your liking. 
-    - see example [./tacspeak/user_settings.py](tacspeak\user_settings.py)
+    - see example [./tacspeak/user_settings.py](tacspeak/user_settings.py)
 - Review and adjust any module settings in `./tacspeak/grammar/_*.py`, e.g. keybindings. 
-    - see example [./tacspeak/grammar/_readyornot.py](tacspeak\grammar\_readyornot.py)
+    - see example [./tacspeak/grammar/_readyornot.py](tacspeak/grammar/_readyornot.py)
 - (Note: you will need to restart Tacspeak for changes to take effect.)
 
 ### Important advisory
@@ -70,7 +70,7 @@ Tacspeak automatically loads (and executes) `./tacspeak/user_settings.py` and al
 
 ### User settings
 
-It is highly recommended to review and adjust  [./tacspeak/user_settings.py](tacspeak\user_settings.py) to your liking.
+It is highly recommended to review and adjust  [./tacspeak/user_settings.py](tacspeak/user_settings.py) to your liking.
 
 Open `./tacspeak/user_settings.py` in a text editor, change the settings, then save and overwrite the file.  There are comments in the file explaining most of the important settings.
 
@@ -95,7 +95,7 @@ For example, you might want to change these:
 
 It is likely you will want to modify or customise some of the [existing Tacspeak grammar modules](tacspeak/grammar) (if not also add your own!), which you can do by editing the `./tacspeak/grammar/_*.py` file corresponding to the application you're interested in.  
 
-As an example, in the [Ready or Not module](tacspeak\grammar\_readyornot.py) you can change `ingame_key_bindings` to align the Tacspeak module with your in-game keybindings.  
+As an example, in the [Ready or Not module](tacspeak/grammar/_readyornot.py) you can change `ingame_key_bindings` to align the Tacspeak module with your in-game keybindings.  
 You could also change the words and/or sentences used for recognising speech commands, for example, adding "smoke it out" as an alternative to "breach and clear".
 
 Additional notes:
