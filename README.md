@@ -16,6 +16,9 @@ Tacspeak has been designed specifically for **recognising speech commands while 
 
 **Open source** - you can modify any part of Tacspeak for yourself, and/or contribute back to the project and help build it as part of the community.
 
+[![Watch the video demo of me using Tacspeak while playing Ready or Not]
+(https://img.youtube.com/vi/qBL0bCt_VMo/0.jpg)](https://youtu.be/qBL0bCt_VMo)
+
 ---
 
 Tacspeak is built atop the excellent [Dragonfly](https://github.com/dictation-toolbox/dragonfly) speech recognition framework for Python. 
@@ -35,9 +38,9 @@ Also built atop the excellent [Kaldi Active Grammar](https://github.com/daanzu/k
 ## Basic install - packaged executable
 
 1. Download and install [Microsoft Visual C++ Redistributable](https://aka.ms/vs/17/release/vc_redist.x64.exe)
-2. Download the [latest release](https://github.com/jwebmeister/tacspeak/releases/latest/), including both (they are separate downloads and may be releases):
-    - the Tacspeak application .zip (includes runtime executable)
-    - a pre-trained Kaldi model .zip.
+2. Download the [latest release](https://github.com/jwebmeister/tacspeak/releases/latest/), including both (they are separate downloads and/or releases):
+    - the Tacspeak application .zip (includes .exe)
+    - a pre-trained Kaldi model .zip (includes kaldi_model folder).
 3. Extract the Tacspeak application .zip into a folder, and extract the Kaldi model .zip into the same folder, 
     - e.g. `Tacspeak/` and `Tacspeak/kaldi_model/`, 
     - (Note: there should be a folder `Tacspeak/Tacspeak/` after extraction).
@@ -45,7 +48,7 @@ Also built atop the excellent [Kaldi Active Grammar](https://github.com/daanzu/k
 
 ## Usage
 ### Basic
-Run `tacspeak.exe` (or `python ./cli.py`) and it will..
+Run `tacspeak.exe` (or `python ./cli.py`) and it will...
 - load `./tacspeak/user_settings.py`
 - load all modules `./tacspeak/grammar/_*.py`
 - start the speech engine
@@ -73,18 +76,21 @@ It is highly recommended to review and adjust  `./tacspeak/user_settings.py` to 
 Open `./tacspeak/user_settings.py` in a text editor, change the settings, then save and overwrite the file.  There are comments in the file explaining most of the important settings.
 
 For example, you might want to change these:
-- `listen_key`=`0x10` 
-    - `0x10` = Shift key.
+- `listen_key`=`0x05` 
     - `0x05` = mouse thumb button 1.
+    - `0x10` = Shift key.
     - See [here](https://learn.microsoft.com/en-us/windows/win32/inputdev/virtual-key-codes) for more info.
-- `listen_key_toggle`=`0` 
-    - Recommended is 0 or -1. 
-    - `0` for toggle mode off, listen only while key is pressed; must release key for command to be registered.
-    - `1` for toggle mode on, key press toggles listening on/off; must toggle off for command to be registered.
-    - `2` for global toggle on, uses Voice Activity Detector (VAD) to detect end of speech and register commands.
-    - `-1` for toggle mode off, but continue listening for priority grammar ("freeze!") even when key is not pressed.
+- `listen_key_toggle`=`-1` 
+    - Recommended is `0` or `-1`. 
+    - `0` for toggle mode off, listen only while key is pressed; must release key for the command to be recognised.
+    - `1` for toggle mode on, key press toggles listening on/off; must toggle off for the command to be recognised.
+    - `2` for global toggle on, uses Voice Activity Detector (VAD) to detect end of speech and recognise commands.
+    - `-1` for toggle mode off + priority, listen only while key is pressed, except always listen for priority grammar ("freeze!") even when key is not pressed.
+    - `None` always listening; similar to global toggle on, uses Voice Activity Detector (VAD) to detect end of speech and recognise commands.
+- `vad_padding_end_ms`=`250`
+    - change this if you use VAD and find it's too quick or slow to identify the figure out you've stopped speaking and that it should try to recognise the command.
 - `input_device_index`=`None`
-    - should use default microphone (as set within OS)
+    - should use default microphone (as set within Windows Sound Settings), but should be able to change the index (number) to select a different input device.
 
 ### Grammar modules
 
