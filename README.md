@@ -56,6 +56,7 @@ Run `tacspeak.exe` (or `python ./cli.py`) and it will...
     - wait for the `listen_key` to be activated if it's specified, and depending on toggle-mode.
 
 Also:
+- You may need to **"Run as administrator"** `tacspeak.exe`
 - Review and adjust  `./tacspeak/user_settings.py` to your liking. 
     - see example [./tacspeak/user_settings.py](tacspeak/user_settings.py)
 - Review and adjust any module settings in `./tacspeak/grammar/_*.py`, e.g. keybindings. 
