@@ -70,7 +70,7 @@ Tacspeak automatically loads (and executes) `./tacspeak/user_settings.py` and al
 
 ### User settings
 
-It is highly recommended to review and adjust  `./tacspeak/user_settings.py` to your liking.
+It is highly recommended to review and adjust  [./tacspeak/user_settings.py](tacspeak\user_settings.py) to your liking.
 
 Open `./tacspeak/user_settings.py` in a text editor, change the settings, then save and overwrite the file.  There are comments in the file explaining most of the important settings.
 
