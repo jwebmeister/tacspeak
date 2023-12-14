@@ -318,7 +318,7 @@ class SelectTeam(CompoundRule):
 
     def _process_recognition(self, node, extras):
         color = extras["color"]
-        print(f"{color}")
+        print(f"Select {color}")
         cmd_select_team(color).execute()
 
 class SelectColor(CompoundRule):
@@ -330,7 +330,7 @@ class SelectColor(CompoundRule):
 
     def _process_recognition(self, node, extras):
         color = extras["color"]
-        print(f"{color}")
+        print(f"Select {color}")
         cmd_select_team(color).execute()
 
 # ------------------------------------------------------------------
@@ -844,6 +844,28 @@ class NpcTeamDeploy(CompoundRule):
         deployable = extras["deployable"]
         print(f"{color} team {deployable} target")
         cmd_npc_team_deploy(color, deployable).execute()
+
+# ------------------------------------------------------------------
+
+def cmd_select_team_member(team_member):
+    """
+    Press & release select team member key (on execution)
+    """
+    return map_ingame_key_bindings[team_member]
+
+class SelectTeamMember(CompoundRule):
+    """
+    Speech recognise commands to individual team member
+    """
+    spec = "<team_member>"
+    extras=[
+        Choice("team_member", map_team_members),
+    ]
+
+    def _process_recognition(self, node, extras):
+        team_member = extras["team_member"]
+        print(f"Select {team_member}")
+        cmd_select_team_member(team_member).execute()
 
 # ------------------------------------------------------------------
 
