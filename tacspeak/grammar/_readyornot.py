@@ -909,7 +909,7 @@ def cmd_team_member_options(team_member, option, additional_option):
                 case "charlie":
                     actions += map_ingame_key_bindings["cmd_3"]
                 case "delta":
-                    actions += map_ingame_key_bindings["cmd_1"]
+                    actions += map_ingame_key_bindings["cmd_4"]
         case "search":
             actions += map_ingame_key_bindings["cmd_4"]
     return actions
@@ -1012,8 +1012,8 @@ grammar.add_rule(UseDeployable())
 grammar.add_rule(NpcPlayerInteract())
 grammar.add_rule(NpcTeamRestrain())
 grammar.add_rule(NpcTeamDeploy())
-grammar.add_rule(TeamMemberOptions())
-grammar.add_rule(SelectTeamMember())
+grammar.add_rule(TeamMemberOptions()) # needs key bindings for alpha-delta in-game
+grammar.add_rule(SelectTeamMember()) # needs key bindings for alpha-delta in-game
 
 grammar_priority.add_rule(YellFreeze())
 
