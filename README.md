@@ -108,6 +108,24 @@ Additional notes:
 
 See [kaldi_model/README.md](kaldi_model/README.md) for more information.
 
+## Troubleshooting
+
+Things to check or try first:
+- Is [Microsoft Visual C++ Redistributable](https://aka.ms/vs/17/release/vc_redist.x64.exe) installed?
+- Have the Tacspeak application and model files been extracted into the correct locations? Check the following files exists:
+    - `./tacspeak.exe`
+    - `./tacspeak/user_settings.py`
+    - `./tacspeak/grammar/_readyornot.py`
+    - `./kaldi_model/Dictation.fst` - if not you need to download and extract the pre-trained model
+- Have you tried "Run as administrator" on `tacspeak.exe`?
+- Is the correct microphone set as the default in Windows Sound Settings?
+- Are you pressing the `listen_key` (by default it is mouse thumb button), and does it show "Hot mic" in the console?
+- Are you running ReadyOrNot and have the window focused (i.e. you're not alt-tabbed to another window)?
+- Are you pressing the `listen_key` (default is mouse thumb button), speaking, then releasing after you finish speaking?
+- Check the key bindings in `./tacspeak/grammar/_readyornot.py`. It's set for default game keybindings.
+- Check the ".tacspeak.log" file for any useful error messages to narrow it down.
+- Try reinstalling (extracting from .zips) everything, including the model, don't change anything in `./tacspeak/user_settings.py` or `./tacspeak/grammar/_readyornot.py` keep it all default, try running `tacspeak.exe`.
+
 ## Advanced install - Python
 
 ### Prerequisites: 
