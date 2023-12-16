@@ -1027,14 +1027,84 @@ freeze_recob.register()
 
 # ---------------------------------------------------------------------------
 if DEBUG_MODE:
+    from lark import Lark, Token
+    import itertools
+    grammar_string = r"""
+?start: alternative
+
+// ? means that the rule will be inlined iff there is a single child
+?alternative: sequence ("|" sequence)*
+?sequence: single*
+         | sequence "{" WORD "}"  -> special
+
+?single: WORD+               -> literal
+      | "<" WORD ">"         -> reference
+      | "[" alternative "]"  -> optional
+      | "(" alternative ")"
+
+// Match anything which is not whitespace or a control character,
+// we will let the engine handle invalid words
+WORD: /[^\s\[\]<>|(){}]+/
+
+%import common.WS_INLINE
+%ignore WS_INLINE
+"""
+
+
     with open(".debug_grammar_readyornot.txt", "w") as file:
         file.write(grammar.get_complexity_string())
+        file.write(f"\n{grammar_priority.get_complexity_string()}\n")
+
         for rule in grammar.rules:
-            file.write(f"\n\n{rule.spec}")
-            for extra in rule.extras:
-                choice_name = extra.name
-                choice_keys = list(extra._choices.keys())
-                file.write(f"\n{choice_name}={choice_keys}")
+            file.write(f"\n\n---{rule.name}---")
+            file.write(f"\n{rule.element.gstring()}")
+            file.write(f"\n---")
+
+            spec_parser = Lark(grammar_string, parser="lalr")
+            tree = spec_parser.parse(rule.element.gstring())
+            # file.write(f"\n{tree.pretty()}")
+
+            def do_on_tree_item(tree_item):
+                elements = []
+                if tree_item.data == "literal":
+                    literal_children = []
+                    for child in tree_item.children:
+                        literal_children.append(child)
+                    elements.append(' '.join(literal_children))
+                    literal_children = None
+                    return elements
+                if tree_item.data == "optional": 
+                    elements.append("")
+                    for child in tree_item.children:
+                        if child is None: 
+                            continue
+                        elements.extend(do_on_tree_item(child))
+                    return elements
+                if tree_item.data == "alternative": 
+                    for child in tree_item.children:
+                        if child is None: 
+                            continue
+                        elements.extend(do_on_tree_item(child))
+                    return elements
+                if tree_item.data == "sequence": 
+                    for child in tree_item.children:
+                        if child is None: 
+                            continue
+                        elements.append(do_on_tree_item(child))
+                    product_iter = itertools.product(*elements)
+                    product_list = [' '.join((' '.join(i)).split()) for i in product_iter]
+                    product_set = set(product_list)
+                    product_list = list(product_set)
+                    product_set = None
+                    return product_list
+
+            for tree_item in tree.children:
+                tree_item_options = do_on_tree_item(tree_item)
+                file.write(f"\n{tree_item_options}")
+            file.write(f"\n------------")
+
+        for rule in grammar_priority.rules:
+            file.write(f"\n\n{rule.element.gstring()}")
 
 # Unload function which will be called at unload time.
 def unload():
