@@ -36,6 +36,8 @@ Also built atop the excellent [Kaldi Active Grammar](https://github.com/daanzu/k
 
 ## Basic install - packaged executable
 
+[![Watch the video demo of me downloading and install Tacspeak](https://img.youtube.com/vi/P405ucc2wP4/maxresdefault.jpg)](https://youtu.be/P405ucc2wP4)
+
 1. Download and install [Microsoft Visual C++ Redistributable](https://aka.ms/vs/17/release/vc_redist.x64.exe)
 2. Download the [latest release](https://github.com/jwebmeister/tacspeak/releases/latest/), including both (they are separate downloads and/or releases):
     - the Tacspeak application .zip (includes .exe)
