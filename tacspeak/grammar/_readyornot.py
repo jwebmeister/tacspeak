@@ -135,7 +135,7 @@ map_door_breach_tools = {
     "(shotgun | shot e)": "shotgun",
     "c two": "c2",
     "[battering] ram [it]": "ram",
-    "((leader | lead) will | wait for my) (open | breach | prep | kick | shotgun | shot e | [prep] c two | [battering] ram )": "leader",
+    "((leader | lead) will | wait for my) (open | breach)": "leader",
 }
 map_door_grenades = {
     "none": "none",
@@ -143,7 +143,7 @@ map_door_grenades = {
     "stinger": "stinger",
     "(cs | gas | cs gas)": "gas",
     "[the] (fourty mil | launcher)": "launcher",
-    "((leader | lead) will [(throw | use | deploy)] | wait for my) (grenade | flash bang | bang | flash | stinger | cs | gas | cs gas | [the] fourty mil | [the] launcher) [grenade]": "leader",
+    "((leader | lead) will | wait for my) (grenade | flash bang | bang | flash | stinger | cs | gas | cs gas | fourty mil | launcher)": "leader",
 }
 map_door_scan = {
     "scan": "pie",
