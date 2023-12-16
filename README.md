@@ -86,7 +86,7 @@ For example, you might want to change these:
     - Recommended is `0` or `-1`. 
     - `0` for toggle mode off, listen only while key is pressed; must release key for the command to be recognised.
     - `1` for toggle mode on, key press toggles listening on/off; must toggle off for the command to be recognised.
-    - `2` for global toggle on, uses Voice Activity Detector (VAD) to detect end of speech and recognise commands.
+    - `2` for global toggle mode on, key press toggles listening on/off, but it uses Voice Activity Detector (VAD) to detect end of speech and recognise commands so you don't have to toggle off to recognise commands.
     - `-1` for toggle mode off + priority, listen only while key is pressed, except always listen for priority grammar ("freeze!") even when key is not pressed.
     - `None` always listening; similar to global toggle on, uses Voice Activity Detector (VAD) to detect end of speech and recognise commands.
 - `vad_padding_end_ms`=`250`
