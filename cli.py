@@ -8,7 +8,7 @@ import argparse
 import os
 from kaldi_active_grammar import Compiler, disable_donation_message
 from tacspeak.__main__ import main as tacspeak_main
-
+from dragonfly import get_engine
 
 def main():
     print_notices()
@@ -18,13 +18,20 @@ def main():
     parser.add_argument('--recompile_model', dest='model_dir', action='store',
                         metavar='model_dir', nargs='?', const='kaldi_model/',
                         help='recompile the model in `model_dir` (default is kaldi_model/), for changes to user_lexicon.txt')
+    parser.add_argument('--print_mic_list', action='store_true',
+                        help=('see a list of available input devices and their corresponding indexes and names.' 
+                                + 'useful for setting `input_device_index` in ./tacspeak/user_settings.py'))
     args = parser.parse_args()
     if args.model_dir is not None and os.path.isdir(args.model_dir):
         compiler = Compiler(args.model_dir)
         print("Compiling dictation graph (approx. 30 minutes)...")
         compiler.compile_agf_dictation_fst()
-    else:
-        tacspeak_main()
+        return
+    if args.print_mic_list:
+        get_engine('kaldi').print_mic_list()
+        input("Press enter key to exit.")
+        return
+    tacspeak_main()
 
 def print_notices():
     text = """

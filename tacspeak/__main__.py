@@ -18,8 +18,6 @@ import os.path
 import sys
 
 from dragonfly import get_engine
-from dragonfly import Grammar, MappingRule, Function, FuncContext
-from dragonfly.engines.backend_kaldi.dictation import UserDictation as Dictation
 from dragonfly.loader import CommandModuleDirectory, CommandModule
 from dragonfly.log import default_levels
 
