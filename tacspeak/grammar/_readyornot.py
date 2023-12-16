@@ -155,8 +155,8 @@ map_ground_options = {
     "cover ([over] (here | there) | [my] front | forward | that (location | position))": "cover",
     "(hold | halt) [(position | movement)]": "halt",
     "resume [movement]": "resume",
-    "search [the] area": "search",
-    "(search for | collect) evidence": "search",
+    "(secure | search) [the] (area | room)": "search",
+    "(search for | collect | secure) evidence": "search",
 }
 map_ground_fallin_formations = {
     "single file": "single",
@@ -216,7 +216,7 @@ map_team_member_options = {
     "(un | release) (focus | watch)" : "unfocus",
     "stop (focusing | watching)" : "unfocus",
     "swap with": "swap",
-    "search [the] (room | area)": "search",
+    "(search | secure) [the] (room | area)": "search",
 }
 map_team_member_move = {
     "([over] (here | there) | [to] my front | forward | [to] that (location | position))": "here",
@@ -1012,8 +1012,8 @@ grammar.add_rule(UseDeployable())
 grammar.add_rule(NpcPlayerInteract())
 grammar.add_rule(NpcTeamRestrain())
 grammar.add_rule(NpcTeamDeploy())
-grammar.add_rule(TeamMemberOptions()) # needs key bindings for alpha-delta in-game
-grammar.add_rule(SelectTeamMember()) # needs key bindings for alpha-delta in-game
+# grammar.add_rule(TeamMemberOptions()) # needs key bindings for alpha-delta in-game
+# grammar.add_rule(SelectTeamMember()) # needs key bindings for alpha-delta in-game
 
 grammar_priority.add_rule(YellFreeze())
 
