@@ -121,10 +121,12 @@ map_door_options = {
     "open": "open",
     "close": "door",
 }
-map_door_stack_sides = {
+map_door_stack_sides = { 
+    # todo! in 1.0 some doors don't have all stack options available, update when Void updates
     "split": "split",
     "left": "left",
     "right": "right",
+    "auto": "auto",  
 }
 map_door_breach_tools = {
     "open": "open",
@@ -183,26 +185,16 @@ map_npc_player_interacts = {
 }
 map_npc_team_restrain = {
     "restrain": "restrain",
-    "zip tie": "restrain",
-    "cuff": "restrain",
     "arrest": "restrain",
 }
 map_npc_team_deployables = {
     "taser": "taser",
     "tase": "taser",
-    "zap": "taser",
-    "shock": "taser",
     "pepper spray": "pepperspray",
     "pepper ball": "pepperball",
     "bean [bag]": "beanbag",
     "melee": "melee",
     "violence": "melee",
-    "hit": "melee",
-    "punch": "melee",
-    "smack": "melee",
-    "beat": "melee",
-    "jab": "melee",
-    "force": "melee",
 }
 map_team_members = {
     "alpha": "alpha",
@@ -405,13 +397,16 @@ def cmd_stack_up(color, hold, side):
     # start hold for command
     if hold == "hold":
         actions += action_hold("down")
-    match side:
+    # todo! in 1.0 some doors don't have all stack options available, update if/when Void update
+    match side: 
         case "split":
             actions += map_ingame_key_bindings["cmd_1"]
         case "left":
             actions += map_ingame_key_bindings["cmd_2"]
         case "right":
             actions += map_ingame_key_bindings["cmd_3"]
+        case "auto":
+            actions += map_ingame_key_bindings["cmd_4"]
     # end hold for command
     if hold == "hold":
         actions += action_hold("up")
@@ -423,7 +418,7 @@ class StackUp(CompoundRule):
     """
     spec_start = "[<color>] [team] [<hold>]"
     spec_1 = "stack <side>"
-    spec_2 = "(stack [up] | post up) [<side>]"
+    spec_2 = "stack [up] [<side>]"
     spec_3 = "<side> stack"
     spec_end = "[(on (the | that) door [way] | there | here)]"
     spec = f"{spec_start} ({spec_1} | {spec_2} | {spec_3}) {spec_end}"
@@ -435,7 +430,10 @@ class StackUp(CompoundRule):
     defaults = {
         "color": "current",
         "hold": "go",
-        "side": "split",
+        # todo! in 1.0 some doors don't have all stack options available, change to "auto" if/when Void update
+        # keeping as "split" for now because it's cmd_1 and don't want to swap off primary weapon if stack options 
+        # aren't available
+        "side": "split", 
     }
 
     def _process_recognition(self, node, extras):
