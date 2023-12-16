@@ -19,10 +19,13 @@ from kaldi_active_grammar import KaldiRule
 
 try:
     DEBUG_MODE = (sys.modules["user_settings"]).DEBUG_MODE
+    DEBUG_HEAVY_DUMP_GRAMMAR = (sys.modules["user_settings"]).DEBUG_HEAVY_DUMP_GRAMMAR
 except NameError:
     DEBUG_MODE = False
+    DEBUG_HEAVY_DUMP_GRAMMAR = False
 
 # DEBUG_MODE = True # if you want to override
+# DEBUG_HEAVY_DUMP_GRAMMAR = True # if you want to override
 
 # ---------------------------------------------------------------------------
 # Create this module's grammar and the context under which it'll be active.
@@ -1050,6 +1053,39 @@ WORD: /[^\s\[\]<>|(){}]+/
 %ignore WS_INLINE
 """
 
+    def do_on_tree_item(tree_item):
+        elements = []
+        if tree_item.data == "literal":
+            literal_children = []
+            for child in tree_item.children:
+                literal_children.append(child)
+            elements.append(' '.join(literal_children))
+            literal_children = None
+            return elements
+        if tree_item.data == "optional": 
+            elements.append("")
+            for child in tree_item.children:
+                if child is None: 
+                    continue
+                elements.extend(do_on_tree_item(child))
+            return elements
+        if tree_item.data == "alternative": 
+            for child in tree_item.children:
+                if child is None: 
+                    continue
+                elements.extend(do_on_tree_item(child))
+            return elements
+        if tree_item.data == "sequence": 
+            for child in tree_item.children:
+                if child is None: 
+                    continue
+                elements.append(do_on_tree_item(child))
+            product_iter = itertools.product(*elements)
+            product_list = [' '.join((' '.join(i)).split()) for i in product_iter]
+            product_set = set(product_list)
+            product_list = list(product_set)
+            product_set = None
+            return product_list
 
     with open(".debug_grammar_readyornot.txt", "w") as file:
         file.write(grammar.get_complexity_string())
@@ -1063,44 +1099,25 @@ WORD: /[^\s\[\]<>|(){}]+/
             spec_parser = Lark(grammar_string, parser="lalr")
             tree = spec_parser.parse(rule.element.gstring())
             # file.write(f"\n{tree.pretty()}")
-
-            def do_on_tree_item(tree_item):
-                elements = []
-                if tree_item.data == "literal":
-                    literal_children = []
-                    for child in tree_item.children:
-                        literal_children.append(child)
-                    elements.append(' '.join(literal_children))
-                    literal_children = None
-                    return elements
-                if tree_item.data == "optional": 
-                    elements.append("")
-                    for child in tree_item.children:
-                        if child is None: 
-                            continue
-                        elements.extend(do_on_tree_item(child))
-                    return elements
-                if tree_item.data == "alternative": 
-                    for child in tree_item.children:
-                        if child is None: 
-                            continue
-                        elements.extend(do_on_tree_item(child))
-                    return elements
-                if tree_item.data == "sequence": 
-                    for child in tree_item.children:
-                        if child is None: 
-                            continue
-                        elements.append(do_on_tree_item(child))
-                    product_iter = itertools.product(*elements)
-                    product_list = [' '.join((' '.join(i)).split()) for i in product_iter]
-                    product_set = set(product_list)
-                    product_list = list(product_set)
-                    product_set = None
-                    return product_list
-
-            for tree_item in tree.children:
-                tree_item_options = do_on_tree_item(tree_item)
-                file.write(f"\n{tree_item_options}")
+            
+            if DEBUG_HEAVY_DUMP_GRAMMAR: 
+                # do_on_tree_item() can be expensive on memory, so we don't do this for 
+                # just DEBUG_MODE
+                for tree_item in tree.children:
+                    tree_item_options = do_on_tree_item(tree_item)
+                    file.write(f"\n{tree_item_options}")
+                file.write(f"\n---")
+            try:
+                file.write(f"\n{rule.spec}")
+                for extra in rule.extras:
+                    choice_name = extra.name
+                    choice_keys = list(extra._choices.keys())
+                    file.write(f"\n{choice_name}={choice_keys}")
+            except: 
+                # it doesn't matter if we can't dump the grammar into a file & it may fail
+                # if rules are added that don't only use CompoundRule and Choice
+                print(f"Unable to gramamr dump all of {rule.name}")
+                pass
             file.write(f"\n------------")
 
         for rule in grammar_priority.rules:
