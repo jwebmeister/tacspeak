@@ -125,7 +125,7 @@ map_door_options = {
     "wedge": "wedge",
     "cover": "cover",
     "open": "open",
-    "close": "door",
+    "close": "close",
 }
 map_door_trapped = {
     "trapped": "trapped",
