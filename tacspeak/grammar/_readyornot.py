@@ -101,13 +101,12 @@ print("-- Ready or Not keybindings --")
 # mappings of spoken phrases to values
 map_hold = {
     "go": "go",
-    "hold": "hold",
-    "(on | hold for) my (mark | order | command)": "hold",
+    "on my (mark | order | command)": "hold",
 }
 map_execute_or_cancels = {
     "execute": "execute", 
     "cancel": "cancel", 
-    "go [go] [go]": "execute",
+    "go [go go]": "execute",
     "belay": "cancel", 
 }
 map_colors = {
@@ -149,6 +148,7 @@ map_door_grenades = {
     "((leader | lead) will | wait for my) (grenade | flash bang | bang | flash | stinger | cs | gas | cs gas | fourty mil | launcher)": "leader",
 }
 map_door_scan = {
+    # todo! in 1.0 some doors don't have all scan options available, update when Void updates
     "scan": "pie",
     "slide": "slide",
     "pie": "pie",
