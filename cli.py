@@ -7,10 +7,12 @@
 import argparse
 import os
 from kaldi_active_grammar import Compiler, disable_donation_message
+import tacspeak
 from tacspeak.__main__ import main as tacspeak_main
 from dragonfly import get_engine
 
 def main():
+    print(f"Tacspeak version {tacspeak.__version__}")
     print_notices()
     disable_donation_message()
     
