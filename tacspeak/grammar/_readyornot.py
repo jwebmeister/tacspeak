@@ -118,6 +118,7 @@ map_colors = {
 map_door_options = {
     # note: stackup, breach & clear, open & clear, scan are separate options
     "mirror [under]": "mirror",
+    "disarm": "disarm", # todo! this inserts itself in the middle of the list and messes up other keybinds, update when Void updates
     "wedge": "wedge",
     "cover": "cover",
     "open": "open",
@@ -352,13 +353,15 @@ def cmd_door_options(color, hold, door_option):
             actions += map_ingame_key_bindings["cmd_3"]
         case "mirror":
             actions += map_ingame_key_bindings["cmd_5"]
-        case "wedge":
+        case "disarm":
             actions += map_ingame_key_bindings["cmd_6"]
-        case "cover":
+        case "wedge": # todo! this assumes door's not trapped, but could be cmd+1 instead
+            actions += map_ingame_key_bindings["cmd_6"]
+        case "cover": # todo! this assumes door's not trapped, but could be cmd+1 instead
             actions += map_ingame_key_bindings["cmd_7"]
-        case "open":
+        case "open": # todo! this assumes door's not trapped, but could be cmd+1 instead
             actions += map_ingame_key_bindings["cmd_8"]
-        case "close":
+        case "close": # todo! this assumes door's not trapped, but could be cmd+1 instead
             actions += map_ingame_key_bindings["cmd_8"]
     # end hold for command
     if hold == "hold":
