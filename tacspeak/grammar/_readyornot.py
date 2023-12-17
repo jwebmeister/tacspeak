@@ -124,6 +124,10 @@ map_door_options = {
     "open": "open",
     "close": "door",
 }
+map_door_trapped = {
+    "trapped": "trapped",
+    "null": "not trapped",
+}
 map_door_stack_sides = { 
     # todo! in 1.0 some doors don't have all stack options available, update when Void updates
     "split": "split",
@@ -331,7 +335,7 @@ class SelectColor(CompoundRule):
 
 # ------------------------------------------------------------------
 
-def cmd_door_options(color, hold, door_option):
+def cmd_door_options(color, hold, door_option, trapped):
     """
     Press & release command keys for team to mirror under, wedge, cover, open, 
     # close the door (on execution)
@@ -355,14 +359,26 @@ def cmd_door_options(color, hold, door_option):
             actions += map_ingame_key_bindings["cmd_5"]
         case "disarm":
             actions += map_ingame_key_bindings["cmd_6"]
-        case "wedge": # todo! this assumes door's not trapped, but could be cmd+1 instead
-            actions += map_ingame_key_bindings["cmd_6"]
-        case "cover": # todo! this assumes door's not trapped, but could be cmd+1 instead
-            actions += map_ingame_key_bindings["cmd_7"]
-        case "open": # todo! this assumes door's not trapped, but could be cmd+1 instead
-            actions += map_ingame_key_bindings["cmd_8"]
-        case "close": # todo! this assumes door's not trapped, but could be cmd+1 instead
-            actions += map_ingame_key_bindings["cmd_8"]
+        case "wedge":
+            if trapped == "trapped":
+                actions += map_ingame_key_bindings["cmd_7"]
+            else:
+                actions += map_ingame_key_bindings["cmd_6"]
+        case "cover":
+            if trapped == "trapped":
+                actions += map_ingame_key_bindings["cmd_8"]
+            else:
+                actions += map_ingame_key_bindings["cmd_7"]
+        case "open":
+            if trapped == "trapped":
+                actions += map_ingame_key_bindings["cmd_9"]
+            else:
+                actions += map_ingame_key_bindings["cmd_8"]
+        case "close":
+            if trapped == "trapped":
+                actions += map_ingame_key_bindings["cmd_9"]
+            else:
+                actions += map_ingame_key_bindings["cmd_8"]
     # end hold for command
     if hold == "hold":
         actions += action_hold("up")
@@ -372,24 +388,27 @@ class DoorOptions(CompoundRule):
     """
     Speech recognise team mirror under, wedge, cover, open, close the door
     """
-    spec = "[<color>] [team] [<hold>] <door_option> [(the | that)] (door [way] | opening | room)"
+    spec = "[<color>] [team] [<hold>] <door_option> [(the | that)] [<trapped>] (door [way] | opening | room)"
     extras = [
         Choice("color", map_colors),
         Choice("hold", map_hold),
         Choice("door_option", map_door_options | map_door_scan),
+        Choice("trapped", map_door_trapped),
     ]
     defaults = {
         "color": "current",
         "hold": "go",
         "door_option": "open",
+        "trapped": "not trapped",
     }
 
     def _process_recognition(self, node, extras):
         color = extras["color"]
         hold = extras["hold"]
         door_option = extras["door_option"]
-        print(f"{color} team {hold} {door_option} the door")
-        cmd_door_options(color, hold, door_option).execute()
+        trapped = extras["trapped"]
+        print(f"{color} team {hold} {door_option} {trapped} the door")
+        cmd_door_options(color, hold, door_option, trapped).execute()
 
 # ------------------------------------------------------------------
 
