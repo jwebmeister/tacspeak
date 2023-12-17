@@ -1,37 +1,55 @@
-#
-# This file is part of Tacspeak.
-# (c) Copyright 2023 by Joshua Webb
-# Licensed under the AGPL-3.0; see LICENSE.txt file.
-#
+"""
+This file is part of Tacspeak.
+(c) Copyright 2023 by Joshua Webb
+Licensed under the AGPL-3.0; see LICENSE.txt file.
+"""
+from __future__ import annotations
+from typing import TYPE_CHECKING
 
 import argparse
-import os
+from pathlib import Path
 from kaldi_active_grammar import Compiler, disable_donation_message
 from tacspeak.__main__ import main as tacspeak_main
 from dragonfly import get_engine
+
+if TYPE_CHECKING:
+    from argparse import ArgumentParser, Namespace
+
 
 def main():
     print_notices()
     disable_donation_message()
     
-    parser = argparse.ArgumentParser(description='Start speech recognition.')
-    parser.add_argument('--recompile_model', dest='model_dir', action='store',
-                        metavar='model_dir', nargs='?', const='kaldi_model/',
-                        help='recompile the model in `model_dir` (default is kaldi_model/), for changes to user_lexicon.txt')
-    parser.add_argument('--print_mic_list', action='store_true',
-                        help=('see a list of available input devices and their corresponding indexes and names.' 
-                                + 'useful for setting `input_device_index` in ./tacspeak/user_settings.py'))
-    args = parser.parse_args()
-    if args.model_dir is not None and os.path.isdir(args.model_dir):
-        compiler = Compiler(args.model_dir)
+    parser: ArgumentParser = argparse.ArgumentParser(description='Start speech recognition.')
+    parser.add_argument(
+        '--recompile_model',
+        dest='model_dir',
+        action='store',
+        metavar='model_dir',
+        nargs='?',
+        const='kaldi_model/',
+        help='recompile the model in `model_dir` (default is kaldi_model/), for changes to user_lexicon.txt'
+    )
+    parser.add_argument(
+        '--print_mic_list',
+        action='store_true',
+        help=(
+                'see a list of available input devices and their corresponding indexes and names.'
+                + 'useful for setting `input_device_index` in ./tacspeak/user_settings.py'
+        )
+    )
+    args: Namespace = parser.parse_args()
+    if args.model_dir is not None and Path(args.model_dir).is_dir():
+        compiler: Compiler = Compiler(args.model_dir)
         print("Compiling dictation graph (approx. 30 minutes)...")
         compiler.compile_agf_dictation_fst()
         return
     if args.print_mic_list:
         get_engine('kaldi').print_mic_list()
-        input("Press enter key to exit.")
+        input("Press any key to exit.")
         return
     tacspeak_main()
+
 
 def print_notices():
     text = """
@@ -52,6 +70,7 @@ def print_notices():
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
         """
     print(text)
+
 
 if __name__ == "__main__":
     main()

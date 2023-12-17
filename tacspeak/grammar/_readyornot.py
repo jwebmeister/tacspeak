@@ -3,7 +3,7 @@
 # (c) Copyright 2023 by Joshua Webb
 # Licensed under the AGPL-3.0; see LICENSE.txt file.
 #
-
+from __future__ import annotations
 import sys
 import dragonfly
 from dragonfly import (BasicRule, CompoundRule, MappingRule, RuleRef, Repetition, RecognitionObserver,
@@ -29,16 +29,15 @@ except NameError:
 
 # ---------------------------------------------------------------------------
 # Create this module's grammar and the context under which it'll be active.
-if DEBUG_MODE:
-    grammar_context = AppContext()
-else:
-    grammar_context = AppContext(executable="ReadyOrNot")
-grammar = Grammar("ReadyOrNot",
-                  context=grammar_context,
-                  )
-grammar_priority = Grammar("ReadyOrNot_priority",
-                           context=grammar_context,
-                           )
+grammar_context: AppContext = AppContext(executable="ReadyOrNot") if not DEBUG_MODE else AppContext()
+grammar: Grammar = Grammar(
+    name="ReadyOrNot",
+    context=grammar_context,
+)
+grammar_priority: Grammar = Grammar(
+    name="ReadyOrNot_priority",
+    context=grammar_context,
+)
 
 # ---------------------------------------------------------------------------
 # Variables used by grammar, rules, recognition observers below
@@ -49,12 +48,12 @@ DEBUG_NOCMD_PRINT_ONLY = DEBUG_MODE
 
 # the minimum time between keys state changes (e.g. pressed then released),
 # it's to make sure key presses are registered in-game
-min_delay = 3.3  # 100/(30 fps) = 3.3 (/100 seconds between frames)
+min_delay: float = 3.3  # 100/(30 fps) = 3.3 (/100 seconds between frames)
 
 # map of action to in-game key bindings
 # https://dragonfly.readthedocs.io/en/latest/actions.html#key-names
 # https://dragonfly.readthedocs.io/en/latest/actions.html#mouse-specification-format
-ingame_key_bindings = {
+ingame_key_bindings = {  # TODO: Move this to a TOML file.
     "gold": "f5",
     "blue": "f6",
     "red": "f7",
@@ -79,18 +78,37 @@ ingame_key_bindings = {
     "yell": "f",
 }
 
+
 def debug_print_key(device, key):
     print(f'({device}_{key})')
 
 
-if DEBUG_NOCMD_PRINT_ONLY:
-    map_ingame_key_bindings = {k: Function(debug_print_key, device='m', key=v.replace("mouse_", "")) if "mouse_" in v
-                               else Function(debug_print_key, device='kb', key=v)
-                               for k, v in ingame_key_bindings.items()}
-else:
-    map_ingame_key_bindings = {k: Mouse(f'{v.replace("mouse_", "")}:down/{min_delay}, {v.replace("mouse_", "")}:up') if "mouse_" in v
-                               else Key(f'{v}:down/{min_delay}, {v}:up')
-                               for k, v in ingame_key_bindings.items()}
+map_ingame_key_bindings: dict = {}
+
+for k, v in ingame_key_bindings.items():
+    new_binding: Function | Mouse | Key
+    key: str = v.replace("mouse_", "") if "mouse_" in v else v
+
+    if not DEBUG_NOCMD_PRINT_ONLY:
+        if "mouse_" in v:
+            new_binding = Mouse(f"{key}:down/{min_delay}, {key}:up")
+        else:
+            new_binding = Key(f"{key}:down/{min_delay}, {key}:up")
+    else:
+        if "mouse_" in v:
+            new_binding = Function(
+                function=debug_print_key,
+                device="m",
+                key=key
+            )
+        else:
+            new_binding = Function(
+                function=debug_print_key,
+                device="kb",
+                key=key
+            )
+
+    map_ingame_key_bindings[k] = new_binding
 
 # print key bindings
 print("-- Ready or Not keybindings --")
@@ -99,7 +117,7 @@ for (k, v) in map_ingame_key_bindings.items():
 print("-- Ready or Not keybindings --")
 
 # mappings of spoken phrases to values
-map_hold = {
+map_hold = {  # TODO: Move dicts to TOML file and load from there.
     "go": "go",
     "hold": "hold",
     "(on | hold for) my (mark | order | command)": "hold",
