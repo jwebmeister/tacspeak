@@ -283,7 +283,7 @@ class SelectColor(CompoundRule):
 
 # ------------------------------------------------------------------
 
-def cmd_door_options(color, hold, door_option):
+def cmd_door_options(color, hold, door_option, trapped):
     """
     Press & release command keys for team to mirror under, wedge, cover, open, 
     # close the door (on execution)
@@ -305,14 +305,28 @@ def cmd_door_options(color, hold, door_option):
             actions += map_ingame_key_bindings["cmd_3"]
         case "mirror":
             actions += map_ingame_key_bindings["cmd_5"]
-        case "wedge":
+        case "disarm":
             actions += map_ingame_key_bindings["cmd_6"]
+        case "wedge":
+            if trapped == "trapped":
+                actions += map_ingame_key_bindings["cmd_7"]
+            else:
+                actions += map_ingame_key_bindings["cmd_6"]
         case "cover":
-            actions += map_ingame_key_bindings["cmd_7"]
+            if trapped == "trapped":
+                actions += map_ingame_key_bindings["cmd_8"]
+            else:
+                actions += map_ingame_key_bindings["cmd_7"]
         case "open":
-            actions += map_ingame_key_bindings["cmd_8"]
+            if trapped == "trapped":
+                actions += map_ingame_key_bindings["cmd_9"]
+            else:
+                actions += map_ingame_key_bindings["cmd_8"]
         case "close":
-            actions += map_ingame_key_bindings["cmd_8"]
+            if trapped == "trapped":
+                actions += map_ingame_key_bindings["cmd_9"]
+            else:
+                actions += map_ingame_key_bindings["cmd_8"]
     # end hold for command
     if hold == "hold":
         actions += action_hold("up")
@@ -323,7 +337,7 @@ class DoorOptions(CompoundRule):
     """
     Speech recognise team mirror under, wedge, cover, open, close the door
     """
-    spec: str = "[<color>] [team] [<hold>] <door_option> [(the | that)] (door [way] | opening | room)"
+    spec: str = "[<color>] [team] [<hold>] <door_option> [(the | that)] [<trapped>] (door [way] | opening | room)"
     extras: list[Choice] = [
         Choice(
             name="color",
@@ -337,19 +351,30 @@ class DoorOptions(CompoundRule):
             name="door_option",
             choices=map_phrases["map_door_options"] | map_phrases["map_door_scan"]
         ),
+        Choice(
+            name="trapped",
+            choices=map_phrases["map_door_trapped"]
+        )
     ]
     defaults: dict[str, str] = {
         "color": "current",
         "hold": "go",
         "door_option": "open",
+        "trapped": "safe",
     }
 
     def _process_recognition(self, node, extras):
         color = extras["color"]
         hold = extras["hold"]
         door_option = extras["door_option"]
-        print(f"{color} team {hold} {door_option} the door")
-        cmd_door_options(color, hold, door_option).execute()
+        trapped = extras["trapped"]
+        print(f"{color} team {hold} {door_option} {trapped} the door")
+        cmd_door_options(
+            color=color,
+            hold=hold,
+            door_option=door_option,
+            trapped=trapped
+        ).execute()
 
 
 # ------------------------------------------------------------------
@@ -1033,9 +1058,11 @@ class TeamMemberOptions(CompoundRule):
         move_option = extras.get("move_option")
         focus_option = extras.get("focus_option")
         other_team_member = extras.get("other_team_member")
-        additional_option = ((move_option if move_option is not None else "")
-                             + (focus_option if focus_option is not None else "")
-                             + (other_team_member if other_team_member is not None else ""))
+        additional_option = (
+                (move_option if move_option is not None else "")
+                + (focus_option if focus_option is not None else "")
+                + (other_team_member if other_team_member is not None else "")
+        )
         print(f"{team_member} {option} {additional_option}")
         cmd_team_member_options(
             team_member=team_member,

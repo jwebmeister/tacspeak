@@ -97,7 +97,7 @@ build_exe_options = {
 
 setup(
     name="tacspeak",
-    version="0.1.1",
+    version="0.1.2",
     description="tacspeak",
     options={"build_exe": build_exe_options},
     executables=[Executable(script="cli.py", 

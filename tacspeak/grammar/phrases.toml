@@ -19,10 +19,15 @@
 
 [map_door_options]
 "mirror" = "mirror [under]"
+"disarm" = "disarm" # TODO: this inserts itself in the middle of the list and messes up other keybinds - update when Void updates
 "wedge" = "wedge"
 "cover" = "cover"
 "open" = "open"
 "door" = "close"
+
+[map_door_trapped]
+"trapped" = "trapped"
+"safe" = "null"
 
 [map_door_stack_sides]  # TODO: as of RoN v1.0, some doors lack some stack options - update when Void does
 "split" = "split"

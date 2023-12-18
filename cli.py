@@ -9,6 +9,7 @@ from typing import TYPE_CHECKING
 import argparse
 from pathlib import Path
 from kaldi_active_grammar import Compiler, disable_donation_message
+import tacspeak
 from tacspeak.__main__ import main as tacspeak_main
 from dragonfly import get_engine
 
@@ -17,6 +18,7 @@ if TYPE_CHECKING:
 
 
 def main():
+    print(f"Tacspeak version {tacspeak.__version__}")
     print_notices()
     disable_donation_message()
     
