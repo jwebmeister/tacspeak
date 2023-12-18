@@ -145,7 +145,7 @@ map_door_breach_tools = {
     "(shotgun | shot e)": "shotgun",
     "c two": "c2",
     "[battering] ram [it]": "ram",
-    "((leader | lead) will | wait for my) (open | breach)": "leader",
+    "((leader | lead) will | wait for (my | me to)) (open | breach)": "leader",
 }
 map_door_grenades = {
     "none": "none",
@@ -153,7 +153,7 @@ map_door_grenades = {
     "stinger": "stinger",
     "(cs | gas | cs gas)": "gas",
     "[the] (fourty mil | launcher)": "launcher",
-    "((leader | lead) will | wait for my) (grenade | flash bang | bang | flash | stinger | cs | gas | cs gas | fourty mil | launcher)": "leader",
+    "((leader | lead) will | wait for (my | me to)) (grenade | flash bang | bang | flash | stinger | cs | gas | cs gas | fourty mil | launcher)": "leader",
 }
 map_door_scan = {
     # todo! in 1.0 some doors don't have all scan options available, update when Void updates
