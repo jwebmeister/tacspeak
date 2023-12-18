@@ -146,131 +146,9 @@ map_phrases: dict = invert_dict_pairs(
         toml_file=PHRASE_FILE
     )
 )
-# remove:
-#     map_hold = {
-#         "go": "go",
-#         "hold": "hold",
-#         "(on | hold for) my (mark | order | command)": "hold",
-#     }
-#     map_execute_or_cancels = {
-#         "cancel": "cancel",
-#         "(execute) | (go [go] [go])": "execute",
-#         "belay": "cancel",
-#     }
-#     map_colors = {
-#         "current": "current",
-#         "gold": "gold",
-#         "blue": "blue",
-#         "red": "red",
-#     }
-#     map_door_options = {
-#         # note: stackup, breach & clear, open & clear, scan are separate options
-#         "mirror [under]": "mirror",
-#         "wedge": "wedge",
-#         "cover": "cover",
-#         "open": "open",
-#         "close": "door",
-#     }
-#     map_door_stack_sides = {
-#         "split": "split",
-#         "left": "left",
-#         "right": "right",
-#         "auto": "auto",
-#     }
-#     map_door_breach_tools = {
-#         "open": "open",
-#         "move in": "open",
-#         "kick [it] [down]": "kick",
-#         "(shotgun | shot e)": "shotgun",
-#         "c two": "c2",
-#         "[battering] ram [it]": "ram",
-#         "((leader | lead) will | wait for my) (open | breach)": "leader",
-#     }
-#     map_door_grenades = {
-#         "none": "none",
-#         "(bang | flash bang | flash)": "flashbang",
-#         "stinger": "stinger",
-#         "(cs | gas | cs gas)": "gas",
-#         "[the] (fourty mil | launcher)": "launcher",
-#         "((leader | lead) will | wait for my) (grenade | flash bang | bang | flash | stinger | cs | gas | cs gas | fourty mil | launcher)": "leader",
-#     }
-#     map_door_scan = {
-#         "scan": "pie",
-#         "slide": "slide",
-#         "pie": "pie",
-#         "peek": "peek",
-#     }
-#     map_ground_options = {
-#         # note: deploy and fall in are separate options
-#         "move ([over] (here | there) | [to] my front | forward | [to] that (location | position))": "move",
-#         "cover ([over] (here | there) | [my] front | forward | that (location | position))": "cover",
-#         "(hold | halt) [(position | movement)]": "halt",
-#         "resume [movement]": "resume",
-#         "(secure | search) [the] (area | room)": "search",
-#         "(search for | collect | secure) evidence": "search",
-#     }
-#     map_ground_fallin_formations = {
-#         "single file": "single",
-#         "double file": "double",
-#         "diamond": "diamond",
-#         "wedge": "wedge",
-#     }
-#     map_ground_deployables = {
-#         "(bang | flash bang | flash)": "flash bang",
-#         "stinger": "stinger",
-#         "(cs | gas | cs gas)": "gas",
-#         "chem light": "chemlight",
-#         "shield": "shield",
-#     }
-#     map_npc_player_interacts = {
-#         "move [(here | there | to)]": "move here",
-#         "((move | come) to (me | my position)) | (come here)": "move my position",
-#         "stop [(there | moving)]": "move stop",
-#         "turn around": "turn around",
-#         "move to [the] exit": "move to exit",
-#         "get out of here": "move to exit",
-#         "(get | move) outside": "move to exit",
-#     }
-#     map_npc_team_restrain = {
-#         "restrain": "restrain",
-#         "arrest": "restrain",
-#     }
-#     map_npc_team_deployables = {
-#         "taser": "taser",
-#         "tase": "taser",
-#         "pepper spray": "pepperspray",
-#         "pepper ball": "pepperball",
-#         "bean [bag]": "beanbag",
-#         "melee": "melee",
-#         "violence": "melee",
-#     }
-#     map_team_members = {
-#         "alpha": "alpha",
-#         "bravo": "bravo",
-#         "charlie": "charlie",
-#         "delta": "delta",
-#     }
-#     map_team_member_options = {
-#         "move": "move",
-#         "(focus | watch)": "focus",
-#         "(stop (focusing | watching)) | (un | release) (focus | watch)": "unfocus",
-#         "swap with": "swap",
-#         "(search | secure) [the] (room | area)": "search",
-#     }
-#     map_team_member_move = {
-#         "([over] (here | there) | [to] my front | forward | [to] that (location | position))": "here",
-#         "[over] (here | there) then back": "here then back",
-#     }
-#     map_team_member_focus = {
-#         "([over] (here | there) | [my] front | forward | that (location | position))": "here",
-#         "([on] my position | [on] me)": "my position",
-#         "[on] [the] door [way]": "door",
-#         "[on] (them | him | her | [the] target)": "target",
-#         "(un focus | release)": "unfocus",
-#     }
 
 
-def invert_squash_map(my_map):
+def invert_squash_map(my_map):  # This is a good idea, partially implemented via TOML workflow
     """
     Returns an inverted map, where keys are the original values, 
     and values are the concatenation of the original keys as 
@@ -324,12 +202,18 @@ class ExecuteOrCancelHeldOrder(CompoundRule):
     """
     Speech recognise team execute or cancel a held order
     """
-    spec = "[<color>] [team] <execute_or_cancel> [([that] [held] order | that [order])]"
-    extras = [
-        Choice("color", map_colors),
-        Choice("execute_or_cancel", map_execute_or_cancels),
+    spec: str = "[<color>] [team] <execute_or_cancel> [([that] [held] order | that [order])]"
+    extras: list[Choice] = [
+        Choice(
+            name="color",
+            choices=map_phrases["map_colors"]
+        ),
+        Choice(
+            name="execute_or_cancel",
+            choices=map_phrases["map_execute_or_cancels"]
+        ),
     ]
-    defaults = {
+    defaults: dict[str, str] = {
         "color": "current",
         "execute_or_cancel": "execute",
     }
@@ -338,7 +222,10 @@ class ExecuteOrCancelHeldOrder(CompoundRule):
         color = extras["color"]
         execute_or_cancel = extras["execute_or_cancel"]
         print(f"{color} team {execute_or_cancel} held order")
-        cmd_execute_or_cancel_held_order(color, execute_or_cancel).execute()
+        cmd_execute_or_cancel_held_order(
+            color=color,
+            execute_or_cancel=execute_or_cancel
+        ).execute()
 
 
 # ------------------------------------------------------------------
@@ -358,8 +245,13 @@ class SelectTeam(CompoundRule):
     Speech recognise select color team
     """
     spec = "[<color>] team"
-    extras = [Choice("color", map_colors)]
-    defaults = {"color": "current"}
+    extras: list[Choice] = [
+        Choice(
+            name="color",
+            choices=map_phrases["map_colors"]
+        )
+    ]
+    defaults: dict[str, str] = {"color": "current"}
 
     def _process_recognition(self, node, extras):
         color = extras["color"]
@@ -371,8 +263,17 @@ class SelectColor(CompoundRule):
     """
     Speech recognise select color team
     """
-    spec = "<color>"
-    extras = [Choice("color", ["blue", "red", "gold"])]
+    spec: str = "<color>"
+    extras: list[Choice] = [
+        Choice(
+            name="color",
+            choices=[
+                "blue",
+                "red",
+                "gold"
+            ]
+        )
+    ]
 
     def _process_recognition(self, node, extras):
         color = extras["color"]
@@ -422,13 +323,22 @@ class DoorOptions(CompoundRule):
     """
     Speech recognise team mirror under, wedge, cover, open, close the door
     """
-    spec = "[<color>] [team] [<hold>] <door_option> [(the | that)] (door [way] | opening | room)"
-    extras = [
-        Choice("color", map_colors),
-        Choice("hold", map_hold),
-        Choice("door_option", map_door_options | map_door_scan),
+    spec: str = "[<color>] [team] [<hold>] <door_option> [(the | that)] (door [way] | opening | room)"
+    extras: list[Choice] = [
+        Choice(
+            name="color",
+            choices=map_phrases["map_colors"]
+        ),
+        Choice(
+            name="hold",
+            choices=map_phrases["map_hold"]
+        ),
+        Choice(
+            name="door_option",
+            choices=map_phrases["map_door_options"] | map_phrases["map_door_scan"]
+        ),
     ]
-    defaults = {
+    defaults: dict[str, str] = {
         "color": "current",
         "hold": "go",
         "door_option": "open",
@@ -474,18 +384,27 @@ class StackUp(CompoundRule):
     """
     Speech recognise team stack up on door
     """
-    spec_start = "[<color>] [team] [<hold>]"
-    spec_1 = "stack <side>"
-    spec_2 = "stack [up] [<side>]"
-    spec_3 = "<side> stack"
-    spec_end = "[(on (the | that) door [way] | there | here)]"
-    spec = f"{spec_start} ({spec_1} | {spec_2} | {spec_3}) {spec_end}"
-    extras = [
-        Choice("color", map_colors),
-        Choice("hold", map_hold),
-        Choice("side", map_door_stack_sides),
+    spec_start: str = "[<color>] [team] [<hold>]"
+    spec_1: str = "stack <side>"
+    spec_2: str = "stack [up] [<side>]"
+    spec_3: str = "<side> stack"
+    spec_end: str = "[(on (the | that) door [way] | there | here)]"
+    spec: str = f"{spec_start} ({spec_1} | {spec_2} | {spec_3}) {spec_end}"
+    extras: list[Choice] = [
+        Choice(
+            name="color",
+            choices=map_phrases["map_colors"]
+        ),
+        Choice(
+            name="hold",
+            choices=map_phrases["map_hold"]
+        ),
+        Choice(
+            name="side",
+            choices=map_phrases["map_door_stack_sides"]
+        ),
     ]
-    defaults = {
+    defaults: dict[str, str] = {
         "color": "current",
         "hold": "go",
         # todo! in 1.0 some doors don't have all stack options available, change to "auto" if/when Void update
@@ -499,7 +418,11 @@ class StackUp(CompoundRule):
         hold = extras["hold"]
         side = extras["side"]
         print(f"{color} team {hold} stack up {side}")
-        cmd_stack_up(color, hold, side).execute()
+        cmd_stack_up(
+            color=color,
+            hold=hold,
+            side=side
+        ).execute()
 
 
 # ------------------------------------------------------------------
@@ -564,19 +487,31 @@ class BreachAndClear(CompoundRule):
     # "gold breach and clear use the fourty mil"
     # "blue move in and clear it"
 
-    spec_start = "[<color>] [team] [<hold>]"
+    spec_start: str = "[<color>] [team] [<hold>]"
     spec_tool = "[<tool>] [the door]"
     spec_grenade = "[(throw | deploy | use)] [<grenade>] [grenade]"
     spec_clear = "([then] breach and clear | (then | and) clear | [(then | and)] clear it | [then] move in and clear it)"
 
-    spec = f"{spec_start} {spec_tool} ({spec_grenade} {spec_clear} | {spec_clear} {spec_grenade})"
-    extras = [
-        Choice("color", map_colors),
-        Choice("hold", map_hold),
-        Choice("tool", map_door_breach_tools),
-        Choice("grenade", map_door_grenades),
+    spec: str = f"{spec_start} {spec_tool} ({spec_grenade} {spec_clear} | {spec_clear} {spec_grenade})"
+    extras: list[Choice] = [
+        Choice(
+            name="color",
+            choices=map_phrases["map_colors"]
+        ),
+        Choice(
+            name="hold",
+            choices=map_phrases["map_hold"]
+        ),
+        Choice(
+            name="tool",
+            choices=map_phrases["map_door_breach_tools"]
+        ),
+        Choice(
+            name="grenade",
+            choices=map_phrases["map_door_grenades"]
+        ),
     ]
-    defaults = {
+    defaults: dict[str, str] = {
         "color": "current",
         "hold": "go",
         "tool": "open",
@@ -589,7 +524,12 @@ class BreachAndClear(CompoundRule):
         tool = extras["tool"]
         grenade = extras["grenade"]
         print(f"{color} team {hold} {tool} the door {grenade} breach and clear")
-        cmd_breach_and_clear(color, hold, tool, grenade).execute()
+        cmd_breach_and_clear(
+            color=color,
+            hold=hold,
+            tool=tool,
+            grenade=grenade
+        ).execute()
 
 
 # ------------------------------------------------------------------
@@ -616,12 +556,18 @@ class PickLock(CompoundRule):
     """
     Speech recognise team pick the lock
     """
-    spec = "[<color>] [team] [<hold>] pick ([the] door | [the] lock | it)"
-    extras = [
-        Choice("color", map_colors),
-        Choice("hold", map_hold),
+    spec: str = "[<color>] [team] [<hold>] pick ([the] door | [the] lock | it)"
+    extras: list[Choice] = [
+        Choice(
+            name="color",
+            choices=map_phrases["map_colors"]
+        ),
+        Choice(
+            name="hold",
+            choices=map_phrases["map_hold"]
+        ),
     ]
-    defaults = {
+    defaults: dict[str, str] = {
         "color": "current",
         "hold": "go",
     }
@@ -630,7 +576,10 @@ class PickLock(CompoundRule):
         color = extras["color"]
         hold = extras["hold"]
         print(f"{color} team {hold} pick the lock")
-        cmd_pick_lock(color, hold).execute()
+        cmd_pick_lock(
+            color=color,
+            hold=hold
+        ).execute()
 
 
 # ------------------------------------------------------------------
@@ -666,13 +615,22 @@ class GroundOptions(CompoundRule):
     """
     Speech recognise team move, cover, halt (hold), search area
     """
-    spec = "[<color>] [team] [<hold>] <ground_option>"
-    extras = [
-        Choice("color", map_colors),
-        Choice("hold", map_hold),
-        Choice("ground_option", map_ground_options),
+    spec: str = "[<color>] [team] [<hold>] <ground_option>"
+    extras: list[Choice] = [
+        Choice(
+            name="color",
+            choices=map_phrases["map_colors"]
+        ),
+        Choice(
+            name="hold",
+            choices=map_phrases["map_hold"]
+        ),
+        Choice(
+            name="ground_option",
+            choices=map_phrases["map_ground_options"]
+        ),
     ]
-    defaults = {
+    defaults: dict[str, str] = {
         "color": "current",
         "hold": "go",
         "ground_option": "move"
@@ -683,7 +641,11 @@ class GroundOptions(CompoundRule):
         hold = extras["hold"]
         ground_option = extras["ground_option"]
         print(f"{color} team {hold} {ground_option}")
-        cmd_ground_options(color, hold, ground_option).execute()
+        cmd_ground_options(
+            color=color,
+            hold=hold,
+            ground_option=ground_option
+        ).execute()
 
 
 # ------------------------------------------------------------------
@@ -718,15 +680,24 @@ class FallIn(CompoundRule):
     """
     Speech recognise team fall in
     """
-    spec_1 = "[<color>] [team] [<hold>] (fall in | regroup | form up) [on me] [<formation>] [on me]"
-    spec_2 = "<color> [team] [<hold>] on me [<formation>]"
-    spec = f"({spec_1} | {spec_2})"
-    extras = [
-        Choice("color", map_colors),
-        Choice("hold", map_hold),
-        Choice("formation", map_ground_fallin_formations),
+    spec_1: str = "[<color>] [team] [<hold>] (fall in | regroup | form up) [on me] [<formation>] [on me]"
+    spec_2: str = "<color> [team] [<hold>] on me [<formation>]"
+    spec: str = f"({spec_1} | {spec_2})"
+    extras: list[Choice] = [
+        Choice(
+            name="color",
+            choices=map_phrases["map_colors"]
+        ),
+        Choice(
+            name="hold",
+            choices=map_phrases["map_hold"]
+        ),
+        Choice(
+            name="formation",
+            choices=map_phrases["map_ground_fallin_formations"]
+        ),
     ]
-    defaults = {
+    defaults: dict[str, str] = {
         "color": "current",
         "hold": "go",
         "formation": "single",
@@ -737,7 +708,11 @@ class FallIn(CompoundRule):
         hold = extras["hold"]
         formation = extras["formation"]
         print(f"{color} team {hold} fall in {formation}")
-        cmd_fallin(color, hold, formation).execute()
+        cmd_fallin(
+            color=color,
+            hold=hold,
+            formation=formation
+        ).execute()
 
 
 # ------------------------------------------------------------------
@@ -774,13 +749,22 @@ class UseDeployable(CompoundRule):
     """
     Speech recognise command team to use a deployable at a location
     """
-    spec = "[<color>] [team] [<hold>] deploy <deployable>"
-    extras = [
-        Choice("color", map_colors),
-        Choice("hold", map_hold),
-        Choice("deployable", map_ground_deployables),
+    spec: str = "[<color>] [team] [<hold>] deploy <deployable>"
+    extras: list[Choice] = [
+        Choice(
+            name="color",
+            choices=map_phrases["map_colors"]
+        ),
+        Choice
+        (name="hold",
+         choices=map_phrases["map_hold"]
+         ),
+        Choice(
+            name="deployable",
+            choices=map_phrases["map_ground_deployables"]
+        ),
     ]
-    defaults = {
+    defaults: dict[str, str] = {
         "color": "current",
         "hold": "go",
         "deployable": "flashbang",
@@ -791,7 +775,11 @@ class UseDeployable(CompoundRule):
         hold = extras["hold"]
         deployable = extras["deployable"]
         print(f"{color} team {hold} deploy {deployable}")
-        cmd_use_deployable(color, hold, deployable).execute()
+        cmd_use_deployable(
+            color=color,
+            hold=hold,
+            deployable=deployable
+        ).execute()
 
 
 # ------------------------------------------------------------------
@@ -822,9 +810,12 @@ class NpcPlayerInteract(CompoundRule):
     """
     Speech recognise command an NPC (not team)
     """
-    spec = "you <interaction>"
-    extras = [
-        Choice("interaction", map_npc_player_interacts),
+    spec: str = "you <interaction>"
+    extras: list[Choice] = [
+        Choice(
+            name="interaction",
+            choices=map_phrases["map_npc_player_interacts"]
+        ),
     ]
 
     def _process_recognition(self, node, extras):
@@ -850,14 +841,20 @@ class NpcTeamRestrain(CompoundRule):
     """
     Speech recognise command team to restrain NPC target
     """
-    spec_start = "[<color>] [team]"
-    spec_1 = "<restrain> (them | him | her | [the] target)"
-    spec = f"{spec_start} {spec_1}"
-    extras = [
-        Choice("color", map_colors),
-        Choice("restrain", map_npc_team_restrain),
+    spec_start: str = "[<color>] [team]"
+    spec_1: str = "<restrain> (them | him | her | [the] target)"
+    spec: str = f"{spec_start} {spec_1}"
+    extras: list[Choice] = [
+        Choice(
+            name="color",
+            choices=map_phrases["map_colors"]
+        ),
+        Choice(
+            name="restrain",
+            choices=map_phrases["map_npc_team_restrain"]
+        ),
     ]
-    defaults = {
+    defaults: dict[str, str] = {
         "color": "current",
         "restrain": "restrain",
     }
@@ -865,7 +862,7 @@ class NpcTeamRestrain(CompoundRule):
     def _process_recognition(self, node, extras):
         color = extras["color"]
         print(f"{color} team restrain target")
-        cmd_npc_team_restrain(color).execute()
+        cmd_npc_team_restrain(color=color).execute()
 
 
 # ------------------------------------------------------------------
@@ -896,17 +893,23 @@ class NpcTeamDeploy(CompoundRule):
     """
     Speech recognise command team to use deployable on NPC target
     """
-    spec_start = "[<color>] [team]"
-    spec_target = "(them | him | her | [the] target)"
-    spec_1 = f"subdue {spec_target} [(use | with)] [<deployable>]"
-    spec_2 = f"<deployable> {spec_target}"
-    spec_3 = f"make {spec_target} compliant [(use | with)] [<deployable>]"
-    spec = f"{spec_start} ({spec_1} | {spec_2} | {spec_3})"
-    extras = [
-        Choice("color", map_colors),
-        Choice("deployable", map_npc_team_deployables),
+    spec_start: str = "[<color>] [team]"
+    spec_target: str = "(them | him | her | [the] target)"
+    spec_1: str = f"subdue {spec_target} [(use | with)] [<deployable>]"
+    spec_2: str = f"<deployable> {spec_target}"
+    spec_3: str = f"make {spec_target} compliant [(use | with)] [<deployable>]"
+    spec: str = f"{spec_start} ({spec_1} | {spec_2} | {spec_3})"
+    extras: list[Choice] = [
+        Choice(
+            name="color",
+            choices=map_phrases["map_colors"]
+        ),
+        Choice(
+            name="deployable",
+            choices=map_phrases["map_npc_team_deployables"]
+        ),
     ]
-    defaults = {
+    defaults: dict[str, str] = {
         "color": "current",
         "deployable": "melee",
     }
@@ -915,7 +918,10 @@ class NpcTeamDeploy(CompoundRule):
         color = extras["color"]
         deployable = extras["deployable"]
         print(f"{color} team {deployable} target")
-        cmd_npc_team_deploy(color, deployable).execute()
+        cmd_npc_team_deploy(
+            color=color,
+            deployable=deployable
+        ).execute()
 
 
 # ------------------------------------------------------------------
@@ -931,15 +937,18 @@ class SelectTeamMember(CompoundRule):
     """
     Speech recognise commands to individual team member
     """
-    spec = "<team_member>"
-    extras = [
-        Choice("team_member", map_team_members),
+    spec: str = "<team_member>"
+    extras: list[Choice] = [
+        Choice(
+            name="team_member",
+            choices=map_phrases["map_team_members"]
+        ),
     ]
 
     def _process_recognition(self, node, extras):
         team_member = extras["team_member"]
         print(f"Select {team_member}")
-        cmd_select_team_member(team_member).execute()
+        cmd_select_team_member(team_member=team_member).execute()
 
 
 # ------------------------------------------------------------------
@@ -994,13 +1003,28 @@ class TeamMemberOptions(CompoundRule):
     """
     Speech recognise commands to individual team member
     """
-    spec = "<team_member> <option> [(<move_option> | <focus_option> | <other_team_member>)]"
-    extras = [
-        Choice("team_member", map_team_members),
-        Choice("option", map_team_member_options),
-        Choice("move_option", map_team_member_move),
-        Choice("focus_option", map_team_member_focus),
-        Choice("other_team_member", map_team_members),
+    spec: str = "<team_member> <option> [(<move_option> | <focus_option> | <other_team_member>)]"
+    extras: list[Choice] = [
+        Choice(
+            name="team_member",
+            choices=map_phrases["map_team_members"]
+        ),
+        Choice(
+            name="option",
+            choices=map_phrases["map_team_member_options"]
+        ),
+        Choice(
+            name="move_option",
+            choices=map_phrases["map_team_member_move"]
+        ),
+        Choice(
+            name="focus_option",
+            choices=map_phrases["map_team_member_focus"]
+        ),
+        Choice(
+            name="other_team_member",
+            choices=map_phrases["map_team_members"]
+        ),
     ]
 
     def _process_recognition(self, node, extras):
@@ -1013,7 +1037,11 @@ class TeamMemberOptions(CompoundRule):
                              + (focus_option if focus_option is not None else "")
                              + (other_team_member if other_team_member is not None else ""))
         print(f"{team_member} {option} {additional_option}")
-        cmd_team_member_options(team_member, option, additional_option).execute()
+        cmd_team_member_options(
+            team_member=team_member,
+            option=option,
+            additional_option=additional_option
+        ).execute()
 
 
 # ------------------------------------------------------------------
