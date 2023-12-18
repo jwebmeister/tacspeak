@@ -32,9 +32,12 @@ from dragonfly.actions import (
 
 try:
     DEBUG_MODE = (sys.modules["user_settings"]).DEBUG_MODE
-    DEBUG_HEAVY_DUMP_GRAMMAR = (sys.modules["user_settings"]).DEBUG_HEAVY_DUMP_GRAMMAR
-except NameError:
+except Exception:
     DEBUG_MODE = False
+
+try:
+    DEBUG_HEAVY_DUMP_GRAMMAR = (sys.modules["user_settings"]).DEBUG_HEAVY_DUMP_GRAMMAR
+except Exception:
     DEBUG_HEAVY_DUMP_GRAMMAR = False
 
 # DEBUG_MODE = True # if you want to override
