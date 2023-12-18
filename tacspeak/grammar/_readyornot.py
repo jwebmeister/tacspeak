@@ -1,20 +1,31 @@
-#
-# This file is part of Tacspeak.
-# (c) Copyright 2023 by Joshua Webb
-# Licensed under the AGPL-3.0; see LICENSE.txt file.
-#
+"""
+This file is part of Tacspeak.
+(c) Copyright 2023 by Joshua Webb
+Licensed under the AGPL-3.0; see LICENSE.txt file.
+"""
+
 from __future__ import annotations
-import tomllib as toml
-from pathlib import Path
 import sys
-import dragonfly
-from dragonfly import (BasicRule, CompoundRule, MappingRule, RuleRef, Repetition, RecognitionObserver,
-                       Function, Choice, IntegerRef, Grammar, Alternative, Literal, Text,
-                       AppContext)
-from dragonfly.engines.backend_kaldi.dictation import UserDictation as Dictation
-from dragonfly.actions import (Key, Mouse)
+from pathlib import Path
+import tomllib as toml
 
 from kaldi_active_grammar import KaldiRule
+from dragonfly import (
+    BasicRule,
+    CompoundRule,
+    RecognitionObserver,
+    Function,
+    Choice,
+    Grammar,
+    Alternative,
+    Literal,
+    AppContext
+)
+from dragonfly.actions import (
+    Key,
+    Mouse
+)
+
 
 # ---------------------------------------------------------------------------
 # Check DEBUG_MODE (from user_settings)
