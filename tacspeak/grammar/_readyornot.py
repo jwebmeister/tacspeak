@@ -4,6 +4,8 @@
 # Licensed under the AGPL-3.0; see LICENSE.txt file.
 #
 from __future__ import annotations
+import tomllib as toml
+from pathlib import Path
 import sys
 import dragonfly
 from dragonfly import (BasicRule, CompoundRule, MappingRule, RuleRef, Repetition, RecognitionObserver,
@@ -53,7 +55,7 @@ min_delay: float = 3.3  # 100/(30 fps) = 3.3 (/100 seconds between frames)
 # map of action to in-game key bindings
 # https://dragonfly.readthedocs.io/en/latest/actions.html#key-names
 # https://dragonfly.readthedocs.io/en/latest/actions.html#mouse-specification-format
-ingame_key_bindings = {  # TODO: Move this to a TOML file.
+ingame_key_bindings = {  # TODO: Read required binds from input.ini present within appdata/local
     "gold": "f5",
     "blue": "f6",
     "red": "f7",
@@ -112,136 +114,161 @@ for k, v in ingame_key_bindings.items():
 
 # print key bindings
 print("-- Ready or Not keybindings --")
-for (k, v) in map_ingame_key_bindings.items():
-    print(f'{k}:{v}')
-print("-- Ready or Not keybindings --")
+for (action, binding) in map_ingame_key_bindings.items():
+    print(f'{action}:{binding}')
+print("-- Ready or Not keybindings --", end="\n"*2)
 
-# mappings of spoken phrases to values
-map_hold = {  # TODO: Move dicts to TOML file and load from there.
-    "go": "go",
-    "hold": "hold",
-    "(on | hold for) my (mark | order | command)": "hold",
-}
-map_execute_or_cancels = {
-    "execute": "execute", 
-    "cancel": "cancel", 
-    "go [go] [go]": "execute",
-    "belay": "cancel", 
-}
-map_colors = {
-    "current": "current",
-    "gold": "gold",
-    "blue": "blue",
-    "red": "red",
-}
-map_door_options = {
-    # note: stackup, breach & clear, open & clear, scan are separate options
-    "mirror [under]": "mirror",
-    "wedge": "wedge",
-    "cover": "cover",
-    "open": "open",
-    "close": "door",
-}
-map_door_stack_sides = { 
-    # todo! in 1.0 some doors don't have all stack options available, update when Void updates
-    "split": "split",
-    "left": "left",
-    "right": "right",
-    "auto": "auto",  
-}
-map_door_breach_tools = {
-    "open": "open",
-    "move in": "open",
-    "kick [it] [down]": "kick",
-    "(shotgun | shot e)": "shotgun",
-    "c two": "c2",
-    "[battering] ram [it]": "ram",
-    "((leader | lead) will | wait for my) (open | breach)": "leader",
-}
-map_door_grenades = {
-    "none": "none",
-    "(bang | flash bang | flash)": "flashbang",
-    "stinger": "stinger",
-    "(cs | gas | cs gas)": "gas",
-    "[the] (fourty mil | launcher)": "launcher",
-    "((leader | lead) will | wait for my) (grenade | flash bang | bang | flash | stinger | cs | gas | cs gas | fourty mil | launcher)": "leader",
-}
-map_door_scan = {
-    "scan": "pie",
-    "slide": "slide",
-    "pie": "pie",
-    "peek": "peek",
-}
-map_ground_options = {
-    # note: deploy and fall in are separate options
-    "move ([over] (here | there) | [to] my front | forward | [to] that (location | position))": "move",
-    "cover ([over] (here | there) | [my] front | forward | that (location | position))": "cover",
-    "(hold | halt) [(position | movement)]": "halt",
-    "resume [movement]": "resume",
-    "(secure | search) [the] (area | room)": "search",
-    "(search for | collect | secure) evidence": "search",
-}
-map_ground_fallin_formations = {
-    "single file": "single",
-    "double file": "double",
-    "diamond": "diamond",
-    "wedge": "wedge",
-}
-map_ground_deployables = {
-    "(bang | flash bang | flash)": "flash bang",
-    "stinger": "stinger",
-    "(cs | gas | cs gas)": "gas",
-    "chem light": "chemlight",
-    "shield": "shield",
-}
-map_npc_player_interacts = {
-    "move [(here | there | to)]": "move here",
-    "(move | come) to (me | my position)": "move my position",
-    "come here": "move my position",
-    "stop [(there | moving)]": "move stop",
-    "turn around": "turn around",
-    "move to [the] exit": "move to exit",
-    "get out of here": "move to exit",
-    "(get | move) outside": "move to exit",
-}
-map_npc_team_restrain = {
-    "restrain": "restrain",
-    "arrest": "restrain",
-}
-map_npc_team_deployables = {
-    "taser": "taser",
-    "tase": "taser",
-    "pepper spray": "pepperspray",
-    "pepper ball": "pepperball",
-    "bean [bag]": "beanbag",
-    "melee": "melee",
-    "violence": "melee",
-}
-map_team_members = {
-    "alpha": "alpha",
-    "bravo": "bravo",
-    "charlie": "charlie",
-    "delta": "delta",
-}
-map_team_member_options = {
-    "move": "move",
-    "(focus | watch)": "focus",
-    "(un | release) (focus | watch)" : "unfocus",
-    "stop (focusing | watching)" : "unfocus",
-    "swap with": "swap",
-    "(search | secure) [the] (room | area)": "search",
-}
-map_team_member_move = {
-    "([over] (here | there) | [to] my front | forward | [to] that (location | position))": "here",
-    "[over] (here | there) then back": "here then back",
-}
-map_team_member_focus = {
-    "([over] (here | there) | [my] front | forward | that (location | position))": "here",
-    "([on] my position | [on] me)": "my position",
-    "[on] [the] door [way]": "door",
-    "[on] (them | him | her | [the] target)": "target",
-    "(un focus | release)": "unfocus",
-}
+# load phrase mappings from TOML file
+PHRASE_FILE: Path = Path(Path(__file__).parent, "phrases.toml")
+
+
+def invert_dict_pairs(user_dict: dict) -> dict:
+    inverted_dict: dict = {}
+    for _key, _value in user_dict.items():
+        if isinstance(_value, dict):
+            inverted_dict |= {_key: {_v: _k for _k, _v in _value.items()}}
+    return inverted_dict
+
+
+def load_phrase_mappings(toml_file: Path | str) -> dict:
+    """
+    Load phrase mappings from TOML file
+    """
+    with open(
+        file=toml_file,
+        mode="rb"
+    ) as f:
+        return toml.load(f)
+
+
+map_phrases: dict = invert_dict_pairs(
+    load_phrase_mappings(
+        toml_file=PHRASE_FILE
+    )
+)
+# remove:
+#     map_hold = {
+#         "go": "go",
+#         "hold": "hold",
+#         "(on | hold for) my (mark | order | command)": "hold",
+#     }
+#     map_execute_or_cancels = {
+#         "cancel": "cancel",
+#         "(execute) | (go [go] [go])": "execute",
+#         "belay": "cancel",
+#     }
+#     map_colors = {
+#         "current": "current",
+#         "gold": "gold",
+#         "blue": "blue",
+#         "red": "red",
+#     }
+#     map_door_options = {
+#         # note: stackup, breach & clear, open & clear, scan are separate options
+#         "mirror [under]": "mirror",
+#         "wedge": "wedge",
+#         "cover": "cover",
+#         "open": "open",
+#         "close": "door",
+#     }
+#     map_door_stack_sides = {
+#         "split": "split",
+#         "left": "left",
+#         "right": "right",
+#         "auto": "auto",
+#     }
+#     map_door_breach_tools = {
+#         "open": "open",
+#         "move in": "open",
+#         "kick [it] [down]": "kick",
+#         "(shotgun | shot e)": "shotgun",
+#         "c two": "c2",
+#         "[battering] ram [it]": "ram",
+#         "((leader | lead) will | wait for my) (open | breach)": "leader",
+#     }
+#     map_door_grenades = {
+#         "none": "none",
+#         "(bang | flash bang | flash)": "flashbang",
+#         "stinger": "stinger",
+#         "(cs | gas | cs gas)": "gas",
+#         "[the] (fourty mil | launcher)": "launcher",
+#         "((leader | lead) will | wait for my) (grenade | flash bang | bang | flash | stinger | cs | gas | cs gas | fourty mil | launcher)": "leader",
+#     }
+#     map_door_scan = {
+#         "scan": "pie",
+#         "slide": "slide",
+#         "pie": "pie",
+#         "peek": "peek",
+#     }
+#     map_ground_options = {
+#         # note: deploy and fall in are separate options
+#         "move ([over] (here | there) | [to] my front | forward | [to] that (location | position))": "move",
+#         "cover ([over] (here | there) | [my] front | forward | that (location | position))": "cover",
+#         "(hold | halt) [(position | movement)]": "halt",
+#         "resume [movement]": "resume",
+#         "(secure | search) [the] (area | room)": "search",
+#         "(search for | collect | secure) evidence": "search",
+#     }
+#     map_ground_fallin_formations = {
+#         "single file": "single",
+#         "double file": "double",
+#         "diamond": "diamond",
+#         "wedge": "wedge",
+#     }
+#     map_ground_deployables = {
+#         "(bang | flash bang | flash)": "flash bang",
+#         "stinger": "stinger",
+#         "(cs | gas | cs gas)": "gas",
+#         "chem light": "chemlight",
+#         "shield": "shield",
+#     }
+#     map_npc_player_interacts = {
+#         "move [(here | there | to)]": "move here",
+#         "((move | come) to (me | my position)) | (come here)": "move my position",
+#         "stop [(there | moving)]": "move stop",
+#         "turn around": "turn around",
+#         "move to [the] exit": "move to exit",
+#         "get out of here": "move to exit",
+#         "(get | move) outside": "move to exit",
+#     }
+#     map_npc_team_restrain = {
+#         "restrain": "restrain",
+#         "arrest": "restrain",
+#     }
+#     map_npc_team_deployables = {
+#         "taser": "taser",
+#         "tase": "taser",
+#         "pepper spray": "pepperspray",
+#         "pepper ball": "pepperball",
+#         "bean [bag]": "beanbag",
+#         "melee": "melee",
+#         "violence": "melee",
+#     }
+#     map_team_members = {
+#         "alpha": "alpha",
+#         "bravo": "bravo",
+#         "charlie": "charlie",
+#         "delta": "delta",
+#     }
+#     map_team_member_options = {
+#         "move": "move",
+#         "(focus | watch)": "focus",
+#         "(stop (focusing | watching)) | (un | release) (focus | watch)": "unfocus",
+#         "swap with": "swap",
+#         "(search | secure) [the] (room | area)": "search",
+#     }
+#     map_team_member_move = {
+#         "([over] (here | there) | [to] my front | forward | [to] that (location | position))": "here",
+#         "[over] (here | there) then back": "here then back",
+#     }
+#     map_team_member_focus = {
+#         "([over] (here | there) | [my] front | forward | that (location | position))": "here",
+#         "([on] my position | [on] me)": "my position",
+#         "[on] [the] door [way]": "door",
+#         "[on] (them | him | her | [the] target)": "target",
+#         "(un focus | release)": "unfocus",
+#     }
+
 
 def invert_squash_map(my_map):
     """
@@ -257,14 +284,15 @@ def invert_squash_map(my_map):
         inv_map[k] = '(' + ' | '.join('(' + v + ')') + ')' if len(v) > 1 else ''.join(v)
     return inv_map
 
+
 # ---------------------------------------------------------------------------
 # Rules which will be added to our grammar
 
 # used to chain actions together, e.g. (NULL_ACTION + Key(...) + Mouse(...)).execute()
-NULL_ACTION = Function(lambda: print("NULL_ACTION")
-                       if DEBUG_NOCMD_PRINT_ONLY else None)
+NULL_ACTION: Function = Function(function=lambda: print("NULL_ACTION") if DEBUG_NOCMD_PRINT_ONLY else None)
 
-def action_hold(direction):
+
+def action_hold(direction: str) -> Function | Key:
     """
     press "down" or release "up" the hold command key (on execution)
     - direction="up"|"down"
@@ -274,6 +302,7 @@ def action_hold(direction):
         return Function(debug_print_key, device=device, key=f'{ingame_key_bindings["cmd_hold"]}:{direction}')
     else:
         return Key(f'{ingame_key_bindings["cmd_hold"]}:{direction}')
+
 
 # ------------------------------------------------------------------
 
@@ -289,6 +318,7 @@ def cmd_execute_or_cancel_held_order(color, execute_or_cancel):
         case "cancel":
             actions += map_ingame_key_bindings["cmd_2"]
     return actions
+
 
 class ExecuteOrCancelHeldOrder(CompoundRule):
     """
@@ -310,6 +340,7 @@ class ExecuteOrCancelHeldOrder(CompoundRule):
         print(f"{color} team {execute_or_cancel} held order")
         cmd_execute_or_cancel_held_order(color, execute_or_cancel).execute()
 
+
 # ------------------------------------------------------------------
 
 def cmd_select_team(color):
@@ -320,6 +351,7 @@ def cmd_select_team(color):
         return map_ingame_key_bindings[color]
     else:
         return NULL_ACTION
+
 
 class SelectTeam(CompoundRule):
     """
@@ -334,6 +366,7 @@ class SelectTeam(CompoundRule):
         print(f"Select {color}")
         cmd_select_team(color).execute()
 
+
 class SelectColor(CompoundRule):
     """
     Speech recognise select color team
@@ -345,6 +378,7 @@ class SelectColor(CompoundRule):
         color = extras["color"]
         print(f"Select {color}")
         cmd_select_team(color).execute()
+
 
 # ------------------------------------------------------------------
 
@@ -383,6 +417,7 @@ def cmd_door_options(color, hold, door_option):
         actions += action_hold("up")
     return actions
 
+
 class DoorOptions(CompoundRule):
     """
     Speech recognise team mirror under, wedge, cover, open, close the door
@@ -406,6 +441,7 @@ class DoorOptions(CompoundRule):
         print(f"{color} team {hold} {door_option} the door")
         cmd_door_options(color, hold, door_option).execute()
 
+
 # ------------------------------------------------------------------
 
 def cmd_stack_up(color, hold, side):
@@ -419,7 +455,7 @@ def cmd_stack_up(color, hold, side):
     if hold == "hold":
         actions += action_hold("down")
     # todo! in 1.0 some doors don't have all stack options available, update if/when Void update
-    match side: 
+    match side:
         case "split":
             actions += map_ingame_key_bindings["cmd_1"]
         case "left":
@@ -432,6 +468,7 @@ def cmd_stack_up(color, hold, side):
     if hold == "hold":
         actions += action_hold("up")
     return actions
+
 
 class StackUp(CompoundRule):
     """
@@ -454,7 +491,7 @@ class StackUp(CompoundRule):
         # todo! in 1.0 some doors don't have all stack options available, change to "auto" if/when Void update
         # keeping as "split" for now because it's cmd_1 and don't want to swap off primary weapon if stack options 
         # aren't available
-        "side": "split", 
+        "side": "split",
     }
 
     def _process_recognition(self, node, extras):
@@ -463,6 +500,7 @@ class StackUp(CompoundRule):
         side = extras["side"]
         print(f"{color} team {hold} stack up {side}")
         cmd_stack_up(color, hold, side).execute()
+
 
 # ------------------------------------------------------------------
 
@@ -508,6 +546,7 @@ def cmd_breach_and_clear(color, hold, tool, grenade):
         actions += action_hold("up")
     return actions
 
+
 class BreachAndClear(CompoundRule):
     """
     Speech recognise team breach and clear
@@ -552,6 +591,7 @@ class BreachAndClear(CompoundRule):
         print(f"{color} team {hold} {tool} the door {grenade} breach and clear")
         cmd_breach_and_clear(color, hold, tool, grenade).execute()
 
+
 # ------------------------------------------------------------------
 
 def cmd_pick_lock(color, hold):
@@ -570,6 +610,7 @@ def cmd_pick_lock(color, hold):
     if hold == "hold":
         actions += action_hold("up")
     return actions
+
 
 class PickLock(CompoundRule):
     """
@@ -590,6 +631,7 @@ class PickLock(CompoundRule):
         hold = extras["hold"]
         print(f"{color} team {hold} pick the lock")
         cmd_pick_lock(color, hold).execute()
+
 
 # ------------------------------------------------------------------
 
@@ -619,6 +661,7 @@ def cmd_ground_options(color, hold, ground_option):
         actions += action_hold("up")
     return actions
 
+
 class GroundOptions(CompoundRule):
     """
     Speech recognise team move, cover, halt (hold), search area
@@ -641,6 +684,7 @@ class GroundOptions(CompoundRule):
         ground_option = extras["ground_option"]
         print(f"{color} team {hold} {ground_option}")
         cmd_ground_options(color, hold, ground_option).execute()
+
 
 # ------------------------------------------------------------------
 
@@ -669,6 +713,7 @@ def cmd_fallin(color, hold, formation):
         actions += action_hold("up")
     return actions
 
+
 class FallIn(CompoundRule):
     """
     Speech recognise team fall in
@@ -693,6 +738,7 @@ class FallIn(CompoundRule):
         formation = extras["formation"]
         print(f"{color} team {hold} fall in {formation}")
         cmd_fallin(color, hold, formation).execute()
+
 
 # ------------------------------------------------------------------
 
@@ -723,6 +769,7 @@ def cmd_use_deployable(color, hold, deployable):
         actions += action_hold("up")
     return actions
 
+
 class UseDeployable(CompoundRule):
     """
     Speech recognise command team to use a deployable at a location
@@ -745,6 +792,7 @@ class UseDeployable(CompoundRule):
         deployable = extras["deployable"]
         print(f"{color} team {hold} deploy {deployable}")
         cmd_use_deployable(color, hold, deployable).execute()
+
 
 # ------------------------------------------------------------------
 
@@ -769,6 +817,7 @@ def cmd_npc_player_interact(interaction):
             actions += map_ingame_key_bindings["cmd_5"]
     return actions
 
+
 class NpcPlayerInteract(CompoundRule):
     """
     Speech recognise command an NPC (not team)
@@ -783,6 +832,7 @@ class NpcPlayerInteract(CompoundRule):
         print(f"player to NPC {interaction}")
         cmd_npc_player_interact(interaction).execute()
 
+
 # ------------------------------------------------------------------
 
 def cmd_npc_team_restrain(color):
@@ -794,6 +844,7 @@ def cmd_npc_team_restrain(color):
     actions += map_ingame_key_bindings["cmd_menu"]
     actions += map_ingame_key_bindings["cmd_1"]
     return actions
+
 
 class NpcTeamRestrain(CompoundRule):
     """
@@ -815,6 +866,7 @@ class NpcTeamRestrain(CompoundRule):
         color = extras["color"]
         print(f"{color} team restrain target")
         cmd_npc_team_restrain(color).execute()
+
 
 # ------------------------------------------------------------------
 
@@ -838,6 +890,7 @@ def cmd_npc_team_deploy(color, deployable):
         case "melee":
             actions += map_ingame_key_bindings["cmd_5"]
     return actions
+
 
 class NpcTeamDeploy(CompoundRule):
     """
@@ -864,6 +917,7 @@ class NpcTeamDeploy(CompoundRule):
         print(f"{color} team {deployable} target")
         cmd_npc_team_deploy(color, deployable).execute()
 
+
 # ------------------------------------------------------------------
 
 def cmd_select_team_member(team_member):
@@ -872,12 +926,13 @@ def cmd_select_team_member(team_member):
     """
     return map_ingame_key_bindings[team_member]
 
+
 class SelectTeamMember(CompoundRule):
     """
     Speech recognise commands to individual team member
     """
     spec = "<team_member>"
-    extras=[
+    extras = [
         Choice("team_member", map_team_members),
     ]
 
@@ -885,6 +940,7 @@ class SelectTeamMember(CompoundRule):
         team_member = extras["team_member"]
         print(f"Select {team_member}")
         cmd_select_team_member(team_member).execute()
+
 
 # ------------------------------------------------------------------
 
@@ -933,12 +989,13 @@ def cmd_team_member_options(team_member, option, additional_option):
             actions += map_ingame_key_bindings["cmd_4"]
     return actions
 
+
 class TeamMemberOptions(CompoundRule):
     """
     Speech recognise commands to individual team member
     """
     spec = "<team_member> <option> [(<move_option> | <focus_option> | <other_team_member>)]"
-    extras=[
+    extras = [
         Choice("team_member", map_team_members),
         Choice("option", map_team_member_options),
         Choice("move_option", map_team_member_move),
@@ -952,11 +1009,12 @@ class TeamMemberOptions(CompoundRule):
         move_option = extras.get("move_option")
         focus_option = extras.get("focus_option")
         other_team_member = extras.get("other_team_member")
-        additional_option = ((move_option if move_option is not None else "") 
-            + (focus_option if focus_option is not None else "")
-            + (other_team_member if other_team_member is not None else ""))
+        additional_option = ((move_option if move_option is not None else "")
+                             + (focus_option if focus_option is not None else "")
+                             + (other_team_member if other_team_member is not None else ""))
         print(f"{team_member} {option} {additional_option}")
         cmd_team_member_options(team_member, option, additional_option).execute()
+
 
 # ------------------------------------------------------------------
 
@@ -965,6 +1023,7 @@ def cmd_yell():
     Press & release yell key (on execution)
     """
     return map_ingame_key_bindings["yell"]
+
 
 class YellFreeze(BasicRule):
     """
@@ -981,6 +1040,7 @@ class YellFreeze(BasicRule):
         print("Freeze!")
         cmd_yell().execute()
 
+
 # ---------------------------------------------------------------------------
 # Recognition Observer - for mid-utterance recognition
 
@@ -988,6 +1048,7 @@ class FreezeRecob(RecognitionObserver):
     """
     Observer of partial recognition of yell commands
     """
+
     def __init__(self):
         RecognitionObserver.__init__(self)
         self.words = None
@@ -1014,6 +1075,7 @@ class FreezeRecob(RecognitionObserver):
     def on_end(self, results):
         self.words = False
         self.frozen = False
+
 
 # ---------------------------------------------------------------------------
 # Add rules to grammar and create RecognitionObserver instances
@@ -1050,6 +1112,7 @@ freeze_recob.register()
 if DEBUG_MODE:
     from lark import Lark, Token
     import itertools
+
     grammar_string = r"""
 ?start: alternative
 
@@ -1071,6 +1134,7 @@ WORD: /[^\s\[\]<>|(){}]+/
 %ignore WS_INLINE
 """
 
+
     def do_on_tree_item(tree_item):
         elements = []
         if tree_item.data == "literal":
@@ -1080,22 +1144,22 @@ WORD: /[^\s\[\]<>|(){}]+/
             elements.append(' '.join(literal_children))
             literal_children = None
             return elements
-        if tree_item.data == "optional": 
+        if tree_item.data == "optional":
             elements.append("")
             for child in tree_item.children:
-                if child is None: 
+                if child is None:
                     continue
                 elements.extend(do_on_tree_item(child))
             return elements
-        if tree_item.data == "alternative": 
+        if tree_item.data == "alternative":
             for child in tree_item.children:
-                if child is None: 
+                if child is None:
                     continue
                 elements.extend(do_on_tree_item(child))
             return elements
-        if tree_item.data == "sequence": 
+        if tree_item.data == "sequence":
             for child in tree_item.children:
-                if child is None: 
+                if child is None:
                     continue
                 elements.append(do_on_tree_item(child))
             product_iter = itertools.product(*elements)
@@ -1104,6 +1168,7 @@ WORD: /[^\s\[\]<>|(){}]+/
             product_list = list(product_set)
             product_set = None
             return product_list
+
 
     with open(".debug_grammar_readyornot.txt", "w") as file:
         file.write(grammar.get_complexity_string())
@@ -1117,8 +1182,8 @@ WORD: /[^\s\[\]<>|(){}]+/
             spec_parser = Lark(grammar_string, parser="lalr")
             tree = spec_parser.parse(rule.element.gstring())
             # file.write(f"\n{tree.pretty()}")
-            
-            if DEBUG_HEAVY_DUMP_GRAMMAR: 
+
+            if DEBUG_HEAVY_DUMP_GRAMMAR:
                 # do_on_tree_item() can be expensive on memory, so we don't do this for 
                 # just DEBUG_MODE
                 for tree_item in tree.children:
@@ -1131,7 +1196,7 @@ WORD: /[^\s\[\]<>|(){}]+/
                     choice_name = extra.name
                     choice_keys = list(extra._choices.keys())
                     file.write(f"\n{choice_name}={choice_keys}")
-            except: 
+            except:
                 # it doesn't matter if we can't dump the grammar into a file & it may fail
                 # if rules are added that don't only use CompoundRule and Choice
                 print(f"Unable to gramamr dump all of {rule.name}")
@@ -1140,6 +1205,7 @@ WORD: /[^\s\[\]<>|(){}]+/
 
         for rule in grammar_priority.rules:
             file.write(f"\n\n{rule.element.gstring()}")
+
 
 # Unload function which will be called at unload time.
 def unload():

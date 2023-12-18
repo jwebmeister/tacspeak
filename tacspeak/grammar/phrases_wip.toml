@@ -1,0 +1,84 @@
+[map_hold]
+"go" = [
+  "go"
+]
+"hold" = [
+  "hold",
+  "(on | hold for) my (mark | order | command)"
+]
+
+[map_execute_or_cancels]
+"cancel" = [
+  "cancel",
+  "belay"
+]
+"execute" = [
+  "execute",
+  "go [go] [go]"
+]
+
+[map_colors]
+"current" = ["current"]
+"gold" = ["gold"]
+"blue" = ["blue"]
+"red" = ["red"]
+
+[map_door_options]
+"mirror" = ["mirror under"]
+"wedge" = ["wedge"]
+"cover" = ["cover"]
+"open" = ["open"]
+"door" = ["close"]
+
+[map_door_stack_sides]
+"split" = ["split"]
+"left" = ["left"]
+"right" = ["right"]
+"auto" = ["auto"]
+
+[map_door_breach_tools]
+"open" = [
+  "open",
+  "move in"
+]
+"kick" = ["kick it down"]
+"shotgun" = [
+  "shotgun",
+  "shot e"
+]
+"c2" = ["c two"]
+"ram" = ["battering ram it"]
+"leader" = [
+  "(leader | lead) will",
+  "wait for my (open | breach)"
+]
+
+[map_door_grenades]
+"none" = ["none"]
+"flashbang" = [
+  "bang",
+  "flash bang",
+  "flash"
+]
+"stinger" = ["stinger"]
+"gas" = [
+  "cs",
+  "gas",
+  "cs gas"
+]
+"launcher" = [
+  "the fourty mil",
+  "launcher"
+]
+"leader" = [
+  "(leader | lead) will",
+  "wait for my (grenade | flash bang | bang | flash | stinger | cs | gas | cs gas | fourty mil | launcher)"
+]
+
+[map_door_scan]
+"pie" = [
+  "scan",
+  "pie"
+]
+"slide" = ["slide"]
+"peek" = ["peek"]

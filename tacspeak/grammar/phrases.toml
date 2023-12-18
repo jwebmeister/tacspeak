@@ -1,0 +1,113 @@
+# Phrase to value mapping.
+# Every phrase is mapped to a value, which is used to determine what action to take.
+# Each key is a command, and each value is a list of phrases that map to that command.
+# Each value is actually just a regex pattern, so one can use regex syntax to map multiple phrases to the same command.
+
+[map_hold]
+"go" = "go"
+"hold" = "(hold) | ((on | hold for) my (mark | order | command))"
+
+[map_execute_or_cancels]
+"cancel" = "(cancel) | (belay)"
+"execute" = "(execute) | (go [go] [go])"
+
+[map_colors]
+"current" = "current"
+"gold" = "gold"
+"blue" = "blue"
+"red" = "red"
+
+[map_door_options]
+"mirror" = "mirror [under]"
+"wedge" = "wedge"
+"cover" = "cover"
+"open" = "open"
+"door" = "close"
+
+[map_door_stack_sides]  # TODO: as of RoN v1.0, some doors lack some stack options - update when Void does
+"split" = "split"
+"left" = "left"
+"right" = "right"
+"auto" = "auto"
+
+[map_door_breach_tools]
+"open" = "(open) | (move in)"
+"kick" = "kick [it] [down]"
+"shotgun" = "(shotgun | shot e)"
+"c2" = "c two"
+"ram" = "[battering] ram [it]"
+"leader" = "((leader | lead) will | wait for my) (open | breach)"
+
+[map_door_grenades]
+"none" = "none"
+"flashbang" = "((bang | flash bang | flash))"
+"stinger" = "stinger"
+"gas" = "((cs | gas | cs gas))"
+"launcher" = "([the] (fourty mil | launcher))"
+"leader" = "((leader | lead) will | wait for my) (grenade | flash bang | bang | flash | stinger | cs | gas | cs gas | fourty mil | launcher)"
+
+[map_door_scan]
+"pie" = "(scan) | (pie)"
+"slide" = "slide"
+"peek" = "peek"
+
+[map_ground_options]
+"move" = "move ([over] (here | there) | [to] my front | forward | [to] that (location | position))"
+"cover" = "cover ([over] (here | there) | [my] front | forward | that (location | position))"
+"halt" = "(hold | halt) [(position | movement)]"
+"resume" = "resume [movement]"
+"search" = "((secure | search) [the] (area | room)) | ((search for | collect | secure) evidence)"
+
+[map_ground_fallin_formations]
+"single" = "single file"
+"double" = "double file"
+"diamond" = "diamond"
+"wedge" = "wedge"
+
+[map_ground_deployables]
+"flash bang" = "(bang | flash bang | flash)"
+"stinger" = "stinger"
+"gas" = "(cs | gas | cs gas)"
+"chemlight" = "chem light"
+"shield" = "shield"
+
+[map_npc_player_interacts]
+"move here" = "move [(here | there | to)]"
+"move my position" = "((move | come) to (me | my position)) | (come here)"
+"move stop" = "stop [(there | moving)]"
+"turn around" = "turn around"
+"move to exit" = "(move to [the] exit) | (get out of here) | ((get | move) outside)"
+
+[map_npc_team_restrain]
+"restrain" = "(restrain) | (arrest)"
+
+[map_npc_team_deployables]
+"taser" = "(taser) | (tase)"
+"pepperspray" = "pepper spray"
+"pepperball" = "pepper ball"
+"beanbag" = "bean [bag]"
+"melee" = "(melee) | (violence)"
+
+[map_team_members]
+"alpha" = "alpha"
+"bravo" = "bravo"
+"charlie" = "charlie"
+"delta" = "delta"
+
+[map_team_member_options]
+"move" = "move"
+"focus" = "(focus | watch)"
+"unfocus" = "(stop (focusing | watching)) | (un | release) (focus | watch)"
+"swap" = "swap with"
+"search" = "(search | secure) [the] (room | area)"
+
+[map_team_member_move]
+"here" = "([over] (here | there) | [to] my front | forward | [to] that (location | position)) | ([over] (here | there) then back)"
+
+[map_team_member_focus]
+"here" = "([over] (here | there) | [my] front | forward | that (location | position))"
+"my position" = "([on] my position | [on] me)"
+"door" = "[on] [the] door [way]"
+"target" = "[on] (them | him | her | [the] target)"
+"unfocus" = "(un focus | release)"
+
