@@ -45,9 +45,11 @@ Also built atop the excellent [Kaldi Active Grammar](https://github.com/daanzu/k
 2. Download the [latest release](https://github.com/jwebmeister/tacspeak/releases/latest/), including both (they are separate downloads and/or releases):
     - the Tacspeak application .zip (includes .exe)
     - a pre-trained Kaldi model .zip (includes kaldi_model folder).
-3. Extract the Tacspeak application .zip into a folder, and extract the Kaldi model .zip into the same folder, 
-    - e.g. `Tacspeak/` and `Tacspeak/kaldi_model/`, 
-    - (Note: there should be a folder `Tacspeak/Tacspeak/` after extraction).
+3. Extract the Tacspeak application .zip into a folder, and extract the Kaldi model .zip into the same folder. Check the following files exists:
+    - `./tacspeak.exe`
+    - `./tacspeak/user_settings.py`
+    - `./tacspeak/grammar/_readyornot.py`
+    - `./kaldi_model/Dictation.fst` - if not you need to download and extract the pre-trained model
 4. Run the executable `Tacspeak/tacspeak.exe` :)
 
 ## Usage
@@ -58,7 +60,7 @@ Run `tacspeak.exe` (or `python ./cli.py`) and it will...
 - start the speech engine
 - begin listening for commands, but it will...
     - wait for a matching app context (defined in the `grammar` modules), then activate those relevant modules.
-    - wait for the `listen_key` to be activated if it's specified, and depending on toggle-mode.
+    - wait for the `listen_key` to be activated if it's specified, and depending on `listen_key_toggle` (toggle mode).
 
 Also:
 - You may need to **"Run as administrator"** `tacspeak.exe`
@@ -142,7 +144,8 @@ Things to check or try first:
 
 ### Prerequisites: 
 
-- Python 3.11 installed
+1. [Microsoft Visual C++ Redistributable](https://aka.ms/vs/17/release/vc_redist.x64.exe) installed
+2. Python 3.11 installed
 
 ### Steps:
 
