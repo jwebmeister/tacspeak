@@ -2,12 +2,9 @@
 
 >**Fast, lightweight, modular - speech recognition for gaming**
 
+[![GithubDownloads](https://img.shields.io/github/downloads/jwebmeister/tacspeak/total?logo=github)](https://github.com/jwebmeister/tacspeak/releases) [![NexusmodsModPage](https://img.shields.io/badge/download-Nexus%20Mods-orange)](https://www.nexusmods.com/readyornot/mods/3159) [![Discord](https://img.shields.io/discord/1183400761372180610?logo=discord)](https://discord.gg/QfMV2J8SgP)
+
 [![Donate](https://img.shields.io/badge/donate-GitHub-pink.svg)](https://github.com/sponsors/jwebmeister) [![Donate](https://img.shields.io/badge/donate-PayPal-green.svg)](https://paypal.me/jwebmeister)
-
-[![GithubDownloads](https://img.shields.io/github/downloads/jwebmeister/tacspeak/total?logo=github)](https://github.com/jwebmeister/tacspeak/releases) [![NexusmodsModPage](https://img.shields.io/badge/download-Nexus%20Mods-orange)](https://www.nexusmods.com/readyornot/mods/3159)
-
-[![Discord](https://img.shields.io/discord/1183400761372180610?logo=discord)](https://discord.gg/QfMV2J8SgP)
-
 
 
 ## Introduction
