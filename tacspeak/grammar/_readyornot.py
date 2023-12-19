@@ -164,9 +164,9 @@ map_door_scan = {
 }
 map_ground_options = {
     # note: deploy and fall in are separate options
-    "move ([over] (here | there) | [to] my front | forward | [to] that (location | position))": "move",
-    "cover ([over] (here | there) | [my] front | forward | that (location | position))": "cover",
-    "(hold | halt) [(position | movement)]": "halt",
+    "move ([over] (here | there) | [to] that (location | position))": "move",
+    "cover ([over] (here | there) | that (location | position))": "cover",
+    "(hold | halt | stop) [(position | movement)]": "halt",
     "resume [movement]": "resume",
     "(secure | search) [the] (area | room)": "search",
     "(search for | collect | secure) evidence": "search",
@@ -174,8 +174,8 @@ map_ground_options = {
 map_ground_fallin_formations = {
     "single file": "single",
     "double file": "double",
-    "diamond": "diamond",
-    "wedge": "wedge",
+    "diamond [formation]": "diamond",
+    "wedge [formation]": "wedge",
 }
 map_ground_deployables = {
     "(bang | flash bang | flash)": "flash bang",
@@ -185,10 +185,10 @@ map_ground_deployables = {
     "shield": "shield",
 }
 map_npc_player_interacts = {
-    "move [(here | there | to)]": "move here",
+    "move [(here | there)]": "move here",
     "(move | come) to (me | my position)": "move my position",
     "come here": "move my position",
-    "stop [(there | moving)]": "move stop",
+    "stop [(there | moving | movement)]": "move stop",
     "turn around": "turn around",
     "move to [the] exit": "move to exit",
     "get out of here": "move to exit",
@@ -222,13 +222,13 @@ map_team_member_options = {
     "(search | secure) [the] (room | area)": "search",
 }
 map_team_member_move = {
-    "([over] (here | there) | [to] my front | forward | [to] that (location | position))": "here",
-    "[over] (here | there) then back": "here then back",
+    "([over] (here | there) | [to] that (location | position))": "here",
+    "[over] ((here | there) | [to] that (location | position)) then back": "here then back",
 }
 map_team_member_focus = {
-    "([over] (here | there) | [my] front | forward | that (location | position))": "here",
+    "([over] (here | there) | [on] that (location | position))": "here",
     "([on] my position | [on] me)": "my position",
-    "[on] [the] door [way]": "door",
+    "[on] [(the | that)] door [way]": "door",
     "[on] (them | him | her | [the] target)": "target",
     "(un focus | release)": "unfocus",
 }
