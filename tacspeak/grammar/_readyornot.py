@@ -680,7 +680,7 @@ class FallIn(CompoundRule):
     """
     Speech recognise team fall in
     """
-    spec_1 = "[<color>] [team] [<hold>] (fall in | regroup | form up) [on me] [<formation>] [on me]"
+    spec_1 = "[<color>] [team] [<hold>] (fall in | regroup | form up) [<formation>]"
     spec_2 = "<color> [team] [<hold>] on me [<formation>]"
     spec = f"({spec_1} | {spec_2})"
     extras = [
