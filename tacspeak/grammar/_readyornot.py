@@ -121,8 +121,10 @@ map_colors = {
 map_door_options = {
     # note: stackup, breach & clear, open & clear, scan are separate options
     "mirror [under]": "mirror",
+    "wand [under]": "mirror",
     "disarm": "disarm", # todo! this inserts itself in the middle of the list and messes up other keybinds, update when Void updates
     "wedge": "wedge", # "remove the wedge" has its own recognition. can specify if door is "trapped door" to use correct keybinds.
+    "block": "wedge",
     "cover": "cover", # can specify if door is "trapped door" to use correct keybinds.
     "open": "open", # can specify if door is "trapped door" to use correct keybinds.
     "close": "close", # can specify if door is "trapped door" to use correct keybinds.
@@ -227,7 +229,7 @@ map_team_member_move = {
 }
 map_team_member_focus = {
     "([over] (here | there) | [on] that (location | position))": "here",
-    "([on] my position | [on] me)": "my position",
+    "([on] my position | on me)": "my position",
     "[on] [(the | that)] door [way]": "door",
     "[on] (them | him | her | [the] target)": "target",
     "(un focus | release)": "unfocus",
@@ -417,7 +419,7 @@ class RemoveTheWedge(CompoundRule):
     """
     Speech recognise team remove the wedge
     """
-    spec = "[<color>] [team] [<hold>] remove [the] wedge [from] [(the | that)] [<trapped>] [door] [way]"
+    spec = "[<color>] [team] [<hold>] remove [the] (wedge | block) [from] [(the | that)] [<trapped>] [door] [way]"
     extras = [
         Choice("color", map_colors),
         Choice("hold", map_hold),
@@ -435,6 +437,29 @@ class RemoveTheWedge(CompoundRule):
         trapped = extras["trapped"]
         print(f"{color} team {hold} remove the wedge from the {trapped} door")
         cmd_door_options(color, hold, "wedge", trapped).execute()
+
+class UseTheWand(CompoundRule):
+    """
+    Speech recognise team use the wand
+    """
+    spec = "[<color>] [team] [<hold>] use the (mirror | wand) [on] [(the | that)] [<trapped>] [(door [way] | opening | room)]"
+    extras = [
+        Choice("color", map_colors),
+        Choice("hold", map_hold),
+        Choice("trapped", map_door_trapped),
+    ]
+    defaults = {
+        "color": "current",
+        "hold": "go",
+        "trapped": "not trapped",
+    }
+
+    def _process_recognition(self, node, extras):
+        color = extras["color"]
+        hold = extras["hold"]
+        trapped = extras["trapped"]
+        print(f"{color} team {hold} use the wand on the {trapped} door")
+        cmd_door_options(color, hold, "mirror", trapped).execute()
 
 # ------------------------------------------------------------------
 
@@ -1053,6 +1078,7 @@ grammar.add_rule(SelectTeam())
 grammar.add_rule(SelectColor())
 grammar.add_rule(DoorOptions())
 grammar.add_rule(RemoveTheWedge())
+grammar.add_rule(UseTheWand())
 grammar.add_rule(StackUp())
 grammar.add_rule(BreachAndClear())
 grammar.add_rule(PickLock())
