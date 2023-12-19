@@ -122,10 +122,10 @@ map_door_options = {
     # note: stackup, breach & clear, open & clear, scan are separate options
     "mirror [under]": "mirror",
     "disarm": "disarm", # todo! this inserts itself in the middle of the list and messes up other keybinds, update when Void updates
-    "wedge": "wedge",
-    "cover": "cover",
-    "open": "open",
-    "close": "close",
+    "wedge": "wedge", # "remove the wedge" has its own recognition. can specify if door is "trapped door" to use correct keybinds.
+    "cover": "cover", # can specify if door is "trapped door" to use correct keybinds.
+    "open": "open", # can specify if door is "trapped door" to use correct keybinds.
+    "close": "close", # can specify if door is "trapped door" to use correct keybinds.
 }
 map_door_trapped = {
     "trapped": "trapped",
@@ -544,7 +544,7 @@ class BreachAndClear(CompoundRule):
     """
 
     # "blue team on my command wait for my breach then clear it use flashbangs"
-    # "red hold for my order c2 the door use the fourty mil then breach and clear"
+    # "red on my order c2 the door use the fourty mil then breach and clear"
     # "red team kick down the door breach and clear use cs"
     # "gold open the door use flashbangs breach and clear"
     # "blue flash and clear it"
