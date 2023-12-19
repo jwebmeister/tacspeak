@@ -417,7 +417,7 @@ class RemoveTheWedge(CompoundRule):
     """
     Speech recognise team remove the wedge
     """
-    spec = "[<color>] [team] [<hold>] remove the wedge [from] [(the | that)] [<trapped>] [door] [way]"
+    spec = "[<color>] [team] [<hold>] remove [the] wedge [from] [(the | that)] [<trapped>] [door] [way]"
     extras = [
         Choice("color", map_colors),
         Choice("hold", map_hold),
