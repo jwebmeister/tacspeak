@@ -413,6 +413,29 @@ class DoorOptions(CompoundRule):
         print(f"{color} team {hold} {door_option} {trapped} the door")
         cmd_door_options(color, hold, door_option, trapped).execute()
 
+class RemoveTheWedge(CompoundRule):
+    """
+    Speech recognise team remove the wedge
+    """
+    spec = "[<color>] [team] [<hold>] remove the wedge [from] [(the | that)] [<trapped>] [door] [way]"
+    extras = [
+        Choice("color", map_colors),
+        Choice("hold", map_hold),
+        Choice("trapped", map_door_trapped),
+    ]
+    defaults = {
+        "color": "current",
+        "hold": "go",
+        "trapped": "not trapped",
+    }
+
+    def _process_recognition(self, node, extras):
+        color = extras["color"]
+        hold = extras["hold"]
+        trapped = extras["trapped"]
+        print(f"{color} team {hold} remove the wedge from the {trapped} door")
+        cmd_door_options(color, hold, "wedge", trapped).execute()
+
 # ------------------------------------------------------------------
 
 def cmd_stack_up(color, hold, side):
@@ -1029,6 +1052,7 @@ grammar.add_rule(ExecuteOrCancelHeldOrder())
 grammar.add_rule(SelectTeam())
 grammar.add_rule(SelectColor())
 grammar.add_rule(DoorOptions())
+grammar.add_rule(RemoveTheWedge())
 grammar.add_rule(StackUp())
 grammar.add_rule(BreachAndClear())
 grammar.add_rule(PickLock())
