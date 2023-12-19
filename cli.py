@@ -11,6 +11,9 @@ import tacspeak
 from tacspeak.__main__ import main as tacspeak_main
 from dragonfly import get_engine
 
+import kaldifst
+import graphviz
+
 def main():
     print(f"Tacspeak version {tacspeak.__version__}")
     print_notices()
@@ -22,7 +25,10 @@ def main():
                         help='recompile the model in `model_dir` (default is kaldi_model/), for changes to user_lexicon.txt')
     parser.add_argument('--print_mic_list', action='store_true',
                         help=('see a list of available input devices and their corresponding indexes and names.' 
-                                + 'useful for setting `input_device_index` in ./tacspeak/user_settings.py'))
+                                + ' useful for setting `input_device_index` in ./tacspeak/user_settings.py'))
+    parser.add_argument('--visualise_fst', dest='fst_filepath', action='store',
+                        metavar=('fst_filepath', 'model_words_txt_filepath'), nargs=2,
+                        help='generate .gv (dot) and .svg for visualisation of a FST file. Only use with small (~200 kB) files!')
     args = parser.parse_args()
     if args.model_dir is not None and os.path.isdir(args.model_dir):
         compiler = Compiler(args.model_dir)
@@ -32,6 +38,21 @@ def main():
     if args.print_mic_list:
         get_engine('kaldi').print_mic_list()
         input("Press enter key to exit.")
+        return
+    if args.fst_filepath[0] is not None and os.path.isfile(args.fst_filepath[0]) and args.fst_filepath[1] is not None and os.path.isfile(args.fst_filepath[1]):
+        fst_filepath = args.fst_filepath[0]
+        fst_filename_noext = os.path.splitext(fst_filepath)[0]
+        model_words_txt_filepath = args.fst_filepath[1]
+        print(fst_filename_noext)
+        fst = kaldifst.StdFst.read(fst_filepath)
+        sym = kaldifst.SymbolTable()
+        with open(model_words_txt_filepath, 'r', encoding='utf-8') as sym_file:
+            for line in sym_file:
+                line_split = line.strip().split(' ')
+                sym.add_symbol(symbol=line_split[0], key=int(line_split[1]))
+        fst_dot = kaldifst.draw(fst, osymbols=sym, acceptor=False, portrait=True)
+        source = graphviz.Source(fst_dot)
+        source.render(outfile=f"{fst_filename_noext}.svg")
         return
     tacspeak_main()
 
