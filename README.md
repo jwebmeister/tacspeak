@@ -138,7 +138,11 @@ Things to check or try first:
 - The underlying model that Tacspeak currently uses is based on "16-bit Signed Integer PCM 1-channel 16kHz" audio. Tacspeak tries to convert the incoming audio from your device to this format, but if it's too much for a single CPU core to convert in real-time it may fall over. 
     - I've had no issues using Tacspeak with a 48kHz, 16-bit, 2-channel microphone array and also using a Rode AI-1 and Podmic at 48kHz, 24-bit, 1-channel. 
     - If, for example, your device is recording at 144kHz, or something a single core on your CPU can't handle, it will likely display errors in the console.
-
+- If you no longer hear audio from your output device (headphones), or no audio is coming through from your input device (microphone), you might have to disable "Exclusive Mode" for your audio device in Windows Sound Settings. Follow these steps to disable Exclusive Mode:
+    - Right-click the Speaker icon on the Windows toolbar, and select Open Sound settings.
+    - Click Device properties located underneath Choose your output device, then click Additional device properties located underneath Related Settings.
+    - In the Line Properties window, click the Advanced tab, then uncheck Allow applications to take exclusive control of this device.
+    - Click Apply, then click OK.
 
 ## Advanced install - Python
 
