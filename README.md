@@ -96,7 +96,7 @@ For example, you might want to change these:
     - `None` always listening; similar to global toggle on, uses Voice Activity Detector (VAD) to detect end of speech and recognise commands.
 - `vad_padding_end_ms`=`250`
     - change this if you use VAD and find it's too quick or slow to identify the figure out you've stopped speaking and that it should try to recognise the command.
-- `input_device_index`=`None`
+- `audio_input_device`=`None`
     - should use default microphone (as set within Windows Sound Settings), but should be able to change the index (number) to select a different input device.
 
 ### Grammar modules
