@@ -87,13 +87,13 @@ For example, you might want to change these:
     - `0x05` = mouse thumb button 1.
     - `0x10` = Shift key.
     - See [here](https://learn.microsoft.com/en-us/windows/win32/inputdev/virtual-key-codes) for more info.
+    - `None` = overrides `listen_key_toggle`, and sets it into always listening mode; uses Voice Activity Detector (VAD) to detect end of speech and recognise commands.
 - `listen_key_toggle`=`-1` 
     - Recommended is `0` or `-1`. 
     - `0` for toggle mode off, listen only while key is pressed; must release key for the command to be recognised.
     - `1` for toggle mode on, key press toggles listening on/off; must toggle off for the command to be recognised.
     - `2` for global toggle mode on, key press toggles listening on/off, but it uses Voice Activity Detector (VAD) to detect end of speech and recognise commands so you don't have to toggle off to recognise commands.
     - `-1` for toggle mode off + priority, listen only while key is pressed, except always listen for priority grammar ("freeze!") even when key is not pressed.
-    - `None` always listening; similar to global toggle on, uses Voice Activity Detector (VAD) to detect end of speech and recognise commands.
 - `vad_padding_end_ms`=`250`
     - change this if you use VAD and find it's too quick or slow to identify the figure out you've stopped speaking and that it should try to recognise the command.
 - `audio_input_device`=`None`
