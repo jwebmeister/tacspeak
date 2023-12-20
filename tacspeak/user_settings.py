@@ -6,12 +6,12 @@ KALDI_ENGINE_SETTINGS = {
     "vad_padding_end_ms":250, # ms of required silence after VAD
     "auto_add_to_user_lexicon":False, # this requires g2p_en (which isn't installed by default)
     "allow_online_pronunciations":False,
-    # "input_device_index":None, # set to an int to choose a non-default microphone
+    # "audio_input_device":None, # set to an int to choose a non-default microphone
+    # "input_device_index":None,
     # "vad_aggressiveness":3, # default aggressiveness of VAD
     # "vad_padding_start_ms":150, # default ms of required silence before VAD
     # "model_dir":'kaldi_model', # default model directory
     # "tmp_dir":None, 
-    # "audio_input_device":None, 
     # "audio_self_threaded":True, 
     # "audio_auto_reconnect":True, 
     # "audio_reconnect_callback":None,

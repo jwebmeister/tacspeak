@@ -133,7 +133,7 @@ Things to check or try first:
 - Check the ".tacspeak.log" file for any useful error messages to narrow it down.
 - Try reinstalling (extracting from .zips) everything, including the model, don't change anything in `./tacspeak/user_settings.py` or `./tacspeak/grammar/_readyornot.py` keep it all default, try running `tacspeak.exe`.
 - For Tacspeak version ≥0.1.1, run `./tacspeak.exe --print_mic_list` in Powershell or command prompt. 
-    - This will list all of the audio devices found on your system, and can be useful for figuring out the correct index number for the `input_device_index` setting in `./tacspeak/user_settings.py`. 
+    - This will list all of the audio devices found on your system, and can be useful for figuring out the correct index number for the `audio_input_device` setting in `./tacspeak/user_settings.py`. 
     - A far easier option to try first is to set the correct default recording device in Windows Sound Settings.
 - The underlying model that Tacspeak currently uses is based on "16-bit Signed Integer PCM 1-channel 16kHz" audio. Tacspeak tries to convert the incoming audio from your device to this format, but if it's too much for a single CPU core to convert in real-time it may fall over. 
     - I've had no issues using Tacspeak with a 48kHz, 16-bit, 2-channel microphone array and also using a Rode AI-1 and Podmic at 48kHz, 24-bit, 1-channel. 
