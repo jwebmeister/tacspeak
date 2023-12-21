@@ -34,7 +34,7 @@ documentation is licensed as follows:
 UNKNOWN
 
 cx-Freeze
-6.15.11
+6.15.12
 Python Software Foundation License
 Anthony Tuininga <anthony.tuininga@gmail.com>
 https://github.com/marcelotduarte/cx_Freeze

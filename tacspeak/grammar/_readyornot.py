@@ -121,11 +121,13 @@ map_colors = {
 map_door_options = {
     # note: stackup, breach & clear, open & clear, scan are separate options
     "mirror [under]": "mirror",
+    "wand [under]": "mirror",
     "disarm": "disarm", # todo! this inserts itself in the middle of the list and messes up other keybinds, update when Void updates
-    "wedge": "wedge",
-    "cover": "cover",
-    "open": "open",
-    "close": "close",
+    "wedge": "wedge", # "remove the wedge" has its own recognition. can specify if door is "trapped door" to use correct keybinds.
+    "block": "wedge",
+    "cover": "cover", # can specify if door is "trapped door" to use correct keybinds.
+    "open": "open", # can specify if door is "trapped door" to use correct keybinds.
+    "close": "close", # can specify if door is "trapped door" to use correct keybinds.
 }
 map_door_trapped = {
     "trapped": "trapped",
@@ -164,9 +166,9 @@ map_door_scan = {
 }
 map_ground_options = {
     # note: deploy and fall in are separate options
-    "move ([over] (here | there) | [to] my front | forward | [to] that (location | position))": "move",
-    "cover ([over] (here | there) | [my] front | forward | that (location | position))": "cover",
-    "(hold | halt) [(position | movement)]": "halt",
+    "move ([over] (here | there) | [to] that (location | position))": "move",
+    "cover ([over] (here | there) | that (location | position))": "cover",
+    "(hold | halt | stop) [(position | movement)]": "halt",
     "resume [movement]": "resume",
     "(secure | search) [the] (area | room)": "search",
     "(search for | collect | secure) evidence": "search",
@@ -174,8 +176,8 @@ map_ground_options = {
 map_ground_fallin_formations = {
     "single file": "single",
     "double file": "double",
-    "diamond": "diamond",
-    "wedge": "wedge",
+    "diamond [formation]": "diamond",
+    "wedge [formation]": "wedge",
 }
 map_ground_deployables = {
     "(bang | flash bang | flash)": "flash bang",
@@ -185,10 +187,10 @@ map_ground_deployables = {
     "shield": "shield",
 }
 map_npc_player_interacts = {
-    "move [(here | there | to)]": "move here",
+    "move [(here | there)]": "move here",
     "(move | come) to (me | my position)": "move my position",
     "come here": "move my position",
-    "stop [(there | moving)]": "move stop",
+    "stop [(there | moving | movement)]": "move stop",
     "turn around": "turn around",
     "move to [the] exit": "move to exit",
     "get out of here": "move to exit",
@@ -222,13 +224,13 @@ map_team_member_options = {
     "(search | secure) [the] (room | area)": "search",
 }
 map_team_member_move = {
-    "([over] (here | there) | [to] my front | forward | [to] that (location | position))": "here",
-    "[over] (here | there) then back": "here then back",
+    "([over] (here | there) | [to] that (location | position))": "here",
+    "[over] ((here | there) | [to] that (location | position)) then back": "here then back",
 }
 map_team_member_focus = {
-    "([over] (here | there) | [my] front | forward | that (location | position))": "here",
-    "([on] my position | [on] me)": "my position",
-    "[on] [the] door [way]": "door",
+    "([over] (here | there) | [on] that (location | position))": "here",
+    "([on] my position | on me)": "my position",
+    "[on] [(the | that)] door [way]": "door",
     "[on] (them | him | her | [the] target)": "target",
     "(un focus | release)": "unfocus",
 }
@@ -413,6 +415,52 @@ class DoorOptions(CompoundRule):
         print(f"{color} team {hold} {door_option} {trapped} the door")
         cmd_door_options(color, hold, door_option, trapped).execute()
 
+class RemoveTheWedge(CompoundRule):
+    """
+    Speech recognise team remove the wedge
+    """
+    spec = "[<color>] [team] [<hold>] remove [the] (wedge | block) [from] [(the | that)] [<trapped>] [door] [way]"
+    extras = [
+        Choice("color", map_colors),
+        Choice("hold", map_hold),
+        Choice("trapped", map_door_trapped),
+    ]
+    defaults = {
+        "color": "current",
+        "hold": "go",
+        "trapped": "not trapped",
+    }
+
+    def _process_recognition(self, node, extras):
+        color = extras["color"]
+        hold = extras["hold"]
+        trapped = extras["trapped"]
+        print(f"{color} team {hold} remove the wedge from the {trapped} door")
+        cmd_door_options(color, hold, "wedge", trapped).execute()
+
+class UseTheWand(CompoundRule):
+    """
+    Speech recognise team use the wand
+    """
+    spec = "[<color>] [team] [<hold>] use the (mirror | wand) [on] [(the | that)] [<trapped>] [(door [way] | opening | room)]"
+    extras = [
+        Choice("color", map_colors),
+        Choice("hold", map_hold),
+        Choice("trapped", map_door_trapped),
+    ]
+    defaults = {
+        "color": "current",
+        "hold": "go",
+        "trapped": "not trapped",
+    }
+
+    def _process_recognition(self, node, extras):
+        color = extras["color"]
+        hold = extras["hold"]
+        trapped = extras["trapped"]
+        print(f"{color} team {hold} use the wand on the {trapped} door")
+        cmd_door_options(color, hold, "mirror", trapped).execute()
+
 # ------------------------------------------------------------------
 
 def cmd_stack_up(color, hold, side):
@@ -521,7 +569,7 @@ class BreachAndClear(CompoundRule):
     """
 
     # "blue team on my command wait for my breach then clear it use flashbangs"
-    # "red hold for my order c2 the door use the fourty mil then breach and clear"
+    # "red on my order c2 the door use the fourty mil then breach and clear"
     # "red team kick down the door breach and clear use cs"
     # "gold open the door use flashbangs breach and clear"
     # "blue flash and clear it"
@@ -680,7 +728,7 @@ class FallIn(CompoundRule):
     """
     Speech recognise team fall in
     """
-    spec_1 = "[<color>] [team] [<hold>] (fall in | regroup | form up) [on me] [<formation>] [on me]"
+    spec_1 = "[<color>] [team] [<hold>] (fall in | regroup | form up) [on me] [<formation>]"
     spec_2 = "<color> [team] [<hold>] on me [<formation>]"
     spec = f"({spec_1} | {spec_2})"
     extras = [
@@ -1029,6 +1077,8 @@ grammar.add_rule(ExecuteOrCancelHeldOrder())
 grammar.add_rule(SelectTeam())
 grammar.add_rule(SelectColor())
 grammar.add_rule(DoorOptions())
+grammar.add_rule(RemoveTheWedge())
+grammar.add_rule(UseTheWand())
 grammar.add_rule(StackUp())
 grammar.add_rule(BreachAndClear())
 grammar.add_rule(PickLock())

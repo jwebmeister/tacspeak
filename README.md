@@ -87,16 +87,16 @@ For example, you might want to change these:
     - `0x05` = mouse thumb button 1.
     - `0x10` = Shift key.
     - See [here](https://learn.microsoft.com/en-us/windows/win32/inputdev/virtual-key-codes) for more info.
+    - `None` = overrides `listen_key_toggle`, and sets it into always listening mode; uses Voice Activity Detector (VAD) to detect end of speech and recognise commands.
 - `listen_key_toggle`=`-1` 
     - Recommended is `0` or `-1`. 
     - `0` for toggle mode off, listen only while key is pressed; must release key for the command to be recognised.
     - `1` for toggle mode on, key press toggles listening on/off; must toggle off for the command to be recognised.
     - `2` for global toggle mode on, key press toggles listening on/off, but it uses Voice Activity Detector (VAD) to detect end of speech and recognise commands so you don't have to toggle off to recognise commands.
     - `-1` for toggle mode off + priority, listen only while key is pressed, except always listen for priority grammar ("freeze!") even when key is not pressed.
-    - `None` always listening; similar to global toggle on, uses Voice Activity Detector (VAD) to detect end of speech and recognise commands.
 - `vad_padding_end_ms`=`250`
     - change this if you use VAD and find it's too quick or slow to identify the figure out you've stopped speaking and that it should try to recognise the command.
-- `input_device_index`=`None`
+- `audio_input_device`=`None`
     - should use default microphone (as set within Windows Sound Settings), but should be able to change the index (number) to select a different input device.
 
 ### Grammar modules
@@ -133,12 +133,16 @@ Things to check or try first:
 - Check the ".tacspeak.log" file for any useful error messages to narrow it down.
 - Try reinstalling (extracting from .zips) everything, including the model, don't change anything in `./tacspeak/user_settings.py` or `./tacspeak/grammar/_readyornot.py` keep it all default, try running `tacspeak.exe`.
 - For Tacspeak version ≥0.1.1, run `./tacspeak.exe --print_mic_list` in Powershell or command prompt. 
-    - This will list all of the audio devices found on your system, and can be useful for figuring out the correct index number for the `input_device_index` setting in `./tacspeak/user_settings.py`. 
+    - This will list all of the audio devices found on your system, and can be useful for figuring out the correct index number for the `audio_input_device` setting in `./tacspeak/user_settings.py`. 
     - A far easier option to try first is to set the correct default recording device in Windows Sound Settings.
 - The underlying model that Tacspeak currently uses is based on "16-bit Signed Integer PCM 1-channel 16kHz" audio. Tacspeak tries to convert the incoming audio from your device to this format, but if it's too much for a single CPU core to convert in real-time it may fall over. 
     - I've had no issues using Tacspeak with a 48kHz, 16-bit, 2-channel microphone array and also using a Rode AI-1 and Podmic at 48kHz, 24-bit, 1-channel. 
     - If, for example, your device is recording at 144kHz, or something a single core on your CPU can't handle, it will likely display errors in the console.
-
+- If you no longer hear audio from your output device (headphones), or no audio is coming through from your input device (microphone), you might have to disable "Exclusive Mode" for your audio device in Windows Sound Settings. Follow these steps to disable Exclusive Mode:
+    - Right-click the Speaker icon on the Windows toolbar, and select Open Sound settings.
+    - Click Device properties located underneath Choose your output device, then click Additional device properties located underneath Related Settings.
+    - In the Line Properties window, click the Advanced tab, then uncheck Allow applications to take exclusive control of this device.
+    - Click Apply, then click OK.
 
 ## Advanced install - Python
 
@@ -168,8 +172,25 @@ Things to check or try first:
 2. Python 3.11 installed
 3. A compatible compiler for cx_freeze installed, 
     - Only tested Visual Studio 2022, [MSVC](https://visualstudio.microsoft.com/downloads/)
+4. (Optional, but necessary for releases) PortAudio v19.7.0, `portaudio_x64.dll`, build from [source here](https://files.portaudio.com/archives/pa_stable_v190700_20210406.tgz) using [docs here](https://files.portaudio.com/docs/v19-doxydocs/compile_cmake.html), or [download here](https://github.com/jwebmeister/portaudio/releases/tag/v19.7.0)
 
-### Steps
+### Steps - Option 1
+
+1. Clone this repo into a folder, e.g. `Tacspeak/`.
+2. Open the `Tacspeak/` folder in PowerShell, keep it as your current working directory.
+3. Create and activate a python virtual environment in directory `./.venv`, e.g. 
+    - create within `Tacspeak` folder: `python -m venv "./.venv"`
+    - activate within `Tacspeak` folder: `./.venv/Scripts/Activate.ps1`
+4. Run `scripts\setup_for_build.ps1` in PowerShell. This will download and install dependencies via running the following scripts:
+    - scripts\pip_reinstall_all.ps1
+    - scripts\download_replace_portaudio_x64_dll.ps1
+    - scripts\download_extract_model.ps1
+    - scripts\move_extracted_model.ps1
+    - scripts\generate_all_licenses.ps1
+5. Run `scripts\build_app.ps1` in PowerShell
+
+
+### Steps - Option 2
 
 1. Clone this repo into a folder, e.g. `Tacspeak/`.
 2. Download a pre-trained Kaldi model .zip from the [latest release](https://github.com/jwebmeister/tacspeak/releases/latest/) and extract into the cloned project folder, e.g. `Tacspeak/kaldi_model/`.
@@ -179,7 +200,8 @@ Things to check or try first:
     - activate within `Tacspeak` folder: `./.venv/Scripts/Activate.ps1`
 5. Install required packages via pip
     - `pip install -r requirements.txt`
-6. Build via setup.py
+6. (Optional, but necessary for releases) rename `portaudio_x64.dll` to `libportaudio64bit.dll`, copy and paste overwriting the existing file located at `./venv/Lib/site-packages/_sounddevice_data/portaudio-binaries/libportaudio64bit.dll`.
+7. Build via setup.py
     - `python setup.py build`
 
 ## Motivation
