@@ -23,6 +23,8 @@ If (-not (Test-Path $TmpREADME)) {
 }
 
 # Empty '.\kaldi_model' 
+echo "emptying $NewPath"
 Get-ChildItem $NewPath | Remove-Item -Recurse -Force
 # Move files
+echo "moving files from $TmpPathAll to $NewPath"
 Move-Item -Path $TmpPathAll -Destination $NewPath

@@ -172,8 +172,25 @@ Things to check or try first:
 2. Python 3.11 installed
 3. A compatible compiler for cx_freeze installed, 
     - Only tested Visual Studio 2022, [MSVC](https://visualstudio.microsoft.com/downloads/)
+4. (Optional, but necessary for releases) PortAudio v19.7.0, `portaudio_x64.dll`, build from [source here](https://files.portaudio.com/archives/pa_stable_v190700_20210406.tgz) using [docs here](https://files.portaudio.com/docs/v19-doxydocs/compile_cmake.html), or [download here](https://github.com/jwebmeister/portaudio/releases/tag/v19.7.0)
 
-### Steps
+### Steps - Option 1
+
+1. Clone this repo into a folder, e.g. `Tacspeak/`.
+2. Open the `Tacspeak/` folder in PowerShell, keep it as your current working directory.
+3. Create and activate a python virtual environment in directory `./.venv`, e.g. 
+    - create within `Tacspeak` folder: `python -m venv "./.venv"`
+    - activate within `Tacspeak` folder: `./.venv/Scripts/Activate.ps1`
+4. Run `scripts\setup_for_build.ps1` in PowerShell. This will download and install dependencies via running the following scripts:
+    - scripts\pip_reinstall_all.ps1
+    - scripts\download_replace_portaudio_x64_dll.ps1
+    - scripts\download_extract_model.ps1
+    - scripts\move_extracted_model.ps1
+    - scripts\generate_all_licenses.ps1
+5. Run `scripts\build_app.ps1` in PowerShell
+
+
+### Steps - Option 2
 
 1. Clone this repo into a folder, e.g. `Tacspeak/`.
 2. Download a pre-trained Kaldi model .zip from the [latest release](https://github.com/jwebmeister/tacspeak/releases/latest/) and extract into the cloned project folder, e.g. `Tacspeak/kaldi_model/`.
@@ -183,7 +200,8 @@ Things to check or try first:
     - activate within `Tacspeak` folder: `./.venv/Scripts/Activate.ps1`
 5. Install required packages via pip
     - `pip install -r requirements.txt`
-6. Build via setup.py
+6. (Optional, but necessary for releases) rename `portaudio_x64.dll` to `libportaudio64bit.dll`, copy and paste overwriting the existing file located at `./venv/Lib/site-packages/_sounddevice_data/portaudio-binaries/libportaudio64bit.dll`.
+7. Build via setup.py
     - `python setup.py build`
 
 ## Motivation
