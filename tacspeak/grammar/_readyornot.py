@@ -180,7 +180,7 @@ map_ground_fallin_formations = {
     "wedge [formation]": "wedge",
 }
 map_ground_deployables = {
-    "(bang | flash bang | flash)": "flash bang",
+    "(bang | flash bang | flash)": "flashbang",
     "stinger": "stinger",
     "(cs | gas | cs gas)": "gas",
     "chem light": "chemlight",
