@@ -54,6 +54,9 @@ Also built atop the excellent [Kaldi Active Grammar](https://github.com/daanzu/k
 
 ## Usage
 ### Basic
+
+[![Watch the video Tacspeak getting starting guide how to use & change settings (basic)](https://img.youtube.com/vi/KnYrxzThG-E/maxresdefault.jpg)](https://youtu.be/KnYrxzThG-E)
+
 Run `tacspeak.exe` (or `python ./cli.py`) and it will...
 - load `./tacspeak/user_settings.py`
 - load all modules `./tacspeak/grammar/_*.py`
