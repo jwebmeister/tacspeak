@@ -110,7 +110,6 @@ map_execute_or_cancels = {
     "execute": "execute", 
     "cancel": "cancel", 
     "go [go go]": "execute",
-    "belay": "cancel", 
 }
 map_colors = {
     "current": "current",
@@ -180,7 +179,7 @@ map_ground_fallin_formations = {
     "wedge [formation]": "wedge",
 }
 map_ground_deployables = {
-    "(bang | flash bang | flash)": "flash bang",
+    "(bang | flash bang | flash)": "flashbang",
     "stinger": "stinger",
     "(cs | gas | cs gas)": "gas",
     "chem light": "chemlight",
@@ -231,7 +230,7 @@ map_team_member_focus = {
     "([over] (here | there) | [on] that (location | position))": "here",
     "([on] my position | on me)": "my position",
     "[on] [(the | that)] door [way]": "door",
-    "[on] (them | him | her | [the] target)": "target",
+    "[on] (em | them | him | her | [the] target)": "target",
     "(un focus | release)": "unfocus",
 }
 
@@ -855,7 +854,7 @@ class NpcTeamRestrain(CompoundRule):
     Speech recognise command team to restrain NPC target
     """
     spec_start = "[<color>] [team]"
-    spec_1 = "<restrain> (them | him | her | [the] target)"
+    spec_1 = "<restrain> (em | them | him | her | [the] target)"
     spec = f"{spec_start} {spec_1}"
     extras = [
         Choice("color", map_colors),
@@ -899,7 +898,7 @@ class NpcTeamDeploy(CompoundRule):
     Speech recognise command team to use deployable on NPC target
     """
     spec_start = "[<color>] [team]"
-    spec_target = "(them | him | her | [the] target)"
+    spec_target = "(em | them | him | her | [the] target)"
     spec_1 = f"subdue {spec_target} [(use | with)] [<deployable>]"
     spec_2 = f"<deployable> {spec_target}"
     spec_3 = f"make {spec_target} compliant [(use | with)] [<deployable>]"

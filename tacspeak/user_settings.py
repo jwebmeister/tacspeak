@@ -15,9 +15,9 @@ KALDI_ENGINE_SETTINGS = {
     # "audio_self_threaded":True, 
     # "audio_auto_reconnect":True, 
     # "audio_reconnect_callback":None,
-    # "retain_dir":None, # set to a writable directory path to retain recognition metadata and/or audio data
-    # "retain_audio":None, # set to True to retain speech data wave files in the retain_dir (if set)
-    # "retain_metadata":None, 
+    # "retain_dir":"./retain/", # set to a writable directory path to retain recognition metadata and/or audio data
+    # "retain_audio":True, # set to True to retain speech data wave files in the retain_dir (if set)
+    # "retain_metadata":True, 
     # "retain_approval_func":None,
     # "vad_complex_padding_end_ms":600, # default ms of required silence after VAD for complex utterances
     # "lazy_compilation":True, # set to True to parallelize & speed up loading
