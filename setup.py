@@ -6,8 +6,21 @@
 
 import os
 import sys
+import re
 from pkg_resources import get_distribution
 from cx_Freeze import setup, Executable
+
+def get_version():
+    try:
+        directory = os.path.dirname(__file__)
+    except NameError:
+        directory = os.getcwd()
+    path = os.path.join(directory, "version.txt")
+    version_string = open(path).readline()
+    match = re.match(r"\s*(?P<rel>(?P<ver>\d+\.\d+)(?:\.\S+)*)\s*", version_string)
+    version = match.group("ver")
+    release = match.group("rel")
+    return release
 
 def collect_dist_info(packages):
     """
@@ -98,7 +111,7 @@ build_exe_options = {
 
 setup(
     name="tacspeak",
-    version="0.1.5",
+    version=get_version(),
     description="tacspeak",
     options={"build_exe": build_exe_options},
     executables=[Executable(script="cli.py", 
