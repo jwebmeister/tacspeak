@@ -5,6 +5,7 @@ build/
 kaldi_model/*
 !kaldi_model/user_lexicon.txt
 !kaldi_model/README.md
-retain/
+retain/*
+!retain/README.md
 .*.log
 .debug_grammar*.txt
