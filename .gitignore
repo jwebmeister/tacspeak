@@ -7,5 +7,7 @@ kaldi_model/*
 !kaldi_model/README.md
 retain/*
 !retain/README.md
+exported_model/
+testaudio/
 .*.log
 .debug_grammar*.txt
