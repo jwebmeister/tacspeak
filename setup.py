@@ -6,8 +6,21 @@
 
 import os
 import sys
+import re
 from pkg_resources import get_distribution
 from cx_Freeze import setup, Executable
+
+def get_version():
+    try:
+        directory = os.path.dirname(__file__)
+    except NameError:
+        directory = os.getcwd()
+    path = os.path.join(directory, "version.txt")
+    version_string = open(path).readline()
+    match = re.match(r"\s*(?P<rel>(?P<ver>\d+\.\d+)(?:\.\S+)*)\s*", version_string)
+    version = match.group("ver")
+    release = match.group("rel")
+    return release
 
 def collect_dist_info(packages):
     """
@@ -63,6 +76,11 @@ include_files.append(("kaldi_model/user_lexicon.txt", "kaldi_model/user_lexicon.
 include_files.append(("scripts/download_extract_model.ps1", "scripts/download_extract_model.ps1"))
 include_files.append(("scripts/move_extracted_model.ps1", "scripts/move_extracted_model.ps1"))
 include_files.append(("scripts/compile_dictation_graph.ps1", "scripts/compile_dictation_graph.ps1"))
+include_files.append(("scripts/list_retain_item_missing_wav.ps1", "scripts/list_retain_item_missing_wav.ps1"))
+include_files.append(("scripts/delete_retain_item_missing_wav.ps1", "scripts/delete_retain_item_missing_wav.ps1"))
+include_files.append(("scripts/list_wav_missing_from_retain_tsv.ps1", "scripts/list_wav_missing_from_retain_tsv.ps1"))
+include_files.append(("scripts/delete_wav_missing_from_retain_tsv.ps1", "scripts/delete_wav_missing_from_retain_tsv.ps1"))
+include_files.append(("retain/README.md", "retain/README.md"))
 
 # Dependencies are automatically detected, but it might need fine tuning.
 build_exe_options = {
@@ -98,7 +116,7 @@ build_exe_options = {
 
 setup(
     name="tacspeak",
-    version="0.1.5",
+    version=get_version(),
     description="tacspeak",
     options={"build_exe": build_exe_options},
     executables=[Executable(script="cli.py", 
