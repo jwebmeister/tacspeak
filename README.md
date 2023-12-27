@@ -54,6 +54,9 @@ Also built atop the excellent [Kaldi Active Grammar](https://github.com/daanzu/k
 
 ## Usage
 ### Basic
+
+[![Watch the video Tacspeak getting starting guide how to use & change settings (basic)](https://img.youtube.com/vi/KnYrxzThG-E/maxresdefault.jpg)](https://youtu.be/KnYrxzThG-E)
+
 Run `tacspeak.exe` (or `python ./cli.py`) and it will...
 - load `./tacspeak/user_settings.py`
 - load all modules `./tacspeak/grammar/_*.py`
@@ -69,6 +72,7 @@ Also:
 - Review and adjust any module settings in `./tacspeak/grammar/_*.py`, e.g. keybindings. 
     - see example [./tacspeak/grammar/_readyornot.py](tacspeak/grammar/_readyornot.py)
 - (Note: you will need to restart Tacspeak for changes to take effect.)
+- [Tacspeak - Ready or Not commands list](https://docs.google.com/spreadsheets/d/1jpuR8JHmh0LOOcUQ7JMMzDOmSYYe2uMpy63X238ZySs/edit?usp=sharing) (imperfect, outdated, not maintained, but maybe useful)
 
 ### Important advisory
 
