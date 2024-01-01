@@ -1,4 +1,4 @@
-DEBUG_MODE = False
+DEBUG_MODE = True
 DEBUG_HEAVY_DUMP_GRAMMAR = False # expensive on memory, don't set this to True unless you're sure
 KALDI_ENGINE_SETTINGS = {
     "listen_key":0x05, # 0x10=SHIFT key, 0x05=X1 mouse button, 0x06=X2 mouse button, see https://learn.microsoft.com/en-us/windows/win32/inputdev/virtual-key-codes
@@ -16,9 +16,9 @@ KALDI_ENGINE_SETTINGS = {
     # "audio_self_threaded":True, 
     # "audio_auto_reconnect":True, 
     # "audio_reconnect_callback":None,
-    # "retain_dir":"./retain/", # set to a writable directory path to retain recognition metadata and/or audio data
-    # "retain_audio":True, # set to True to retain speech data wave files in the retain_dir (if set)
-    # "retain_metadata":True, 
+    "retain_dir":"./retain/", # set to a writable directory path to retain recognition metadata and/or audio data
+    "retain_audio":True, # set to True to retain speech data wave files in the retain_dir (if set)
+    "retain_metadata":True, 
     # "retain_approval_func":None,
     # "vad_complex_padding_end_ms":600, # default ms of required silence after VAD for complex utterances
     # "lazy_compilation":True, # set to True to parallelize & speed up loading
