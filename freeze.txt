@@ -1,7 +1,7 @@
 cffi==1.16.0
 cx-Freeze==6.15.12
 cx-Logging==3.1.0
-dragonfly @ git+https://github.com/jwebmeister/dragonfly.git@a900091c2cc5483afb0423838e09411c4526bf36
+dragonfly @ git+https://github.com/jwebmeister/dragonfly.git@3396fab4bf0588da4f0a28d0a80ae116de5e7e6e
 kaldi-active-grammar==3.1.0
 lark-parser==0.8.9
 lief==0.13.2
