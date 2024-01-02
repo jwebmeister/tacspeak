@@ -98,7 +98,17 @@ For example, you might want to change these:
     - `1` for toggle mode on, key press toggles listening on/off; must toggle off for the command to be recognised.
     - `2` for global toggle mode on, key press toggles listening on/off, but it uses Voice Activity Detector (VAD) to detect end of speech and recognise commands so you don't have to toggle off to recognise commands.
     - `-1` for toggle mode off + priority, listen only while key is pressed, except always listen for priority grammar ("freeze!") even when key is not pressed.
+- `listen_key_padding_end_ms_min`=`1`
+    - recommended is `1` if using `listen_key_toggle` `0` or `-1`; set to `0` for anything else.
+    - min ms of audio captured after `listen_key` is released (or toggled off), after which if VAD detects silence it will stop capturing.
+- `listen_key_padding_end_ms_max`=`170`
+    - recommended is `170` if using `listen_key_toggle` `0` or `-1`; set to `0` for anything else.
+    - max ms of audio captured after `listen_key` is released (or toggled off), but will stop short if VAD detects silence.
+- `listen_key_padding_end_always_max`=`False`
+    - disregard VAD and always capture `listen_key_padding_end_ms_max` of audio after `listen_key` is released (or toggled off)
 - `vad_padding_end_ms`=`250`
+    - recommended is `150` if using `listen_key_toggle` `0` or `-1`; set to `250` for anything else.
+    - ms of required silence after VAD.
     - change this if you use VAD and find it's too quick or slow to identify the figure out you've stopped speaking and that it should try to recognise the command.
 - `audio_input_device`=`None`
     - should use default microphone (as set within Windows Sound Settings), but should be able to change the index (number) to select a different input device.
@@ -147,6 +157,7 @@ Things to check or try first:
     - Click Device properties located underneath Choose your output device, then click Additional device properties located underneath Related Settings.
     - In the Line Properties window, click the Advanced tab, then uncheck Allow applications to take exclusive control of this device.
     - Click Apply, then click OK.
+- All commands are being queued? AZERTY keyboard? You might need to change your in-game keybinding for "Hold command" to something other than Shift, and also update the key bindings in `./tacspeak/grammar/_readyornot.py`.
 
 ## Advanced install - Python
 
