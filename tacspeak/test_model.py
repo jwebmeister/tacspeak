@@ -281,8 +281,6 @@ def recognize(engine, wav_path, text):
         global testmodel_busy
         testmodel_busy = False
 
-    engine.prepare_for_recognition()
-
     engine.do_recognition(on_begin, on_recognition, on_failure, on_end, audio_iter=WavAudio.read_file(wav_path, realtime=False))
     
     n_sleeps = 0
@@ -310,11 +308,12 @@ def test_model(tsv_file, model_dir, lexicon_file=None):
     # test_model("./testaudio/recorder.tsv", "./kaldi_model/")
     # python -c 'from tacspeak.test_model import test_model; test_model("./testaudio/recorder.tsv", "./kaldi_model/")'
 
+    print("Start test_model")
     calculator = Calculator()
 
     lexicon = set()
     if lexicon_file:
-        with open(lexicon_file, 'r') as f:
+        with open(lexicon_file, 'r', encoding='utf-8') as f:
             for line in f:
                 word = line.strip().split(None, 1)[0]
                 lexicon.add(word)
@@ -323,7 +322,7 @@ def test_model(tsv_file, model_dir, lexicon_file=None):
 
     try:
         print(f"opening {tsv_file}")
-        with open(tsv_file, 'r') as f:
+        with open(tsv_file, 'r', encoding='utf-8') as f:
             submissions = []
             for line in f:
                 fields = line.rstrip('\n').split('\t')
@@ -339,6 +338,7 @@ def test_model(tsv_file, model_dir, lexicon_file=None):
             print(f"read lines: {len(submissions)}")
             for wav_path, text in submissions:
                 output_str, text = recognize(engine, wav_path, text)
+                engine.prepare_for_recognition()
                 calculator.calculate(text.strip().split(), output_str.strip().split())
 
         result = calculator.overall()

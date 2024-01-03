@@ -9,6 +9,7 @@ import os
 from kaldi_active_grammar import Compiler, disable_donation_message
 import tacspeak
 from tacspeak.__main__ import main as tacspeak_main
+from tacspeak.test_model import test_model
 from dragonfly import get_engine
 
 import kaldifst
@@ -28,7 +29,12 @@ def main():
                                 + ' useful for setting `input_device_index` in ./tacspeak/user_settings.py'))
     parser.add_argument('--visualise_fst', dest='fst_filepath', action='store',
                         metavar=('fst_filepath', 'model_words_txt_filepath'), nargs=2,
-                        help='generate .gv (dot) and .svg for visualisation of a FST file. Only use with small (~200 kB) files!')
+                        help=('generate .gv (dot) and .svg for visualisation of a FST file. Only use with small (~200 kB) files!'
+                                + ' Requires GraphViz installed.'))
+    parser.add_argument('--test_model', dest='test_model', action='store',
+                        metavar=('tsv_file', 'model_dir', 'lexicon_file'), nargs=3,
+                        help=('test model + active grammar recognition using test audio specified in .tsv file.'
+                                + " Example: --test_model './testaudio/recorder.tsv' './kaldi_model/' './kaldi_model/lexicon.txt'"))
     args = parser.parse_args()
     if args.model_dir is not None and os.path.isdir(args.model_dir):
         compiler = Compiler(args.model_dir)
@@ -39,20 +45,33 @@ def main():
         get_engine('kaldi').print_mic_list()
         input("Press enter key to exit.")
         return
-    if args.fst_filepath[0] is not None and os.path.isfile(args.fst_filepath[0]) and args.fst_filepath[1] is not None and os.path.isfile(args.fst_filepath[1]):
-        fst_filepath = args.fst_filepath[0]
-        fst_filename_noext = os.path.splitext(fst_filepath)[0]
-        model_words_txt_filepath = args.fst_filepath[1]
-        print(fst_filename_noext)
-        fst = kaldifst.StdFst.read(fst_filepath)
-        sym = kaldifst.SymbolTable()
-        with open(model_words_txt_filepath, 'r', encoding='utf-8') as sym_file:
-            for line in sym_file:
-                line_split = line.strip().split(' ')
-                sym.add_symbol(symbol=line_split[0], key=int(line_split[1]))
-        fst_dot = kaldifst.draw(fst, osymbols=sym, acceptor=False, portrait=True)
-        source = graphviz.Source(fst_dot)
-        source.render(outfile=f"{fst_filename_noext}.svg")
+    if args.fst_filepath:
+        if args.fst_filepath[0] is not None and os.path.isfile(args.fst_filepath[0]) and args.fst_filepath[1] is not None and os.path.isfile(args.fst_filepath[1]):
+            fst_filepath = args.fst_filepath[0]
+            fst_filename_noext = os.path.splitext(fst_filepath)[0]
+            model_words_txt_filepath = args.fst_filepath[1]
+            print(fst_filename_noext)
+            fst = kaldifst.StdFst.read(fst_filepath)
+            sym = kaldifst.SymbolTable()
+            with open(model_words_txt_filepath, 'r', encoding='utf-8') as sym_file:
+                for line in sym_file:
+                    line_split = line.strip().split(' ')
+                    sym.add_symbol(symbol=line_split[0], key=int(line_split[1]))
+            fst_dot = kaldifst.draw(fst, osymbols=sym, acceptor=False, portrait=True)
+            source = graphviz.Source(fst_dot)
+            source.render(outfile=f"{fst_filename_noext}.svg")
+        return
+    if args.test_model:
+        if args.test_model[0] is not None and os.path.isfile(args.test_model[0]) and args.test_model[1] is not None and os.path.isdir(args.test_model[1]):
+            tsv_file = args.test_model[0]
+            model_dir = args.test_model[1]
+            try:
+                lexicon_file = args.test_model[2]
+            except Exception as e:
+                print(f"{e}")
+                lexicon_file = None
+            print(f"{tsv_file},{model_dir},{lexicon_file}")
+            test_model(tsv_file, model_dir, lexicon_file)
         return
     tacspeak_main()
 
