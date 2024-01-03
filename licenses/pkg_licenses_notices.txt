@@ -1219,7 +1219,7 @@ UNKNOWN
 UNKNOWN
 
 numpy
-1.26.2
+1.26.3
 BSD License
 Travis E. Oliphant et al.
 https://numpy.org

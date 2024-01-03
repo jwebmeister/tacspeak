@@ -7,7 +7,7 @@ kaldi-active-grammar==3.1.0
 kaldifst==1.7.9
 lark-parser==0.8.9
 lief==0.13.2
-numpy==1.26.2
+numpy==1.26.3
 packaging==23.2
 pip-licenses==4.3.3
 prettytable==3.9.0
