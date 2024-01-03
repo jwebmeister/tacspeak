@@ -367,15 +367,27 @@ def test_model(tsv_file, model_dir, lexicon_file=None, num_threads=1):
         
         with multiprocessing.Pool(processes=num_threads, initializer=initialize_kaldi, initargs=(model_dir,)) as pool:
             for output_str, text in pool.starmap(recognize, submissions, chunksize=1):
-                calculator.calculate(text.strip().split(), output_str.strip().split())
-                utterance_str = ''
-                utterance_str += f"\nRef: {text}"
-                utterance_str += f"\nHyp: {output_str}"
-                utterances_list.append(utterance_str)
+                result = calculator.calculate(text.strip().split(), output_str.strip().split())
+                n_errors = result['sub'] + result['del'] + result['ins']
+                n_correct = result['cor']
+                n_all = result['all']
+                rate_errors = float(n_errors) / float(max(1, n_all))
+                entry = {'ref':text, 'hyp':output_str, 'n_errors':n_errors, 
+                        'n_correct':n_correct, 'n_all':n_all, 'rate_errors':rate_errors}
+                utterances_list.append(entry)
+                # utterance_str = ''
+                # utterance_str += f"\nRef: {text}"
+                # utterance_str += f"\nHyp: {output_str}"
+                # utterances_list.append(utterance_str)
 
+        utterances_list.sort(key=lambda x: x['n_errors'], reverse=True)
         with open('./test_model_output_utterances.txt', 'w', encoding='utf-8') as outfile:
             for item in utterances_list:
-                outfile.write(item)
+                outfile.write(f"\n errors={item['n_errors']}, n_correct={item['n_correct']}"
+                              + f", n_all={item['n_all']}, rate_errors={item['rate_errors']}"
+                              + f"\n ref: {item['ref']}"
+                              + f"\n hyp: {item['hyp']}"
+                              )
         
         print(f"{calculator.overall_string()}")
 
