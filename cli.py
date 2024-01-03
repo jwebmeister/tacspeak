@@ -71,7 +71,15 @@ def main():
                 print(f"{e}")
                 lexicon_file = None
             print(f"{tsv_file},{model_dir},{lexicon_file}")
-            test_model(tsv_file, model_dir, lexicon_file)
+            calculator = test_model(tsv_file, model_dir, lexicon_file)
+            with open('test_model_output_tokens.txt', 'w', encoding='utf-8') as outfile:
+                outfile.write(f"\n{calculator.overall_string()}\n")
+                for item in calculator.data.items():
+                    outfile.write(f"\n{str(item)}")
+                outfile.write("\n")
+                for entry in calculator.ranked_worst_to_best_list():
+                    outfile.write(f"\n{str(entry)}")
+
         return
     tacspeak_main()
 

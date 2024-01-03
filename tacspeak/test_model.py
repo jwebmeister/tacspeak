@@ -21,6 +21,7 @@ from dragonfly.engines.backend_kaldi.audio import WavAudio
 # --------------------------------------------------------------------------
 # Global variables
 
+# todo! change this to not global for multi-threading
 testmodel_recog_buffer = []
 testmodel_busy = False
 
@@ -146,6 +147,18 @@ class Calculator:
             result['ins'] = result['ins'] + self.data[token]['ins']
             result['del'] = result['del'] + self.data[token]['del']
         return result
+    def overall_string(self):
+        out_string = ''
+        result = self.overall()
+        if result['all'] != 0 :
+            wer = float(result['ins'] + result['sub'] + result['del']) * 100.0 / result['all']
+        else :
+            wer = 0.0
+        out_string += str('Overall -> %4.2f %%' % wer)
+        out_string += str('+/- %4.2f %%' % er_margin_of_error(wer, n=result['all']))
+        out_string += str('N=%d C=%d S=%d D=%d I=%d' % (result['all'], result['cor'], result['sub'], result['del'], result['ins']))
+        return out_string
+
     def cluster(self, data) :
         result = {'all':0, 'cor':0, 'sub':0, 'ins':0, 'del':0}
         for token in data :
@@ -157,7 +170,21 @@ class Calculator:
                 result['del'] = result['del'] + self.data[token]['del']
         return result
     def keys(self) :
-            return list(self.data.keys())
+        return list(self.data.keys())
+    def ranked_worst_to_best_list(self) :
+        ranked_worst_tokens = []
+        for key, value in self.data.items():
+            token = key
+            n_errors = value['sub'] + value['del'] + value['ins']
+            n_correct = value['cor']
+            n_all = value['all']
+            rate_errors = float(n_errors) / float(max(1, n_all))
+            entry = {'token':token, 'rate_errors':rate_errors, 'n_errors':n_errors, 
+                     'n_correct':n_correct, 'n_all':n_all}
+            ranked_worst_tokens.append(entry)
+        ranked_worst_tokens.sort(key=lambda x: x['rate_errors'], reverse=True)
+        return ranked_worst_tokens
+
 
 def er_margin_of_error(error, n, z=1.96):
     error = max(0, min(error, 100))
@@ -254,6 +281,7 @@ def initialize_kaldi(model_dir):
     return engine
 
 def recognize(engine, wav_path, text):
+    # todo! change this to not global for multi-threading
     global testmodel_recog_buffer
     global testmodel_busy
 
@@ -317,8 +345,6 @@ def test_model(tsv_file, model_dir, lexicon_file=None):
             for line in f:
                 word = line.strip().split(None, 1)[0]
                 lexicon.add(word)
-    
-    engine = initialize_kaldi(model_dir)
 
     try:
         print(f"opening {tsv_file}")
@@ -336,23 +362,29 @@ def test_model(tsv_file, model_dir, lexicon_file=None):
                     continue
                 submissions.append((wav_path, text,))
             print(f"read lines: {len(submissions)}")
+        # todo! should probably change this back to multiple threads
+        engine = initialize_kaldi(model_dir)
+        with open('./test_model_output_utterances.txt', 'w', encoding='utf-8') as outfile:
             for wav_path, text in submissions:
                 output_str, text = recognize(engine, wav_path, text)
                 engine.prepare_for_recognition()
                 calculator.calculate(text.strip().split(), output_str.strip().split())
+                outfile.write(f"\nRef: {text}")
+                outfile.write(f"\nHyp: {output_str}")
 
-        result = calculator.overall()
-        if result['all'] != 0 :
-            wer = float(result['ins'] + result['sub'] + result['del']) * 100.0 / result['all']
-        else :
-            wer = 0.0
-        print('Overall -> %4.2f %%' % wer, end = ' ')
-        print('+/- %4.2f %%' % er_margin_of_error(wer, n=result['all']), end = ' ')
-        print('N=%d C=%d S=%d D=%d I=%d' % (result['all'], result['cor'], result['sub'], result['del'], result['ins']))
+        # result = calculator.overall()
+        # if result['all'] != 0 :
+        #     wer = float(result['ins'] + result['sub'] + result['del']) * 100.0 / result['all']
+        # else :
+        #     wer = 0.0
+        # print('Overall -> %4.2f %%' % wer, end = ' ')
+        # print('+/- %4.2f %%' % er_margin_of_error(wer, n=result['all']), end = ' ')
+        # print('N=%d C=%d S=%d D=%d I=%d' % (result['all'], result['cor'], result['sub'], result['del'], result['ins']))
+        print(f"{calculator.overall_string()}")
 
     except Exception as e:
         print(f"{e}")
         pass
     # Disconnect from the engine, freeing its resources.
     engine.disconnect()
-
+    return calculator
