@@ -1,6 +1,6 @@
 #
 # This file is part of Tacspeak.
-# (c) Copyright 2023 by Joshua Webb
+# (c) Copyright 2023-2024 by Joshua Webb
 # Licensed under the AGPL-3.0; see LICENSE.txt file.
 #
 
@@ -26,7 +26,7 @@ def main():
                         help='recompile the model in `model_dir` (default is kaldi_model/), for changes to user_lexicon.txt')
     parser.add_argument('--print_mic_list', action='store_true',
                         help=('see a list of available input devices and their corresponding indexes and names.' 
-                                + ' useful for setting `input_device_index` in ./tacspeak/user_settings.py'))
+                                + ' useful for setting `audio_input_device` in ./tacspeak/user_settings.py'))
     parser.add_argument('--visualise_fst', dest='fst_filepath', action='store',
                         metavar=('fst_filepath', 'model_words_txt_filepath'), nargs=2,
                         help=('generate .gv (dot) and .svg for visualisation of a FST file. Only use with small (~200 kB) files!'
@@ -88,14 +88,13 @@ def main():
                 outfile.write("\n")
                 for entry in calculator.ranked_worst_to_best_list():
                     outfile.write(f"\n{str(entry)}")
-
         return
     tacspeak_main()
 
 def print_notices():
     text = """
     Tacspeak - speech recognition for gaming
-    © Copyright 2023 by Joshua Webb
+    © Copyright 2023-2024 by Joshua Webb
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU Affero General Public License as
