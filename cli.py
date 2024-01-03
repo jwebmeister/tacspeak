@@ -32,9 +32,9 @@ def main():
                         help=('generate .gv (dot) and .svg for visualisation of a FST file. Only use with small (~200 kB) files!'
                                 + ' Requires GraphViz installed.'))
     parser.add_argument('--test_model', dest='test_model', action='store',
-                        metavar=('tsv_file', 'model_dir', 'lexicon_file'), nargs=3,
+                        metavar=('tsv_file', 'model_dir', 'lexicon_file', 'num_threads'), nargs=4,
                         help=('test model + active grammar recognition using test audio specified in .tsv file.'
-                                + " Example: --test_model './testaudio/recorder.tsv' './kaldi_model/' './kaldi_model/lexicon.txt'"))
+                                + " Example: --test_model './testaudio/recorder.tsv' './kaldi_model/' './kaldi_model/lexicon.txt' 2"))
     args = parser.parse_args()
     if args.model_dir is not None and os.path.isdir(args.model_dir):
         compiler = Compiler(args.model_dir)
@@ -67,11 +67,20 @@ def main():
             model_dir = args.test_model[1]
             try:
                 lexicon_file = args.test_model[2]
+                if not os.path.isfile(lexicon_file):
+                    lexicon_file = None
             except Exception as e:
                 print(f"{e}")
                 lexicon_file = None
-            print(f"{tsv_file},{model_dir},{lexicon_file}")
-            calculator = test_model(tsv_file, model_dir, lexicon_file)
+            try:
+                num_threads = int(args.test_model[3])
+                if not isinstance(num_threads, int) or num_threads < 1:
+                    num_threads = 1
+            except Exception as e:
+                print(f"{e}")
+                num_threads = 1
+            print(f"{tsv_file},{model_dir},{lexicon_file},{num_threads}")
+            calculator = test_model(tsv_file, model_dir, lexicon_file, num_threads)
             with open('test_model_output_tokens.txt', 'w', encoding='utf-8') as outfile:
                 outfile.write(f"\n{calculator.overall_string()}\n")
                 for item in calculator.data.items():

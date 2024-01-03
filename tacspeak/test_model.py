@@ -11,24 +11,18 @@ import os.path
 import sys
 import time
 import math
-from itertools import starmap
+import multiprocessing
 
 from dragonfly import get_engine
 from dragonfly.loader import CommandModuleDirectory, CommandModule
 from dragonfly.log import default_levels
 from dragonfly.engines.backend_kaldi.audio import WavAudio
-
-# --------------------------------------------------------------------------
-# Global variables
-
-# todo! change this to not global for multi-threading
-testmodel_recog_buffer = []
-testmodel_busy = False
-
+from kaldi_active_grammar import disable_donation_message
 
 # --------------------------------------------------------------------------
 # Functions
 
+# Adapted from daanzu/kaldi_ag_training, licensed under the AGPL-3.0
 # From wenet-e2e/wenet, licensed under the Apache License 2.0
 class Calculator:
     def __init__(self) :
@@ -194,6 +188,7 @@ def er_margin_of_error(error, n, z=1.96):
     return moe * 100
 
 def initialize_kaldi(model_dir):
+    disable_donation_message()
     user_settings_path = os.path.join(os.getcwd(), os.path.relpath("tacspeak/user_settings.py"))
     user_settings = CommandModule(user_settings_path)
     user_settings.load()
@@ -280,23 +275,22 @@ def initialize_kaldi(model_dir):
     engine.prepare_for_recognition()
     return engine
 
-def recognize(engine, wav_path, text):
+def recognize(wav_path, text):
     # todo! change this to not global for multi-threading
-    global testmodel_recog_buffer
-    global testmodel_busy
+    engine = get_engine('kaldi')
 
     testmodel_recog_buffer = None
     testmodel_busy = False
 
     # Define recognition callback functions.
     def on_begin():
-        global testmodel_recog_buffer
-        global testmodel_busy
+        nonlocal testmodel_recog_buffer
+        nonlocal testmodel_busy
         testmodel_recog_buffer = None
         testmodel_busy = True
 
     def on_recognition(words, results):
-        global testmodel_recog_buffer
+        nonlocal testmodel_recog_buffer
         # message = f"{results.kaldi_rule} | {' '.join(words)}"
         # log_recognition = logging.getLogger('on_recognition')
         # log_recognition.log(20, message)
@@ -306,7 +300,7 @@ def recognize(engine, wav_path, text):
         pass
 
     def on_end():
-        global testmodel_busy
+        nonlocal testmodel_busy
         testmodel_busy = False
 
     engine.do_recognition(on_begin, on_recognition, on_failure, on_end, audio_iter=WavAudio.read_file(wav_path, realtime=False))
@@ -331,12 +325,13 @@ def recognize(engine, wav_path, text):
 # --------------------------------------------------------------------------
 # Main event driving loop.
 
-def test_model(tsv_file, model_dir, lexicon_file=None):
+def test_model(tsv_file, model_dir, lexicon_file=None, num_threads=1):
     # from tacspeak.test_model import test_model
     # test_model("./testaudio/recorder.tsv", "./kaldi_model/")
     # python -c 'from tacspeak.test_model import test_model; test_model("./testaudio/recorder.tsv", "./kaldi_model/")'
 
     print("Start test_model")
+
     calculator = Calculator()
 
     lexicon = set()
@@ -362,29 +357,30 @@ def test_model(tsv_file, model_dir, lexicon_file=None):
                     continue
                 submissions.append((wav_path, text,))
             print(f"read lines: {len(submissions)}")
-        # todo! should probably change this back to multiple threads
-        engine = initialize_kaldi(model_dir)
-        with open('./test_model_output_utterances.txt', 'w', encoding='utf-8') as outfile:
-            for wav_path, text in submissions:
-                output_str, text = recognize(engine, wav_path, text)
-                engine.prepare_for_recognition()
-                calculator.calculate(text.strip().split(), output_str.strip().split())
-                outfile.write(f"\nRef: {text}")
-                outfile.write(f"\nHyp: {output_str}")
 
-        # result = calculator.overall()
-        # if result['all'] != 0 :
-        #     wer = float(result['ins'] + result['sub'] + result['del']) * 100.0 / result['all']
-        # else :
-        #     wer = 0.0
-        # print('Overall -> %4.2f %%' % wer, end = ' ')
-        # print('+/- %4.2f %%' % er_margin_of_error(wer, n=result['all']), end = ' ')
-        # print('N=%d C=%d S=%d D=%d I=%d' % (result['all'], result['cor'], result['sub'], result['del'], result['ins']))
+        
+        # initialize first in-case model needs to be recompiled
+        engine = initialize_kaldi(model_dir)
+        engine.disconnect()
+
+        utterances_list = []
+        
+        with multiprocessing.Pool(processes=num_threads, initializer=initialize_kaldi, initargs=(model_dir,)) as pool:
+            for output_str, text in pool.starmap(recognize, submissions, chunksize=1):
+                calculator.calculate(text.strip().split(), output_str.strip().split())
+                utterance_str = ''
+                utterance_str += f"\nRef: {text}"
+                utterance_str += f"\nHyp: {output_str}"
+                utterances_list.append(utterance_str)
+
+        with open('./test_model_output_utterances.txt', 'w', encoding='utf-8') as outfile:
+            for item in utterances_list:
+                outfile.write(item)
+        
         print(f"{calculator.overall_string()}")
 
     except Exception as e:
         print(f"{e}")
         pass
-    # Disconnect from the engine, freeing its resources.
-    engine.disconnect()
+    
     return calculator
