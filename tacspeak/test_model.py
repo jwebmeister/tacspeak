@@ -17,6 +17,9 @@ from dragonfly import get_engine
 from dragonfly.loader import CommandModuleDirectory, CommandModule
 from dragonfly.log import default_levels
 from dragonfly.engines.backend_kaldi.audio import WavAudio
+
+from dragonfly.grammar.rule_compound import CompoundRule
+
 from kaldi_active_grammar import disable_donation_message
 
 # --------------------------------------------------------------------------
@@ -249,7 +252,7 @@ def initialize_kaldi(model_dir):
             logger.addHandler(handlers[1])
             logger.setLevel(min(stderr_level, file_level))
             logger.propagate = False
-            logger.setLevel(999)
+            logger.setLevel(20)
     
     setup_loggers()
 
@@ -289,12 +292,12 @@ def recognize(wav_path, text):
         testmodel_recog_buffer = None
         testmodel_busy = True
 
-    def on_recognition(words, results):
+    def on_recognition(words, results, rule, node):
         nonlocal testmodel_recog_buffer
         # message = f"{results.kaldi_rule} | {' '.join(words)}"
         # log_recognition = logging.getLogger('on_recognition')
         # log_recognition.log(20, message)
-        testmodel_recog_buffer = (f"{results.kaldi_rule}", ' '.join(words))
+        testmodel_recog_buffer = (' '.join(words), results, rule, node)
 
     def on_failure():
         pass
@@ -310,7 +313,25 @@ def recognize(wav_path, text):
         n_sleeps += 1
         time.sleep(0.1)
     if testmodel_recog_buffer:
-        output_str = testmodel_recog_buffer[1]
+        output_str = testmodel_recog_buffer[0]
+        rule = testmodel_recog_buffer[2]
+        node = testmodel_recog_buffer[3]
+        if isinstance(rule, CompoundRule):
+            extras = {
+                "_grammar":  rule.grammar,
+                "_rule":     rule,
+                "_node":     node,
+            }
+            extras.update(rule._defaults)
+            for name, element in rule._extras.items():
+                extra_node = node.get_child_by_name(name, shallow=True)
+                if extra_node:
+                    extras[name] = extra_node.value()
+                elif element.has_default():
+                    extras[name] = element.default
+            # todo! change this to do something more than print to stdout
+            # e.g. mimic text as recognition, compare extras
+            print(f"extras: {extras}")
     else:
         output_str = ""
     print(f"n_sleeps: {n_sleeps}")
