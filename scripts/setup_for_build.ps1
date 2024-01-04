@@ -21,3 +21,5 @@ scripts\download_replace_portaudio_x64_dll.ps1
 scripts\download_extract_model.ps1
 scripts\move_extracted_model.ps1
 scripts\generate_all_licenses.ps1
+
+pip freeze > freeze.txt
