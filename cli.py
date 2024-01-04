@@ -9,7 +9,7 @@ import os
 from kaldi_active_grammar import Compiler, disable_donation_message
 import tacspeak
 from tacspeak.__main__ import main as tacspeak_main
-from tacspeak.test_model import test_model
+from tacspeak.test_model import test_model, test_model_dictation
 from dragonfly import get_engine
 
 def main():
@@ -27,7 +27,10 @@ def main():
     parser.add_argument('--test_model', dest='test_model', action='store',
                         metavar=('tsv_file', 'model_dir', 'lexicon_file', 'num_threads'), nargs=4,
                         help=('test model + active grammar recognition using test audio specified in .tsv file.'
-                                + " Example: --test_model './testaudio/recorder.tsv' './kaldi_model/' './kaldi_model/lexicon.txt' 2"))
+                                + " Example: --test_model './testaudio/recorder.tsv' './kaldi_model/' './kaldi_model/lexicon.txt' 4"))
+    parser.add_argument('--test_dictation', action='store_true',
+                        help=('only used together with --test_model. tests model using raw dictation graph, irrespective of grammar modules.'
+                              + " Example: --test_model './testaudio/recorder.tsv' './kaldi_model/' './kaldi_model/lexicon.txt' 4 --test_dictation"))
     args = parser.parse_args()
     if args.model_dir is not None and os.path.isdir(args.model_dir):
         compiler = Compiler(args.model_dir)
@@ -57,8 +60,14 @@ def main():
                 print(f"{e}")
                 num_threads = 1
             print(f"{tsv_file},{model_dir},{lexicon_file},{num_threads}")
-            calculator = test_model(tsv_file, model_dir, lexicon_file, num_threads)
-            with open('test_model_output_tokens.txt', 'w', encoding='utf-8') as outfile:
+            if args.test_dictation:
+                calculator = test_model_dictation(tsv_file, model_dir, lexicon_file, num_threads)
+                outfile_path = 'test_model_output_dictation_tokens.txt'
+            else:
+                calculator = test_model(tsv_file, model_dir, lexicon_file, num_threads)
+                outfile_path = 'test_model_output_tokens.txt'
+
+            with open(outfile_path, 'w', encoding='utf-8') as outfile:
                 outfile.write(f"\n{calculator.overall_string()}\n")
                 for item in calculator.data.items():
                     outfile.write(f"\n{str(item)}")

@@ -12,6 +12,7 @@ import sys
 import time
 import math
 import multiprocessing
+import wave
 
 from dragonfly import get_engine
 from dragonfly.loader import CommandModuleDirectory, CommandModule
@@ -20,7 +21,8 @@ from dragonfly.engines.backend_kaldi.audio import WavAudio
 
 from dragonfly.grammar.rule_compound import CompoundRule
 
-from kaldi_active_grammar import disable_donation_message
+from kaldi_active_grammar import disable_donation_message, PlainDictationRecognizer
+
 
 # --------------------------------------------------------------------------
 # Functions
@@ -497,6 +499,98 @@ def test_model(tsv_file, model_dir, lexicon_file=None, num_threads=1):
                             + f"\n hyp: {item['hyp']}"
                             + f"\n input_options: {item['input_options']}"
                             + f"\n output_options: {item['output_options']}"
+                            + "\n"
+                            )
+    
+    print(f"{calculator.overall_string()}")
+    
+    return calculator
+
+
+# ---------------------------------------------------------------------------------------------
+# Dictation test_model
+
+def initialize_kaldi_dictation(model_dir):
+    global call_recognizer
+    disable_donation_message()
+    recognizer = PlainDictationRecognizer(model_dir=model_dir)
+    def decode(data):
+        output_str, info = recognizer.decode_utterance(data)
+        return output_str
+    call_recognizer = decode
+
+def recognize_dictation(wav_path, text):
+    global call_recognizer
+    with wave.open(wav_path, 'rb') as wav_file:
+        data = wav_file.readframes(wav_file.getnframes())
+    output_str = call_recognizer(data)
+    print(f"Ref: {text}")
+    print(f"Hyp: {output_str}")
+    return output_str, text
+
+def test_model_dictation(tsv_file, model_dir, lexicon_file=None, num_threads=1):
+
+    print("Start test_model_dictation")
+
+    call_recognizer = None
+
+    calculator = Calculator()
+
+    lexicon = set()
+    if lexicon_file:
+        with open(lexicon_file, 'r', encoding='utf-8') as f:
+            for line in f:
+                word = line.strip().split(None, 1)[0]
+                lexicon.add(word)
+
+    print(f"opening {tsv_file}")
+    with open(tsv_file, 'r', encoding='utf-8') as f:
+        submissions = []
+        for line in f:
+            fields = line.rstrip('\n').split('\t')
+            text = fields[4]
+            wav_path = fields[0]
+            if not os.path.exists(wav_path):
+                print(f"{wav_path} does not exist")
+                continue
+            if lexicon_file and any(word not in lexicon for word in text.split()):
+                print(f"{wav_path} is out of vocabulary: {text}")
+                continue
+            submissions.append((wav_path, text,))
+        print(f"read lines: {len(submissions)}")
+
+    
+    # initialize first in-case model needs to be recompiled
+    initialize_kaldi_dictation(model_dir)
+
+    utterances_list = []
+    
+    with multiprocessing.Pool(processes=num_threads, initializer=initialize_kaldi_dictation, initargs=(model_dir,)) as pool:
+        try:
+            for output_str, text in pool.starmap(recognize_dictation, submissions, chunksize=1):
+                result = calculator.calculate(text.strip().split(), output_str.strip().split())
+                n_errors = result['sub'] + result['del'] + result['ins']
+                n_correct = result['cor']
+                n_all = result['all']
+                rate_errors = float(n_errors) / float(max(1, n_all))
+
+                entry = {'ref':text, 'hyp':output_str, 
+                         'n_errors':n_errors, 'n_correct':n_correct, 'n_all':n_all, 'rate_errors':rate_errors
+                         }
+                utterances_list.append(entry)
+
+        except KeyboardInterrupt as e:
+            print(f"Closing pool: {e}")
+            pool.close()
+            return None
+
+    utterances_list.sort(key=lambda x: x['n_errors'], reverse=True)
+    with open('./test_model_output_dictation.txt', 'w', encoding='utf-8') as outfile:
+        for item in utterances_list:
+            outfile.write(  f"\n errors={item['n_errors']}, n_correct={item['n_correct']}"
+                            + f", n_all={item['n_all']}, rate_errors={item['rate_errors']}"
+                            + f"\n ref: {item['ref']}"
+                            + f"\n hyp: {item['hyp']}"
                             + "\n"
                             )
     

@@ -11,5 +11,4 @@ exported_model/
 testaudio/
 .*.log
 .debug_grammar*.txt
-test_model_output_utterances.txt
-test_model_output_tokens.txt
+test_model_output_*.txt
