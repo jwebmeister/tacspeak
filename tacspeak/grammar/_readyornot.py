@@ -7,7 +7,7 @@
 import sys
 import dragonfly
 from dragonfly import (BasicRule, CompoundRule, MappingRule, RuleRef, Repetition, RecognitionObserver,
-                       Function, Choice, IntegerRef, Grammar, Alternative, Literal, Text,
+                       Function, Choice, IntegerRef, Grammar, Alternative, Literal, Text, Optional,
                        AppContext)
 from dragonfly.engines.backend_kaldi.dictation import UserDictation as Dictation
 from dragonfly.actions import (Key, Mouse)
@@ -103,7 +103,6 @@ print("-- Ready or Not keybindings --")
 
 # mappings of spoken phrases to values
 map_hold = {
-    "go": "go",
     "on my (mark | order | command)": "hold",
 }
 map_execute_or_cancels = {
@@ -112,7 +111,6 @@ map_execute_or_cancels = {
     "go [go go]": "execute",
 }
 map_colors = {
-    "current": "current",
     "gold": "gold",
     "blue": "blue",
     "red": "red",
@@ -130,7 +128,6 @@ map_door_options = {
 }
 map_door_trapped = {
     "trapped": "trapped",
-    "null": "not trapped",
 }
 map_door_stack_sides = { 
     # todo! in 1.0 some doors don't have all stack options available, update when Void updates
@@ -149,7 +146,6 @@ map_door_breach_tools = {
     "((leader | lead) will | wait for (my | me to)) (open | breach)": "leader",
 }
 map_door_grenades = {
-    "none": "none",
     "(bang | flash bang | flash)": "flashbang",
     "stinger": "stinger",
     "(cs | gas | cs gas)": "gas",
@@ -285,9 +281,9 @@ class ExecuteOrCancelHeldOrder(CompoundRule):
     """
     Speech recognise team execute or cancel a held order
     """
-    spec = "[<color>] [team] <execute_or_cancel> [([that] [held] order | that [order])]"
+    spec = "<color> [team] <execute_or_cancel> [([that] [held] order | that [order])]"
     extras = [
-        Choice("color", map_colors),
+        Optional(Choice("color_choice", map_colors), "color", "current"),
         Choice("execute_or_cancel", map_execute_or_cancels),
     ]
     defaults = {
@@ -316,8 +312,8 @@ class SelectTeam(CompoundRule):
     """
     Speech recognise select color team
     """
-    spec = "[<color>] team"
-    extras = [Choice("color", map_colors)]
+    spec = "<color> team"
+    extras = [Optional(Choice("color_choice", map_colors), "color", "current")]
     defaults = {"color": "current"}
 
     def _process_recognition(self, node, extras):
@@ -392,12 +388,12 @@ class DoorOptions(CompoundRule):
     """
     Speech recognise team mirror under, wedge, cover, open, close the door
     """
-    spec = "[<color>] [team] [<hold>] <door_option> [(the | that)] [<trapped>] (door [way] | opening | room)"
+    spec = "<color> [team] <hold> <door_option> [(the | that)] <trapped> (door [way] | opening | room)"
     extras = [
-        Choice("color", map_colors),
-        Choice("hold", map_hold),
+        Optional(Choice("color_choice", map_colors), "color", "current"),
+        Optional(Choice("hold_choice", map_hold), "hold", "go"),
         Choice("door_option", map_door_options | map_door_scan),
-        Choice("trapped", map_door_trapped),
+        Optional(Choice("trapped_choice", map_door_trapped), "trapped", "not trapped"),
     ]
     defaults = {
         "color": "current",
@@ -418,11 +414,11 @@ class RemoveTheWedge(CompoundRule):
     """
     Speech recognise team remove the wedge
     """
-    spec = "[<color>] [team] [<hold>] remove [the] (wedge | block) [from] [(the | that)] [<trapped>] [door] [way]"
+    spec = "<color> [team] <hold> remove [the] (wedge | block) [from] [(the | that)] <trapped> [door] [way]"
     extras = [
-        Choice("color", map_colors),
-        Choice("hold", map_hold),
-        Choice("trapped", map_door_trapped),
+        Optional(Choice("color_choice", map_colors), "color", "current"),
+        Optional(Choice("hold_choice", map_hold), "hold", "go"),
+        Optional(Choice("trapped_choice", map_door_trapped), "trapped", "not trapped"),
     ]
     defaults = {
         "color": "current",
@@ -441,11 +437,11 @@ class UseTheWand(CompoundRule):
     """
     Speech recognise team use the wand
     """
-    spec = "[<color>] [team] [<hold>] use the (mirror | wand) [on] [(the | that)] [<trapped>] [(door [way] | opening | room)]"
+    spec = "<color> [team] <hold> use the (mirror | wand) [on] [(the | that)] <trapped> [(door [way] | opening | room)]"
     extras = [
-        Choice("color", map_colors),
-        Choice("hold", map_hold),
-        Choice("trapped", map_door_trapped),
+        Optional(Choice("color_choice", map_colors), "color", "current"),
+        Optional(Choice("hold_choice", map_hold), "hold", "go"),
+        Optional(Choice("trapped_choice", map_door_trapped), "trapped", "not trapped"),
     ]
     defaults = {
         "color": "current",
@@ -491,15 +487,15 @@ class StackUp(CompoundRule):
     """
     Speech recognise team stack up on door
     """
-    spec_start = "[<color>] [team] [<hold>]"
+    spec_start = "<color> [team] <hold>"
     spec_1 = "stack <side>"
     spec_2 = "stack [up] [<side>]"
     spec_3 = "<side> stack"
     spec_end = "[(on (the | that) door [way] | there | here)]"
     spec = f"{spec_start} ({spec_1} | {spec_2} | {spec_3}) {spec_end}"
     extras = [
-        Choice("color", map_colors),
-        Choice("hold", map_hold),
+        Optional(Choice("color_choice", map_colors), "color", "current"),
+        Optional(Choice("hold_choice", map_hold), "hold", "go"),
         Choice("side", map_door_stack_sides),
     ]
     defaults = {
@@ -579,17 +575,17 @@ class BreachAndClear(CompoundRule):
     # "gold breach and clear use the fourty mil"
     # "blue move in and clear it"
 
-    spec_start = "[<color>] [team] [<hold>]"
+    spec_start = "<color> [team] <hold>"
     spec_tool = "[<tool>] [the door]"
-    spec_grenade = "[(throw | deploy | use)] [<grenade>] [grenade]"
+    spec_grenade = "[(throw | deploy | use)] <grenade> [grenade]"
     spec_clear = "([then] breach and clear | (then | and) clear | [(then | and)] clear it | [then] move in and clear it)"
 
     spec = f"{spec_start} {spec_tool} ({spec_grenade} {spec_clear} | {spec_clear} {spec_grenade})"
     extras = [
-        Choice("color", map_colors),
-        Choice("hold", map_hold),
+        Optional(Choice("color_choice", map_colors), "color", "current"),
+        Optional(Choice("hold_choice", map_hold), "hold", "go"),
         Choice("tool", map_door_breach_tools),
-        Choice("grenade", map_door_grenades),
+        Optional(Choice("grenade_choice", map_door_grenades), "grenade", "none"),
     ]
     defaults = {
         "color": "current",
@@ -629,10 +625,10 @@ class PickLock(CompoundRule):
     """
     Speech recognise team pick the lock
     """
-    spec = "[<color>] [team] [<hold>] pick ([the] door | [the] lock | it)"
+    spec = "<color> [team] <hold> pick ([the] door | [the] lock | it)"
     extras = [
-        Choice("color", map_colors),
-        Choice("hold", map_hold),
+        Optional(Choice("color_choice", map_colors), "color", "current"),
+        Optional(Choice("hold_choice", map_hold), "hold", "go"),
     ]
     defaults = {
         "color": "current",
@@ -677,10 +673,10 @@ class GroundOptions(CompoundRule):
     """
     Speech recognise team move, cover, halt (hold), search area
     """
-    spec = "[<color>] [team] [<hold>] <ground_option>"
+    spec = "<color> [team] <hold> <ground_option>"
     extras = [
-        Choice("color", map_colors),
-        Choice("hold", map_hold),
+        Optional(Choice("color_choice", map_colors), "color", "current"),
+        Optional(Choice("hold_choice", map_hold), "hold", "go"),
         Choice("ground_option", map_ground_options),
     ]
     defaults = {
@@ -727,12 +723,12 @@ class FallIn(CompoundRule):
     """
     Speech recognise team fall in
     """
-    spec_1 = "[<color>] [team] [<hold>] (fall in | regroup | form up) [on me] [<formation>]"
-    spec_2 = "<color> [team] [<hold>] on me [<formation>]"
+    spec_1 = "<color> [team] <hold> (fall in | regroup | form up) [on me] [<formation>]"
+    spec_2 = "<color> [team] <hold> on me [<formation>]"
     spec = f"({spec_1} | {spec_2})"
     extras = [
-        Choice("color", map_colors),
-        Choice("hold", map_hold),
+        Optional(Choice("color_choice", map_colors), "color", "current"),
+        Optional(Choice("hold_choice", map_hold), "hold", "go"),
         Choice("formation", map_ground_fallin_formations),
     ]
     defaults = {
@@ -781,10 +777,10 @@ class UseDeployable(CompoundRule):
     """
     Speech recognise command team to use a deployable at a location
     """
-    spec = "[<color>] [team] [<hold>] deploy <deployable>"
+    spec = "<color> [team] <hold> deploy <deployable>"
     extras = [
-        Choice("color", map_colors),
-        Choice("hold", map_hold),
+        Optional(Choice("color_choice", map_colors), "color", "current"),
+        Optional(Choice("hold_choice", map_hold), "hold", "go"),
         Choice("deployable", map_ground_deployables),
     ]
     defaults = {
@@ -853,11 +849,11 @@ class NpcTeamRestrain(CompoundRule):
     """
     Speech recognise command team to restrain NPC target
     """
-    spec_start = "[<color>] [team]"
+    spec_start = "<color> [team]"
     spec_1 = "<restrain> (em | them | him | her | [the] target)"
     spec = f"{spec_start} {spec_1}"
     extras = [
-        Choice("color", map_colors),
+        Optional(Choice("color_choice", map_colors), "color", "current"),
         Choice("restrain", map_npc_team_restrain),
     ]
     defaults = {
@@ -897,14 +893,14 @@ class NpcTeamDeploy(CompoundRule):
     """
     Speech recognise command team to use deployable on NPC target
     """
-    spec_start = "[<color>] [team]"
+    spec_start = "<color> [team]"
     spec_target = "(em | them | him | her | [the] target)"
     spec_1 = f"subdue {spec_target} [(use | with)] [<deployable>]"
     spec_2 = f"<deployable> {spec_target}"
     spec_3 = f"make {spec_target} compliant [(use | with)] [<deployable>]"
     spec = f"{spec_start} ({spec_1} | {spec_2} | {spec_3})"
     extras = [
-        Choice("color", map_colors),
+        Optional(Choice("color_choice", map_colors), "color", "current"),
         Choice("deployable", map_npc_team_deployables),
     ]
     defaults = {
@@ -1170,6 +1166,9 @@ WORD: /[^\s\[\]<>|(){}]+/
             file.write(f"\n{rule.element.gstring()}")
             file.write(f"\n---")
 
+            # file.write(f"\n{rule._element.element_tree_string()}")
+            # file.write(f"\n---")
+
             spec_parser = Lark(grammar_string, parser="lalr")
             tree = spec_parser.parse(rule.element.gstring())
             # file.write(f"\n{tree.pretty()}")
@@ -1182,15 +1181,27 @@ WORD: /[^\s\[\]<>|(){}]+/
                     file.write(f"\n{tree_item_options}")
                 file.write(f"\n---")
             try:
-                file.write(f"\n{rule.spec}")
-                for extra in rule.extras:
-                    choice_name = extra.name
-                    choice_keys = list(extra._choices.keys())
-                    file.write(f"\n{choice_name}={choice_keys}")
-            except: 
+                if hasattr(rule, 'spec'):
+                    file.write(f"\n{rule.spec}")
+                if hasattr(rule, 'extras'):
+                    for extra in rule.extras:
+                        if isinstance(extra, Choice):
+                            choice_name = extra.name
+                            choice_keys = list(extra._choices.keys())
+                            file.write(f"\n{choice_name}={choice_keys}")
+                        elif isinstance(extra, Optional):
+                            if isinstance(extra._child, Choice):
+                                el_name = extra.name
+                                choice_keys = list(extra._child._choices.keys())
+                                file.write(f"\n{el_name}=Optional({choice_keys})")
+                        else:
+                            el_name = extra.name
+                            el_tree = extra.element_tree_string()
+                            file.write(f"\n{el_name}={el_tree}")
+            except Exception: 
                 # it doesn't matter if we can't dump the grammar into a file & it may fail
                 # if rules are added that don't only use CompoundRule and Choice
-                print(f"Unable to gramamr dump all of {rule.name}")
+                print(f"Unable to grammar dump all of {rule.name}")
                 pass
             file.write(f"\n------------")
 
