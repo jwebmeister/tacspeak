@@ -140,6 +140,7 @@ map_door_breach_tools = {
     "open": "open",
     "move in": "open",
     "kick [it] [down]": "kick",
+    "kick the door down": "kick",
     "(shotgun | shot e)": "shotgun",
     "c two": "c2",
     "[battering] ram [it]": "ram",
