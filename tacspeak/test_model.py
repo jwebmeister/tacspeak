@@ -392,7 +392,7 @@ def recognize(wav_path, text):
     print(f"input_extras: {input_extras}")
     print(f"output_extras: {output_extras}")
 
-    return output_str, text, output_options, input_options, correct_rule
+    return output_str, text, output_options, input_options, correct_rule, wav_path
 
 # --------------------------------------------------------------------------
 # Main event driving loop.
@@ -446,7 +446,7 @@ def test_model(tsv_file, model_dir, lexicon_file=None, num_threads=1):
                                         'cmd_not_recog_input':0,
                                         'cmds':0,
                                         }
-            for output_str, text, output_options, input_options, correct_rule in pool.starmap(recognize, submissions, chunksize=1):
+            for output_str, text, output_options, input_options, correct_rule, wav_path in pool.starmap(recognize, submissions, chunksize=1):
                 result = calculator.calculate(text.strip().split(), output_str.strip().split())
                 n_errors = result['sub'] + result['del'] + result['ins']
                 n_correct = result['cor']
@@ -479,7 +479,7 @@ def test_model(tsv_file, model_dir, lexicon_file=None, num_threads=1):
                 cmd_thread_overall_stats['cmd_not_recog_input'] += 1 if cmd_recog_input == -1 else 0
                 cmd_thread_overall_stats['cmds'] += 1
 
-                entry = {'ref':text, 'hyp':output_str, 
+                entry = {'ref':text, 'hyp':output_str, 'wav_path':wav_path,
                          'cmd_correct_output':cmd_correct_output, 
                          'cmd_correct_rule':cmd_correct_rule,
                          'cmd_correct_options':cmd_correct_options,
@@ -527,12 +527,14 @@ def test_model(tsv_file, model_dir, lexicon_file=None, num_threads=1):
                             + f", n_all={item['n_all']}, rate_errors={item['rate_errors']}"
                             + f"\n ref: {item['ref']}"
                             + f"\n hyp: {item['hyp']}"
+                            + f"\n wav_path: {item['wav_path']}"
                             + f"\n input_options: {item['input_options']}"
                             + f"\n output_options: {item['output_options']}"
                             + "\n"
                             )
     
     print(f"{calculator.overall_string()}")
+    print(f"Command stats -> {cmd_overall_stats}")
     
     return calculator
 
@@ -556,7 +558,7 @@ def recognize_dictation(wav_path, text):
     output_str = call_recognizer(data)
     print(f"Ref: {text}")
     print(f"Hyp: {output_str}")
-    return output_str, text
+    return output_str, text, wav_path
 
 def test_model_dictation(tsv_file, model_dir, lexicon_file=None, num_threads=1):
 
@@ -597,14 +599,14 @@ def test_model_dictation(tsv_file, model_dir, lexicon_file=None, num_threads=1):
     
     with multiprocessing.Pool(processes=num_threads, initializer=initialize_kaldi_dictation, initargs=(model_dir,)) as pool:
         try:
-            for output_str, text in pool.starmap(recognize_dictation, submissions, chunksize=1):
+            for output_str, text, wav_path in pool.starmap(recognize_dictation, submissions, chunksize=1):
                 result = calculator.calculate(text.strip().split(), output_str.strip().split())
                 n_errors = result['sub'] + result['del'] + result['ins']
                 n_correct = result['cor']
                 n_all = result['all']
                 rate_errors = float(n_errors) / float(max(1, n_all))
 
-                entry = {'ref':text, 'hyp':output_str, 
+                entry = {'ref':text, 'hyp':output_str, 'wav_path':wav_path,
                          'n_errors':n_errors, 'n_correct':n_correct, 'n_all':n_all, 'rate_errors':rate_errors
                          }
                 utterances_list.append(entry)
@@ -621,6 +623,7 @@ def test_model_dictation(tsv_file, model_dir, lexicon_file=None, num_threads=1):
                             + f", n_all={item['n_all']}, rate_errors={item['rate_errors']}"
                             + f"\n ref: {item['ref']}"
                             + f"\n hyp: {item['hyp']}"
+                            + f"\n wav_path: {item['wav_path']}"
                             + "\n"
                             )
     
