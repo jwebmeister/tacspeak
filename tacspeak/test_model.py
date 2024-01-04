@@ -435,9 +435,17 @@ def test_model(tsv_file, model_dir, lexicon_file=None, num_threads=1):
     engine.disconnect()
 
     utterances_list = []
+    cmd_all_threads_overall_stats = []
     
     with multiprocessing.Pool(processes=num_threads, initializer=initialize_kaldi, initargs=(model_dir,)) as pool:
         try:
+            cmd_thread_overall_stats = {'cmd_not_correct_output':0, 
+                                        'cmd_not_correct_rule':0,
+                                        'cmd_not_correct_options':0,
+                                        'cmd_not_recog_output':0,
+                                        'cmd_not_recog_input':0,
+                                        'cmds':0,
+                                        }
             for output_str, text, output_options, input_options, correct_rule in pool.starmap(recognize, submissions, chunksize=1):
                 result = calculator.calculate(text.strip().split(), output_str.strip().split())
                 n_errors = result['sub'] + result['del'] + result['ins']
@@ -464,6 +472,12 @@ def test_model(tsv_file, model_dir, lexicon_file=None, num_threads=1):
                 elif cmd_correct_rule == 1 and cmd_correct_options == 1:
                     cmd_correct_output = 1
 
+                cmd_thread_overall_stats['cmd_not_correct_output'] += 1 if cmd_correct_output == -1 else 0
+                cmd_thread_overall_stats['cmd_not_correct_rule'] += 1 if cmd_correct_rule == -1 else 0
+                cmd_thread_overall_stats['cmd_not_correct_options'] += 1 if cmd_correct_options == -1 else 0
+                cmd_thread_overall_stats['cmd_not_recog_output'] += 1 if cmd_recog_output == -1 else 0
+                cmd_thread_overall_stats['cmd_not_recog_input'] += 1 if cmd_recog_input == -1 else 0
+                cmd_thread_overall_stats['cmds'] += 1
 
                 entry = {'ref':text, 'hyp':output_str, 
                          'cmd_correct_output':cmd_correct_output, 
@@ -476,17 +490,33 @@ def test_model(tsv_file, model_dir, lexicon_file=None, num_threads=1):
                          'n_errors':n_errors, 'n_correct':n_correct, 'n_all':n_all, 'rate_errors':rate_errors
                          }
                 utterances_list.append(entry)
-                # utterance_str = ''
-                # utterance_str += f"\nRef: {text}"
-                # utterance_str += f"\nHyp: {output_str}"
-                # utterances_list.append(utterance_str)
+
+            cmd_all_threads_overall_stats.append(cmd_thread_overall_stats)
         except KeyboardInterrupt as e:
             print(f"Closing pool: {e}")
             pool.close()
             return None
 
     utterances_list.sort(key=lambda x: (x['cmd_correct_output'] * 100.0) + (x['cmd_correct_rule'] * 3.0) + (x['cmd_correct_options'] * 3.0) + (x['cmd_recog_output'] * 2.0) + x['cmd_recog_input'] - x['rate_errors'], reverse=False)
+    
+    cmd_overall_stats = {}
+    cmd_overall_stats['cmd_not_correct_output'] = 0
+    cmd_overall_stats['cmd_not_correct_rule'] = 0
+    cmd_overall_stats['cmd_not_correct_options'] = 0
+    cmd_overall_stats['cmd_not_recog_output'] = 0
+    cmd_overall_stats['cmd_not_recog_input'] = 0
+    cmd_overall_stats['cmds'] = 0
+
+    for thread_item in cmd_all_threads_overall_stats:
+        cmd_overall_stats['cmd_not_correct_output'] += thread_item['cmd_not_correct_output']
+        cmd_overall_stats['cmd_not_correct_rule'] += thread_item['cmd_not_correct_rule']
+        cmd_overall_stats['cmd_not_correct_options'] += thread_item['cmd_not_correct_options']
+        cmd_overall_stats['cmd_not_recog_output'] += thread_item['cmd_not_recog_output']
+        cmd_overall_stats['cmd_not_recog_input'] += thread_item['cmd_not_recog_input']
+        cmd_overall_stats['cmds'] += thread_item['cmds']
+    
     with open('./test_model_output_utterances.txt', 'w', encoding='utf-8') as outfile:
+        outfile.write(f"{cmd_overall_stats}\n\n")
         for item in utterances_list:
             outfile.write(  f"\n cmd_correct_output={item['cmd_correct_output']}, "
                             + f"cmd_correct_rule={item['cmd_correct_rule']}, "
