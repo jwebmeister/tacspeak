@@ -1025,6 +1025,7 @@ class YellFreeze(BasicRule):
         Literal("freeze"),
         Literal("hands"),
         Literal("drop"),
+        Literal("drop it"),
         Literal("police"),
     ))
 
