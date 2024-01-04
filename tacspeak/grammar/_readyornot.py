@@ -579,7 +579,7 @@ class BreachAndClear(CompoundRule):
     spec_start = "<color> [team] <hold>"
     spec_tool = "[<tool>] [the door]"
     spec_grenade = "[(throw | deploy | use)] <grenade> [grenade]"
-    spec_clear = "([then] breach and clear | (then | and) clear | [(then | and)] clear it | [then] move in and clear it)"
+    spec_clear = "([then] breach and clear | (then | and) clear | [(then | and)] clear it | [then] move in and clear [it])"
 
     spec = f"{spec_start} {spec_tool} ({spec_grenade} {spec_clear} | {spec_clear} {spec_grenade})"
     extras = [
