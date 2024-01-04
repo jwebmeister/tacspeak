@@ -1055,7 +1055,7 @@ class FreezeRecob(RecognitionObserver):
             cmd_yell().execute()
             self.frozen = True
 
-    def on_recognition(self, words, results):
+    def on_recognition(self, words, results, rule, node):
         self.words = words
         # print("words={0}".format(words))
         # print("results={0}".format(results))
