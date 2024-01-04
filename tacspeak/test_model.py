@@ -279,7 +279,6 @@ def initialize_kaldi(model_dir):
     return engine
 
 def recognize(wav_path, text):
-    # todo! change this to not global for multi-threading
     engine = get_engine('kaldi')
 
     testmodel_recog_buffer = None
@@ -312,9 +311,14 @@ def recognize(wav_path, text):
     while testmodel_recog_buffer is None and n_sleeps < 30:
         n_sleeps += 1
         time.sleep(0.1)
+    output_str = ""
+    output_extras = None
+    output_options = None
+    output_rule = None
     if testmodel_recog_buffer:
         output_str = testmodel_recog_buffer[0]
         rule = testmodel_recog_buffer[2]
+        output_rule = rule
         node = testmodel_recog_buffer[3]
         if isinstance(rule, CompoundRule):
             extras = {
@@ -329,19 +333,64 @@ def recognize(wav_path, text):
                     extras[name] = extra_node.value()
                 elif element.has_default():
                     extras[name] = element.default
-            # todo! change this to do something more than print to stdout
-            # e.g. mimic text as recognition, compare extras
-            print(f"extras: {extras}")
+            output_extras = extras
+            output_options = {k:v for k,v in output_extras.items() if k not in ['_grammar','_rule','_node']}
     else:
         output_str = ""
-    print(f"n_sleeps: {n_sleeps}")
-    print(f"Ref: {text}")
-    print(f"Hyp: {output_str}")
 
     testmodel_recog_buffer = None
     testmodel_busy = False
 
-    return output_str, text
+    # becaused we called do_recognition with on_recognition callbacks, 
+    # it should still be registered in engine and we don't have to do anything for mimic
+    try:
+        engine.mimic(text)
+    except Exception:
+        pass
+    
+    n_sleeps = 0
+    while testmodel_recog_buffer is None and n_sleeps < 30:
+        n_sleeps += 1
+        time.sleep(0.1)
+    input_str = ""
+    input_extras = None
+    input_options = None
+    input_rule = None
+    if testmodel_recog_buffer:
+        input_str = testmodel_recog_buffer[0]
+        rule = testmodel_recog_buffer[2]
+        input_rule = rule
+        node = testmodel_recog_buffer[3]
+        if isinstance(rule, CompoundRule):
+            extras = {
+                "_grammar":  rule.grammar,
+                "_rule":     rule,
+                "_node":     node,
+            }
+            extras.update(rule._defaults)
+            for name, element in rule._extras.items():
+                extra_node = node.get_child_by_name(name, shallow=True)
+                if extra_node:
+                    extras[name] = extra_node.value()
+                elif element.has_default():
+                    extras[name] = element.default
+            input_extras = extras
+            input_options = {k:v for k,v in input_extras.items() if k not in ['_grammar','_rule','_node']}
+    else:
+        input_str = ""
+
+    correct_rule = 0
+    if output_rule is not None and output_rule == input_rule:
+        correct_rule = 1
+    elif output_rule is not None and input_rule is not None and output_rule != input_rule:
+        correct_rule = -1
+
+    print(f"Ref: {text}")
+    print(f"Hyp: {output_str}")
+    print(f"input_extras: {input_extras}")
+    print(f"output_extras: {output_extras}")
+
+    return output_str, text, output_options, input_options, correct_rule
 
 # --------------------------------------------------------------------------
 # Main event driving loop.
@@ -362,58 +411,95 @@ def test_model(tsv_file, model_dir, lexicon_file=None, num_threads=1):
                 word = line.strip().split(None, 1)[0]
                 lexicon.add(word)
 
-    try:
-        print(f"opening {tsv_file}")
-        with open(tsv_file, 'r', encoding='utf-8') as f:
-            submissions = []
-            for line in f:
-                fields = line.rstrip('\n').split('\t')
-                text = fields[4]
-                wav_path = fields[0]
-                if not os.path.exists(wav_path):
-                    print(f"{wav_path} does not exist")
-                    continue
-                if lexicon_file and any(word not in lexicon for word in text.split()):
-                    print(f"{wav_path} is out of vocabulary: {text}")
-                    continue
-                submissions.append((wav_path, text,))
-            print(f"read lines: {len(submissions)}")
+    print(f"opening {tsv_file}")
+    with open(tsv_file, 'r', encoding='utf-8') as f:
+        submissions = []
+        for line in f:
+            fields = line.rstrip('\n').split('\t')
+            text = fields[4]
+            wav_path = fields[0]
+            if not os.path.exists(wav_path):
+                print(f"{wav_path} does not exist")
+                continue
+            if lexicon_file and any(word not in lexicon for word in text.split()):
+                print(f"{wav_path} is out of vocabulary: {text}")
+                continue
+            submissions.append((wav_path, text,))
+        print(f"read lines: {len(submissions)}")
 
-        
-        # initialize first in-case model needs to be recompiled
-        engine = initialize_kaldi(model_dir)
-        engine.disconnect()
+    
+    # initialize first in-case model needs to be recompiled
+    engine = initialize_kaldi(model_dir)
+    engine.disconnect()
 
-        utterances_list = []
-        
-        with multiprocessing.Pool(processes=num_threads, initializer=initialize_kaldi, initargs=(model_dir,)) as pool:
-            for output_str, text in pool.starmap(recognize, submissions, chunksize=1):
+    utterances_list = []
+    
+    with multiprocessing.Pool(processes=num_threads, initializer=initialize_kaldi, initargs=(model_dir,)) as pool:
+        try:
+            for output_str, text, output_options, input_options, correct_rule in pool.starmap(recognize, submissions, chunksize=1):
                 result = calculator.calculate(text.strip().split(), output_str.strip().split())
                 n_errors = result['sub'] + result['del'] + result['ins']
                 n_correct = result['cor']
                 n_all = result['all']
                 rate_errors = float(n_errors) / float(max(1, n_all))
-                entry = {'ref':text, 'hyp':output_str, 'n_errors':n_errors, 
-                        'n_correct':n_correct, 'n_all':n_all, 'rate_errors':rate_errors}
+
+                cmd_recog_input = 1 if input_options is not None else -1
+                cmd_recog_output = 1 if output_options is not None else -1
+
+                cmd_correct_rule = correct_rule
+                cmd_correct_options = 0
+                cmd_correct_output = 0
+
+                if cmd_recog_input == 1 and cmd_recog_output == 1:
+                    if cmd_correct_rule == 1:
+                        cmd_correct_options = 1
+                        for key, value in input_options.items():
+                            if output_options[key] != value:
+                                cmd_correct_options = -1
+                
+                if cmd_correct_rule == -1 or cmd_correct_options == -1:
+                    cmd_correct_output = -1
+                elif cmd_correct_rule == 1 and cmd_correct_options == 1:
+                    cmd_correct_output = 1
+
+
+                entry = {'ref':text, 'hyp':output_str, 
+                         'cmd_correct_output':cmd_correct_output, 
+                         'cmd_correct_rule':cmd_correct_rule,
+                         'cmd_correct_options':cmd_correct_options,
+                         'cmd_recog_output':cmd_recog_output,
+                         'cmd_recog_input':cmd_recog_input,
+                         'output_options':output_options,
+                         'input_options':input_options,
+                         'n_errors':n_errors, 'n_correct':n_correct, 'n_all':n_all, 'rate_errors':rate_errors
+                         }
                 utterances_list.append(entry)
                 # utterance_str = ''
                 # utterance_str += f"\nRef: {text}"
                 # utterance_str += f"\nHyp: {output_str}"
                 # utterances_list.append(utterance_str)
+        except KeyboardInterrupt as e:
+            print(f"Closing pool: {e}")
+            pool.close()
+            return None
 
-        utterances_list.sort(key=lambda x: x['n_errors'], reverse=True)
-        with open('./test_model_output_utterances.txt', 'w', encoding='utf-8') as outfile:
-            for item in utterances_list:
-                outfile.write(f"\n errors={item['n_errors']}, n_correct={item['n_correct']}"
-                              + f", n_all={item['n_all']}, rate_errors={item['rate_errors']}"
-                              + f"\n ref: {item['ref']}"
-                              + f"\n hyp: {item['hyp']}"
-                              )
-        
-        print(f"{calculator.overall_string()}")
-
-    except Exception as e:
-        print(f"{e}")
-        pass
+    utterances_list.sort(key=lambda x: (x['cmd_correct_output'] * 100.0) + (x['cmd_correct_rule'] * 3.0) + (x['cmd_correct_options'] * 3.0) + (x['cmd_recog_output'] * 2.0) + x['cmd_recog_input'] - x['rate_errors'], reverse=False)
+    with open('./test_model_output_utterances.txt', 'w', encoding='utf-8') as outfile:
+        for item in utterances_list:
+            outfile.write(  f"\n cmd_correct_output={item['cmd_correct_output']}, "
+                            + f"cmd_correct_rule={item['cmd_correct_rule']}, "
+                            + f"cmd_correct_options={item['cmd_correct_options']}, "
+                            + f"cmd_recog_output={item['cmd_recog_output']}, "
+                            + f"cmd_recog_input={item['cmd_recog_input']}"
+                            + f"\n errors={item['n_errors']}, n_correct={item['n_correct']}"
+                            + f", n_all={item['n_all']}, rate_errors={item['rate_errors']}"
+                            + f"\n ref: {item['ref']}"
+                            + f"\n hyp: {item['hyp']}"
+                            + f"\n input_options: {item['input_options']}"
+                            + f"\n output_options: {item['output_options']}"
+                            + "\n"
+                            )
+    
+    print(f"{calculator.overall_string()}")
     
     return calculator
