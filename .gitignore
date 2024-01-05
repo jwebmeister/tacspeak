@@ -8,7 +8,8 @@ kaldi_model/*
 retain/*
 !retain/README.md
 exported_model/
-testaudio/
+testaudio*/
+cleanaudio*/
 .*.log
 .debug_grammar*.txt
 test_model_output_*.txt
