@@ -467,6 +467,10 @@ def test_model(tsv_file, model_dir, lexicon_file=None, num_threads=1):
                             if output_options[key] != value:
                                 cmd_correct_options = -1
                 
+                if correct_rule == 1:
+                    cmd_recog_input = 1
+                    cmd_recog_output = 1
+
                 if cmd_correct_rule == -1 or cmd_correct_options == -1:
                     cmd_correct_output = -1
                 elif cmd_correct_rule == 1 and cmd_correct_options == 1:
