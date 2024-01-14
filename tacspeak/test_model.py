@@ -542,6 +542,24 @@ def test_model(tsv_file, model_dir, lexicon_file=None, num_threads=1):
     
     return calculator
 
+def transcribe_wav(wav_path, out_txt_path=None, model_dir=None):
+    call_recognizer = None
+    if model_dir is None:
+        model_dir = "./kaldi_model/"
+    initialize_kaldi(model_dir)
+    output_str, text, output_options, input_options, correct_rule, wav_path = recognize(wav_path, "")
+    entry = {wav_path: output_str}
+    if out_txt_path is None:
+        return entry
+    if os.path.isfile(out_txt_path):
+        with open(out_txt_path, 'a') as f:
+            f.write(f"{entry}\n")
+    else:
+        with open(out_txt_path, 'w') as f:
+            f.write(f"{entry}\n")
+    
+    return entry
+
 
 # ---------------------------------------------------------------------------------------------
 # Dictation test_model
@@ -634,3 +652,21 @@ def test_model_dictation(tsv_file, model_dir, lexicon_file=None, num_threads=1):
     print(f"{calculator.overall_string()}")
     
     return calculator
+
+def transcribe_wav_dictation(wav_path, out_txt_path=None, model_dir=None):
+    call_recognizer = None
+    if model_dir is None:
+        model_dir = "./kaldi_model/"
+    initialize_kaldi_dictation(model_dir)
+    output_str, _, wav_path = recognize_dictation(wav_path, "")
+    entry = {wav_path: output_str}
+    if out_txt_path is None:
+        return entry
+    if os.path.isfile(out_txt_path):
+        with open(out_txt_path, 'a') as f:
+            f.write(f"{entry}\n")
+    else:
+        with open(out_txt_path, 'w') as f:
+            f.write(f"{entry}\n")
+    
+    return entry

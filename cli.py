@@ -9,7 +9,7 @@ import os
 from kaldi_active_grammar import Compiler, disable_donation_message
 import tacspeak
 from tacspeak.__main__ import main as tacspeak_main
-from tacspeak.test_model import test_model, test_model_dictation
+from tacspeak.test_model import test_model, test_model_dictation, transcribe_wav, transcribe_wav_dictation
 from dragonfly import get_engine
 
 def main():
@@ -31,6 +31,13 @@ def main():
     parser.add_argument('--test_dictation', action='store_true',
                         help=('only used together with --test_model. tests model using raw dictation graph, irrespective of grammar modules.'
                               + " Example: --test_model './testaudio/recorder.tsv' './kaldi_model/' './kaldi_model/lexicon.txt' 4 --test_dictation"))
+    parser.add_argument('--transcribe_wav', dest='transcribe_wav', action='store',
+                        metavar=('wav_path', 'out_txt_path', 'model_dir'), nargs=3,
+                        help=('transcribe a wav file using active grammar modules, output to txt file.'
+                                + " Example: --transcribe_wav 'audio.wav' 'audio.txt' './kaldi_model/'"))
+    parser.add_argument('--transcribe_dictation', action='store_true',
+                        help=('only used together with --transcribe_wav. transcribes using raw dictation graph, irrespective of grammar modules.'
+                              + " Example: --transcribe_wav 'audio.wav' 'audio.txt' './kaldi_model/' --transcribe_dictation"))
     args = parser.parse_args()
     if args.model_dir is not None and os.path.isdir(args.model_dir):
         compiler = Compiler(args.model_dir)
@@ -74,6 +81,23 @@ def main():
                 outfile.write("\n")
                 for entry in calculator.ranked_worst_to_best_list():
                     outfile.write(f"\n{str(entry)}")
+        return
+    if args.transcribe_wav:
+        if args.transcribe_wav[0] is not None and os.path.isfile(args.transcribe_wav[0]):
+            wav_path = args.transcribe_wav[0]
+            try:
+                out_txt_path = args.transcribe_wav[1]
+            except Exception:
+                out_txt_path = None
+            try:
+                model_dir = args.transcribe_wav[2]
+            except Exception:
+                model_dir = "./kaldi_model/"
+            if args.transcribe_dictation:
+                entry = transcribe_wav_dictation(wav_path, out_txt_path, model_dir)
+            else:
+                entry = transcribe_wav(wav_path, out_txt_path, model_dir)
+            print(f"{entry}")
         return
     tacspeak_main()
 
