@@ -1,7 +1,7 @@
 cffi==1.16.0
 cx-Freeze==6.15.12
 cx-Logging==3.1.0
-dragonfly @ git+https://github.com/jwebmeister/dragonfly.git@f546242467b55e9c019589cf12322906f68f86f1
+dragonfly @ git+https://github.com/jwebmeister/dragonfly.git@41b60136eceea4f1db1c98912fc756f8009f9915
 kaldi-active-grammar==3.1.0
 lark-parser==0.8.9
 lief==0.13.2
@@ -14,5 +14,5 @@ pywin32==306
 six==1.16.0
 sounddevice==0.3.15
 ush==3.1.0
-wcwidth==0.2.12
+wcwidth==0.2.13
 webrtcvad-wheels==2.0.11.post1

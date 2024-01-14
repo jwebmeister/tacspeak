@@ -7,9 +7,11 @@ kaldi_model/*
 !kaldi_model/README.md
 retain/*
 !retain/README.md
-exported_model/
-testaudio*/
-cleanaudio*/
 .*.log
 .debug_grammar*.txt
 test_model_output_*.txt
+
+exported_model/
+testaudio*/
+cleanaudio*/
+*_retain/

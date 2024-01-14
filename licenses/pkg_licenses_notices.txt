@@ -88,7 +88,7 @@ Computronix\xae is a registered trademark of Computronix (Canada) Ltd.
 UNKNOWN
 
 dragonfly
-1.0.0rc2.dev106
+1.0.0rc2.dev107
 GNU Library or Lesser General Public License (LGPL)
 Christo Butcher
 https://github.com/dictation-toolbox/dragonfly
@@ -2201,7 +2201,7 @@ UNKNOWN
 UNKNOWN
 
 wcwidth
-0.2.12
+0.2.13
 MIT License
 Jeff Quast
 https://github.com/jquast/wcwidth

@@ -1,9 +1,9 @@
 kaldi-active-grammar~=3.1.0
 
-# dragonfly[kaldi] @ git+https://github.com/jwebmeister/dragonfly.git@1.0.0-rc2-dev106
-# dragonfly[kaldi] @ https://github.com/jwebmeister/dragonfly/releases/download/1.0.0-rc2-dev106/dragonfly-1.0.0rc2.dev106-py3-none-any.whl
+dragonfly[kaldi] @ git+https://github.com/jwebmeister/dragonfly.git@1.0.0-rc2-dev107
+# dragonfly[kaldi] @ https://github.com/jwebmeister/dragonfly/releases/download/1.0.0-rc2-dev107/dragonfly-1.0.0rc2.dev107-py3-none-any.whl
 # -e ../dragonfly/[kaldi]
-dragonfly[kaldi] @ git+https://github.com/jwebmeister/dragonfly.git@dev
+# dragonfly[kaldi] @ git+https://github.com/jwebmeister/dragonfly.git@dev
 
 # dev only
 cx_Freeze~=6.15.12
