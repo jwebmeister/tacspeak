@@ -11,6 +11,7 @@ import tacspeak
 from tacspeak.__main__ import main as tacspeak_main
 from tacspeak.test_model import test_model, test_model_dictation, transcribe_wav, transcribe_wav_dictation
 from dragonfly import get_engine
+import logging
 
 def main():
     print(f"Tacspeak version {tacspeak.__version__}")
@@ -40,6 +41,8 @@ def main():
                               + " Example: --transcribe_wav 'audio.wav' 'audio.txt' './kaldi_model/' --transcribe_dictation"))
     args = parser.parse_args()
     if args.model_dir is not None and os.path.isdir(args.model_dir):
+        _log = logging.getLogger('kaldi')
+        logging.basicConfig(level=5)
         compiler = Compiler(args.model_dir)
         print("Compiling dictation graph (approx. 30 minutes)...")
         compiler.compile_agf_dictation_fst()
