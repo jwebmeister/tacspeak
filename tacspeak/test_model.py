@@ -540,7 +540,7 @@ def test_model(tsv_file, model_dir, lexicon_file=None, num_threads=1):
     print(f"{calculator.overall_string()}")
     print(f"Command stats -> {cmd_overall_stats}")
     
-    return calculator
+    return calculator, cmd_overall_stats
 
 def transcribe_wav(wav_path, out_txt_path=None, model_dir=None):
     call_recognizer = None
@@ -651,7 +651,7 @@ def test_model_dictation(tsv_file, model_dir, lexicon_file=None, num_threads=1):
     
     print(f"{calculator.overall_string()}")
     
-    return calculator
+    return calculator, None
 
 def transcribe_wav_dictation(wav_path, out_txt_path=None, model_dir=None):
     call_recognizer = None

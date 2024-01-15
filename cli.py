@@ -71,10 +71,10 @@ def main():
                 num_threads = 1
             print(f"{tsv_file},{model_dir},{lexicon_file},{num_threads}")
             if args.test_dictation:
-                calculator = test_model_dictation(tsv_file, model_dir, lexicon_file, num_threads)
+                calculator, cmd_overall_stats = test_model_dictation(tsv_file, model_dir, lexicon_file, num_threads)
                 outfile_path = 'test_model_output_dictation_tokens.txt'
             else:
-                calculator = test_model(tsv_file, model_dir, lexicon_file, num_threads)
+                calculator, cmd_overall_stats = test_model(tsv_file, model_dir, lexicon_file, num_threads)
                 outfile_path = 'test_model_output_tokens.txt'
 
             with open(outfile_path, 'w', encoding='utf-8') as outfile:
@@ -84,6 +84,15 @@ def main():
                 outfile.write("\n")
                 for entry in calculator.ranked_worst_to_best_list():
                     outfile.write(f"\n{str(entry)}")
+            
+            overall_entry_1 = (model_dir, tsv_file, "Dictation" if args.test_dictation else "Command", "WER", calculator.overall_string())
+            overall_entry_2 = (model_dir, tsv_file, "Dictation" if args.test_dictation else "Command", "CMDERR", cmd_overall_stats)
+            with open('test_model_output_overall.txt', 'a', encoding='utf-8') as outfile:
+                outfile.write(f"{overall_entry_1}\n")
+                if not args.test_dictation:
+                    outfile.write(f"{overall_entry_2}\n")
+
+            return calculator.overall_string(), cmd_overall_stats
         return
     if args.transcribe_wav:
         if args.transcribe_wav[0] is not None and os.path.isfile(args.transcribe_wav[0]):
