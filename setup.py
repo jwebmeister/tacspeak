@@ -1,6 +1,6 @@
 #
 # This file is part of Tacspeak.
-# (c) Copyright 2023 by Joshua Webb
+# (c) Copyright 2023-2024 by Joshua Webb
 # Licensed under the AGPL-3.0; see LICENSE.txt file.
 #
 
@@ -80,6 +80,7 @@ include_files.append(("scripts/list_retain_item_missing_wav.ps1", "scripts/list_
 include_files.append(("scripts/delete_retain_item_missing_wav.ps1", "scripts/delete_retain_item_missing_wav.ps1"))
 include_files.append(("scripts/list_wav_missing_from_retain_tsv.ps1", "scripts/list_wav_missing_from_retain_tsv.ps1"))
 include_files.append(("scripts/delete_wav_missing_from_retain_tsv.ps1", "scripts/delete_wav_missing_from_retain_tsv.ps1"))
+include_files.append(("scripts/copy_retain_item_cmds_only.ps1", "scripts/copy_retain_item_cmds_only.ps1"))
 include_files.append(("retain/README.md", "retain/README.md"))
 
 # Dependencies are automatically detected, but it might need fine tuning.
@@ -121,6 +122,6 @@ setup(
     options={"build_exe": build_exe_options},
     executables=[Executable(script="cli.py", 
                             target_name="tacspeak", 
-                            copyright="© Copyright 2023 by Joshua Webb"
+                            copyright="© Copyright 2023-2024 by Joshua Webb"
                             )],
 )
