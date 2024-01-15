@@ -25,7 +25,11 @@ KALDI_ENGINE_SETTINGS = {
                                                 # recommended is 150 if using listen_key_toggle (0 or -1), 250 for anything else.
     "auto_add_to_user_lexicon":False,           # this requires g2p_en (which isn't installed by default)
     "allow_online_pronunciations":False,
-    # "audio_input_device":None,                # set to an int to choose a non-default microphone
+    # "retain_dir":"./retain/",                 # uncomment this to retain recordings of recognised commands. set to a writable directory path to retain recognition metadata and/or audio data
+    # "retain_audio":True,                      # uncomment this to retain recordings of recognised commands. set to True to retain speech data wave files in the retain_dir (if set)
+    # "retain_metadata":True,                   # uncomment this to retain recordings of recognised commands. set to True to retain .tsv file with metadata of the recognition.
+    # "retain_approval_func":None,              # keep as None and/or commented.
+    # "audio_input_device":None,                # set to an int to choose a non-default microphone. use "./tacspeak.exe --print_mic_list" to see what devices are available.
     # "input_device_index":None,
     # "vad_aggressiveness":3,                   # default aggressiveness of VAD
     # "vad_padding_start_ms":150,               # default ms of required silence before VAD
@@ -34,10 +38,6 @@ KALDI_ENGINE_SETTINGS = {
     # "audio_self_threaded":True, 
     # "audio_auto_reconnect":True, 
     # "audio_reconnect_callback":None,
-    # "retain_dir":"./retain/",                   # set to a writable directory path to retain recognition metadata and/or audio data
-    # "retain_audio":True,                        # set to True to retain speech data wave files in the retain_dir (if set)
-    # "retain_metadata":True, 
-    # "retain_approval_func":None,
     # "vad_complex_padding_end_ms":600,         # default ms of required silence after VAD for complex utterances
     # "lazy_compilation":True,                  # set to True to parallelize & speed up loading
     # "invalidate_cache":False,
