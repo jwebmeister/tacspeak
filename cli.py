@@ -12,6 +12,7 @@ from tacspeak.__main__ import main as tacspeak_main
 from tacspeak.test_model import test_model, test_model_dictation, transcribe_wav, transcribe_wav_dictation
 from dragonfly import get_engine
 import logging
+from multiprocessing import freeze_support
 
 def main():
     print(f"Tacspeak version {tacspeak.__version__}")
@@ -134,4 +135,5 @@ def print_notices():
     print(text)
 
 if __name__ == "__main__":
+    freeze_support()
     main()
