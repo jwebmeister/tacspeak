@@ -81,6 +81,7 @@ include_files.append(("scripts/delete_retain_item_missing_wav.ps1", "scripts/del
 include_files.append(("scripts/list_wav_missing_from_retain_tsv.ps1", "scripts/list_wav_missing_from_retain_tsv.ps1"))
 include_files.append(("scripts/delete_wav_missing_from_retain_tsv.ps1", "scripts/delete_wav_missing_from_retain_tsv.ps1"))
 include_files.append(("scripts/copy_retain_item_cmds_only.ps1", "scripts/copy_retain_item_cmds_only.ps1"))
+include_files.append(("scripts/sum_wav_length.ps1", "scripts/sum_wav_length.ps1"))
 include_files.append(("retain/README.md", "retain/README.md"))
 
 # Dependencies are automatically detected, but it might need fine tuning.

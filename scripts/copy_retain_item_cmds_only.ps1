@@ -1,4 +1,4 @@
-$RetainTsvFilepath = ".\cleanaudio\retain.tsv"
+$RetainTsvFilepath = ".\retain\retain.tsv"
 $NewTsvFilepath = ".\cleanaudio_cmds\retain.tsv"
 
 
@@ -22,7 +22,7 @@ foreach($row in $RetainTsv) {
     }
 }
 
-# $NewTsv | Export-Csv -Path $NewTsvFilepath -Delimiter "`t" -NoTypeInformation -NoHeader -UseQuotes Never -Force
+New-Item -ItemType Directory -Force -Path (Split-Path -Parent $NewTsvFilepath)
 
 foreach($row in $NewTsv) {
     $WavFilename = Split-Path $row.audio_data -Leaf
