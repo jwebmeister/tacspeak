@@ -320,9 +320,10 @@ def recognize(wav_path, text):
     if testmodel_recog_buffer:
         output_str = testmodel_recog_buffer[0]
         rule = testmodel_recog_buffer[2]
-        output_rule = rule
         node = testmodel_recog_buffer[3]
-        if isinstance(rule, CompoundRule):
+        if not "NoiseSink" in rule.name:
+            output_rule = rule
+        if isinstance(output_rule, CompoundRule):
             extras = {
                 "_grammar":  rule.grammar,
                 "_rule":     rule,
@@ -361,9 +362,10 @@ def recognize(wav_path, text):
     if testmodel_recog_buffer:
         input_str = testmodel_recog_buffer[0]
         rule = testmodel_recog_buffer[2]
-        input_rule = rule
         node = testmodel_recog_buffer[3]
-        if isinstance(rule, CompoundRule):
+        if not "NoiseSink" in rule.name:
+            input_rule = rule
+        if isinstance(input_rule, CompoundRule):
             extras = {
                 "_grammar":  rule.grammar,
                 "_rule":     rule,
@@ -548,7 +550,7 @@ def transcribe_wav(wav_path, out_txt_path=None, model_dir=None):
         model_dir = "./kaldi_model/"
     initialize_kaldi(model_dir)
     output_str, text, output_options, input_options, correct_rule, wav_path = recognize(wav_path, "")
-    entry = {wav_path: output_str}
+    entry = (model_dir, wav_path, output_str)
     if out_txt_path is None:
         return entry
     if os.path.isfile(out_txt_path):
@@ -659,7 +661,7 @@ def transcribe_wav_dictation(wav_path, out_txt_path=None, model_dir=None):
         model_dir = "./kaldi_model/"
     initialize_kaldi_dictation(model_dir)
     output_str, _, wav_path = recognize_dictation(wav_path, "")
-    entry = {wav_path: output_str}
+    entry = (model_dir, wav_path, output_str)
     if out_txt_path is None:
         return entry
     if os.path.isfile(out_txt_path):
