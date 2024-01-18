@@ -10,7 +10,7 @@ from dragonfly import (BasicRule, CompoundRule, MappingRule, RuleRef, Repetition
                        Function, Choice, IntegerRef, Grammar, Alternative, Literal, Text, Optional,
                        AppContext)
 from dragonfly.engines.backend_kaldi.dictation import UserDictation as Dictation
-from dragonfly.actions import (Key, Mouse)
+from dragonfly.actions import (Key, Mouse, ActionBase)
 
 from kaldi_active_grammar import KaldiRule
 
@@ -1056,6 +1056,15 @@ class YellFreeze(BasicRule):
         print("Freeze!")
         cmd_yell().execute()
 
+# ------------------------------------------------------------------
+
+class NoiseSink(MappingRule):
+    """
+    Capture any other noises or words outside of commands, and do nothing
+    """
+    mapping = {'<dictation>': ActionBase()}
+    extras = [ Dictation("dictation") ]
+
 # ---------------------------------------------------------------------------
 # Recognition Observer - for mid-utterance recognition
 
@@ -1113,6 +1122,7 @@ grammar.add_rule(NpcTeamDeploy())
 # grammar.add_rule(SelectTeamMember()) # needs key bindings for alpha-delta in-game
 
 grammar_priority.add_rule(YellFreeze())
+grammar_priority.add_rule(NoiseSink())
 
 freeze_recob = FreezeRecob()
 
