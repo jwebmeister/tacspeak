@@ -27,8 +27,15 @@ try:
 except Exception:
     DEBUG_HEAVY_DUMP_GRAMMAR = False
 
+# whether or not to load NoiseSink rule to grammar_priority
+try:
+    USE_NOISE_SINK = (sys.modules["user_settings"]).USE_NOISE_SINK
+except Exception:
+    USE_NOISE_SINK = False
+
 # DEBUG_MODE = True # if you want to override
 # DEBUG_HEAVY_DUMP_GRAMMAR = True # if you want to override
+# USE_NOISE_SINK = False # if you want to override
 
 # ---------------------------------------------------------------------------
 # Create this module's grammar and the context under which it'll be active.
@@ -1122,7 +1129,8 @@ grammar.add_rule(NpcTeamDeploy())
 # grammar.add_rule(SelectTeamMember()) # needs key bindings for alpha-delta in-game
 
 grammar_priority.add_rule(YellFreeze())
-grammar_priority.add_rule(NoiseSink())
+if USE_NOISE_SINK:
+    grammar_priority.add_rule(NoiseSink())
 
 freeze_recob = FreezeRecob()
 

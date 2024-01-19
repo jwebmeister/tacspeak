@@ -4,6 +4,8 @@ DEBUG_MODE = False                              # enables additional logging, an
 DEBUG_HEAVY_DUMP_GRAMMAR = False                # expensive on memory, don't set this to True unless you're sure
                                                 # if properly setup in the grammar module:
                                                 # - generates a .debug_grammar_*.txt that describes the spec of the active commands
+USE_NOISE_SINK = True                           # load NoiseSink rule(s), if it's setup in the grammar module.
+                                                # - it should partially capture other noises and words outside of commands, and do nothing.
 KALDI_ENGINE_SETTINGS = {
     "listen_key":0x05,                          # see https://learn.microsoft.com/en-us/windows/win32/inputdev/virtual-key-codes
                                                 # 0x10=SHIFT key
