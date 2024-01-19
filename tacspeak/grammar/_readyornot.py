@@ -8,8 +8,8 @@ import sys
 import dragonfly
 from dragonfly import (BasicRule, CompoundRule, MappingRule, RuleRef, Repetition, RecognitionObserver,
                        Function, Choice, IntegerRef, Grammar, Alternative, Literal, Text, Optional,
-                       AppContext)
-from dragonfly.engines.backend_kaldi.dictation import UserDictation as Dictation
+                       AppContext, Dictation)
+# from dragonfly.engines.backend_kaldi.dictation import UserDictation as Dictation
 from dragonfly.actions import (Key, Mouse, ActionBase)
 
 from kaldi_active_grammar import KaldiRule
