@@ -27,9 +27,9 @@ KALDI_ENGINE_SETTINGS = {
                                                 # recommended is 150 if using listen_key_toggle (0 or -1), 250 for anything else.
     "auto_add_to_user_lexicon":False,           # this requires g2p_en (which isn't installed by default)
     "allow_online_pronunciations":False,
-    # "retain_dir":"./retain/",                 # uncomment this to retain recordings of recognised commands. set to a writable directory path to retain recognition metadata and/or audio data
-    # "retain_audio":True,                      # uncomment this to retain recordings of recognised commands. set to True to retain speech data wave files in the retain_dir (if set)
-    # "retain_metadata":True,                   # uncomment this to retain recordings of recognised commands. set to True to retain .tsv file with metadata of the recognition.
+    # "retain_dir":"./retain/",                 # uncomment this to retain recordings of recognised commands. set to a writeable directory to retain recognition metadata and/or audio data
+    # "retain_audio":True,                      # uncomment this to retain recordings of recognised commands. set to True to retain audio of recognitions in .wav files in the retain_dir (if set)
+    # "retain_metadata":True,                   # uncomment this to retain recordings of recognised commands. set to True to retain metadata of recognitions in a .tsv file in retain_dir (if set)
     # "retain_approval_func":None,              # keep as None and/or commented.
     # "audio_input_device":None,                # set to an int to choose a non-default microphone. use "./tacspeak.exe --print_mic_list" to see what devices are available.
     # "input_device_index":None,

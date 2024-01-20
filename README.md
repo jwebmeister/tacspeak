@@ -112,6 +112,14 @@ For example, you might want to change these:
     - change this if you use VAD and find it's too quick or slow to identify the figure out you've stopped speaking and that it should try to recognise the command.
 - `audio_input_device`=`None`
     - should use default microphone (as set within Windows Sound Settings), but should be able to change the index (number) to select a different input device.
+- `USE_NOISE_SINK`=`True`
+    - load NoiseSink rule(s), if it's setup in the grammar module - it should *partially* capture other noises and words outside of other rules, and do nothing. Set to `False` if you're having issues with recognition accuracy.
+- `retain_dir`= `./retain/`
+    - use this setting to retain recordings of recognised commands - set to a writeable directory to retain recognition metadata and/or audio data. Disabled by default.
+- `retain_audio`= `True`
+    - use this setting to retain recordings of recognised commands - set to True to retain speech data wave files in the `retain_dir`. Disabled by default.
+- `retain_metadata`= `True`
+    - use this setting to retain recordings of recognised commands - set to True to retain metadata of recognitions in a `.tsv` file in `retain_dir`. Disabled by default.
 
 ### Grammar modules
 
@@ -158,6 +166,9 @@ Things to check or try first:
     - In the Line Properties window, click the Advanced tab, then uncheck Allow applications to take exclusive control of this device.
     - Click Apply, then click OK.
 - All commands are being queued? AZERTY keyboard? You might need to change your in-game keybinding for "Hold command" to something other than Shift, and also update the key bindings in `./tacspeak/grammar/_readyornot.py`.
+- In your Windows privacy and security settings, can apps (including Tacspeak) access your microphone?  Is your microphone working in other apps?
+- Try setting `USE_NOISE_SINK` (in `./tacspeak/user_settings.py`) to `True` or `False` if you're getting too many false positive or false negative speech recognitions respectively.
+- If you want to retain recordings of the speech recognitions from Tacspeak, set `retain_dir`, `retain_audio` and `retain_metadata` (in `./tacspeak/user_settings.py`) appropriately.
 
 ## Advanced install - Python
 
