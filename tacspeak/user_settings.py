@@ -6,6 +6,11 @@ DEBUG_HEAVY_DUMP_GRAMMAR = False                # expensive on memory, don't set
                                                 # - generates a .debug_grammar_*.txt that describes the spec of the active commands
 USE_NOISE_SINK = True                           # load NoiseSink rule(s), if it's setup in the grammar module.
                                                 # - it should partially capture other noises and words outside of commands, and do nothing.
+
+def my_retain_func(audio_store):
+    """Used in retain_approval_func"""
+    return not 'NoiseSink' in audio_store.rule_name
+
 KALDI_ENGINE_SETTINGS = {
     "listen_key":0x05,                          # see https://learn.microsoft.com/en-us/windows/win32/inputdev/virtual-key-codes
                                                 # 0x10=SHIFT key
@@ -30,7 +35,7 @@ KALDI_ENGINE_SETTINGS = {
     # "retain_dir":"./retain/",                 # uncomment this to retain recordings of recognised commands. set to a writeable directory to retain recognition metadata and/or audio data
     # "retain_audio":True,                      # uncomment this to retain recordings of recognised commands. set to True to retain audio of recognitions in .wav files in the retain_dir (if set)
     # "retain_metadata":True,                   # uncomment this to retain recordings of recognised commands. set to True to retain metadata of recognitions in a .tsv file in retain_dir (if set)
-    # "retain_approval_func":None,              # keep as None and/or commented.
+    # "retain_approval_func":my_retain_func,    # keep as is.
     # "audio_input_device":None,                # set to an int to choose a non-default microphone. use "./tacspeak.exe --print_mic_list" to see what devices are available.
     # "input_device_index":None,
     # "vad_aggressiveness":3,                   # default aggressiveness of VAD
