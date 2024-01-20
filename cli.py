@@ -32,10 +32,10 @@ def main():
     parser.add_argument('--test_model', dest='test_model', action='store',
                         metavar=('tsv_file', 'model_dir', 'lexicon_file', 'num_threads'), nargs=4,
                         help=('test model + active grammar recognition using test audio specified in .tsv file.'
-                                + " Example: --test_model './testaudio/recorder.tsv' './kaldi_model/' './kaldi_model/lexicon.txt' 4"))
+                                + " Example: --test_model './retain/retain.tsv' './kaldi_model/' './kaldi_model/lexicon.txt' 4"))
     parser.add_argument('--test_dictation', action='store_true',
                         help=('only used together with --test_model. tests model using raw dictation graph, irrespective of grammar modules.'
-                              + " Example: --test_model './testaudio/recorder.tsv' './kaldi_model/' './kaldi_model/lexicon.txt' 4 --test_dictation"))
+                              + " Example: --test_model './retain/retain.tsv' './kaldi_model/' './kaldi_model/lexicon.txt' 4 --test_dictation"))
     parser.add_argument('--transcribe_wav', dest='transcribe_wav', action='store',
                         metavar=('wav_path', 'out_txt_path', 'model_dir'), nargs=3,
                         help=('transcribe a wav file using active grammar modules, output to txt file.'
