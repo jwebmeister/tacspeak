@@ -2245,7 +2245,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 UNKNOWN
 
 pip-licenses
-4.3.3
+4.3.4
 MIT License
 raimon
 https://github.com/raimon49/pip-licenses
