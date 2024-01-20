@@ -35,7 +35,7 @@ KALDI_ENGINE_SETTINGS = {
     # "retain_dir":"./retain/",                 # uncomment this to retain recordings of recognised commands. set to a writeable directory to retain recognition metadata and/or audio data
     # "retain_audio":True,                      # uncomment this to retain recordings of recognised commands. set to True to retain audio of recognitions in .wav files in the retain_dir (if set)
     # "retain_metadata":True,                   # uncomment this to retain recordings of recognised commands. set to True to retain metadata of recognitions in a .tsv file in retain_dir (if set)
-    # "retain_approval_func":my_retain_func,    # keep as is.
+    # "retain_approval_func":my_retain_func,    # uncomment this to retain recordings of recognised commands. set to a function returning `True` or `False` based on `AudioStoreEntry` contents
     # "audio_input_device":None,                # set to an int to choose a non-default microphone. use "./tacspeak.exe --print_mic_list" to see what devices are available.
     # "input_device_index":None,
     # "vad_aggressiveness":3,                   # default aggressiveness of VAD

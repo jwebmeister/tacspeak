@@ -120,6 +120,8 @@ For example, you might want to change these:
     - use this setting to retain recordings of recognised commands - set to True to retain speech data wave files in the `retain_dir`. Disabled by default.
 - `retain_metadata`= `True`
     - use this setting to retain recordings of recognised commands - set to True to retain metadata of recognitions in a `.tsv` file in `retain_dir`. Disabled by default.
+- `retain_approval_func`= `my_retain_func`
+    - use this setting to retain recordings of recognised commands - set to a function returning `True` or `False` based on `AudioStoreEntry` contents. Disabled by default.
 
 ### Grammar modules
 
