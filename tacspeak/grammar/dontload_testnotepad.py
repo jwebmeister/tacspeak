@@ -5,8 +5,8 @@
 #
 
 
-from dragonfly import (CompoundRule, AppContext, Grammar)
-from dragonfly.engines.backend_kaldi.dictation import UserDictation as Dictation
+from dragonfly import (CompoundRule, AppContext, Grammar, Dictation, MappingRule, Function, Choice)
+# from dragonfly.engines.backend_kaldi.dictation import UserDictation as Dictation
 from dragonfly.actions import Text
 
 test_grammar_context = AppContext(executable="notepad")
@@ -14,7 +14,7 @@ test_grammar = Grammar("testnotepad", context=test_grammar_context)
 
 # ----------------------------------------------------------------
 
-class TestNotepadRule(CompoundRule):
+class TestNotepadDictationRule(CompoundRule):
     spec = "<text>"
     extras = [Dictation("text")]
 
@@ -24,7 +24,25 @@ class TestNotepadRule(CompoundRule):
         print(f"text: {text}")
         Text(f"{text}\n").execute()
 
-test_grammar.add_rule(TestNotepadRule())
+test_grammar.add_rule(TestNotepadDictationRule())
+
+# ----------------------------------------------------------------
+
+def print_type_cmd_text(cmd_text):
+        print(f"text: {cmd_text}")
+        Text(f"{cmd_text}\n").execute()
+
+class TestNotepadCommandRule(MappingRule):
+    mapping = {
+        '<cmd_text>': Function(print_type_cmd_text),
+        }
+    extras = [
+         Choice('cmd_text', ['turtle', 'bear', 'beaver', 'dove'])
+    ]
+
+test_grammar.add_rule(TestNotepadCommandRule())
+
+# ----------------------------------------------------------------
 
 # Load the grammar and set it as exclusive, meaning that the engine will
 #  only recognize from this grammar (and any other exclusive grammar).
