@@ -14,8 +14,6 @@ from dragonfly import get_engine
 import logging
 from multiprocessing import freeze_support
 
-import kaldifst
-import graphviz
 
 def main():
     print(f"Tacspeak version {tacspeak.__version__}")
@@ -43,10 +41,6 @@ def main():
     parser.add_argument('--transcribe_dictation', action='store_true',
                         help=('only used together with --transcribe_wav. transcribes using raw dictation graph, irrespective of grammar modules.'
                               + " Example: --transcribe_wav 'audio.wav' 'audio.txt' './kaldi_model/' --transcribe_dictation"))
-    parser.add_argument('--visualise_fst', dest='fst_filepath', action='store',
-                        metavar=('fst_filepath', 'model_words_txt_filepath'), nargs=2,
-                        help='generate .gv (dot) and .svg for visualisation of a FST file. Only use with small (~200 kB) files! Requires GraphViz installed.'
-                                + " Example: --visualise_fst './kaldi_model/cache.tmp/somefile.fst' './kaldi_model/words.txt'")
     args = parser.parse_args()
     if args.model_dir is not None and os.path.isdir(args.model_dir):
         _log = logging.getLogger('kaldi')
@@ -118,22 +112,6 @@ def main():
             else:
                 entry = transcribe_wav(wav_path, out_txt_path, model_dir)
             print(f"{entry}")
-        return
-    if args.fst_filepath:
-        if args.fst_filepath[0] is not None and os.path.isfile(args.fst_filepath[0]) and args.fst_filepath[1] is not None and os.path.isfile(args.fst_filepath[1]):
-            fst_filepath = args.fst_filepath[0]
-            fst_filename_noext = os.path.splitext(fst_filepath)[0]
-            model_words_txt_filepath = args.fst_filepath[1]
-            print(fst_filename_noext)
-            fst = kaldifst.StdFst.read(fst_filepath)
-            sym = kaldifst.SymbolTable()
-            with open(model_words_txt_filepath, 'r', encoding='utf-8') as sym_file:
-                for line in sym_file:
-                    line_split = line.strip().split(' ')
-                    sym.add_symbol(symbol=line_split[0], key=int(line_split[1]))
-            fst_dot = kaldifst.draw(fst, osymbols=sym, acceptor=False, portrait=True)
-            source = graphviz.Source(fst_dot)
-            source.render(outfile=f"{fst_filename_noext}.svg")
         return
     tacspeak_main()
 
