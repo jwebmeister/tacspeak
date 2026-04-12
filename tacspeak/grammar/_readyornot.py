@@ -1134,11 +1134,11 @@ grammar.add_rule(NpcTeamDeploy())
 # grammar.add_rule(TeamMemberOptions()) # needs key bindings for alpha-delta in-game
 # grammar.add_rule(SelectTeamMember()) # needs key bindings for alpha-delta in-game
 
-grammar_priority.add_rule(YellFreeze())
+# grammar_priority.add_rule(YellFreeze())
 if USE_NOISE_SINK:
     grammar_priority.add_rule(NoiseSink())
 
-freeze_recob = FreezeRecob()
+# freeze_recob = FreezeRecob()
 
 # ---------------------------------------------------------------------------
 # Load the grammar instance, register RecognitionObservers, and define how
@@ -1146,7 +1146,7 @@ freeze_recob = FreezeRecob()
 
 grammar.load()
 grammar_priority.load()
-freeze_recob.register()
+# freeze_recob.register()
 
 # ---------------------------------------------------------------------------
 if DEBUG_MODE:

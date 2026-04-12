@@ -4,7 +4,7 @@ DEBUG_MODE = False                              # enables additional logging, an
 DEBUG_HEAVY_DUMP_GRAMMAR = False                # expensive on memory, don't set this to True unless you're sure
                                                 # if properly setup in the grammar module:
                                                 # - generates a .debug_grammar_*.txt that describes the spec of the active commands
-USE_NOISE_SINK = True                           # load NoiseSink rule(s), if it's setup in the grammar module.
+USE_NOISE_SINK = False                           # load NoiseSink rule(s), if it's setup in the grammar module.
                                                 # - it should partially capture other noises and words outside of commands, and do nothing.
 
 def my_retain_func(audio_store):
@@ -18,7 +18,7 @@ KALDI_ENGINE_SETTINGS = {
                                                 # 0x06=X2 mouse button
                                                 # None=overrides listen_key_toggle, and sets it into always listening mode; 
                                                 #      uses Voice Activity Detector (VAD) to detect end of speech and recognise commands.
-    "listen_key_toggle":-1,                     # Recommended is 0 or -1. 
+    "listen_key_toggle":0,                     # Recommended is 0 or -1. 
                                                 #  0 for toggle mode off; 
                                                 #  1 for toggle mode on; 
                                                 #  2 for global toggle mode on (use VAD); 
