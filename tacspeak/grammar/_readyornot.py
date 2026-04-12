@@ -157,6 +157,7 @@ map_door_grenades = {
     "(bang | flash bang | flash)": "flashbang",
     "stinger": "stinger",
     "(cs | gas | cs gas)": "gas",
+    "(nine bang | nine er | nine banger)": "ninebang",
     "[the] (fourty mil | launcher)": "launcher",
     "((leader | lead) will | wait for (my | me to)) (grenade | flash bang | bang | flash | stinger | cs | gas | cs gas | fourty mil | launcher)": "leader",
 }
@@ -186,6 +187,7 @@ map_ground_deployables = {
     "(bang | flash bang | flash)": "flashbang",
     "stinger": "stinger",
     "(cs | gas | cs gas)": "gas",
+    "(nine bang | nine er | nine banger)": "ninebang",
     "chem light": "chemlight",
     "shield": "shield",
 }
@@ -349,10 +351,10 @@ def cmd_door_options(color, hold, door_option, trapped):
     # close the door (on execution)
     """
     actions = cmd_select_team(color)
-    actions += map_ingame_key_bindings["cmd_menu"]
     # start hold for command
     if hold == "hold":
         actions += action_hold("down")
+    actions += map_ingame_key_bindings["cmd_menu"]
     match door_option:
         case "slide":
             actions += map_ingame_key_bindings["cmd_4"]
@@ -494,11 +496,11 @@ def cmd_stack_up(color, hold, side):
     Press & release command keys for team to stack up (on execution)
     """
     actions = cmd_select_team(color)
-    actions += map_ingame_key_bindings["cmd_menu"]
-    actions += map_ingame_key_bindings["cmd_1"]
     # start hold for command
     if hold == "hold":
         actions += action_hold("down")
+    actions += map_ingame_key_bindings["cmd_menu"]
+    actions += map_ingame_key_bindings["cmd_1"]
     # todo! in 1.0 some doors don't have all stack options available, update if/when Void update
     match side: 
         case "split":
@@ -552,6 +554,9 @@ def cmd_breach_and_clear(color, hold, tool, grenade):
     Press & release command keys for team to breach & clear (on execution)
     """
     actions = cmd_select_team(color)
+    # start hold for command
+    if hold == "hold":
+        actions += action_hold("down")
     actions += map_ingame_key_bindings["cmd_menu"]
     if tool == "open":
         actions += map_ingame_key_bindings["cmd_2"]
@@ -568,9 +573,6 @@ def cmd_breach_and_clear(color, hold, tool, grenade):
                 actions += map_ingame_key_bindings["cmd_4"]
             case "leader":
                 actions += map_ingame_key_bindings["cmd_5"]
-    # start hold for command
-    if hold == "hold":
-        actions += action_hold("down")
     match grenade:
         case "none":
             actions += map_ingame_key_bindings["cmd_1"]
@@ -580,10 +582,12 @@ def cmd_breach_and_clear(color, hold, tool, grenade):
             actions += map_ingame_key_bindings["cmd_3"]
         case "gas":
             actions += map_ingame_key_bindings["cmd_4"]
-        case "launcher":
+        case "ninebang":
             actions += map_ingame_key_bindings["cmd_5"]
-        case "leader":
+        case "launcher":
             actions += map_ingame_key_bindings["cmd_6"]
+        case "leader":
+            actions += map_ingame_key_bindings["cmd_7"]
     # end hold for command
     if hold == "hold":
         actions += action_hold("up")
@@ -641,10 +645,10 @@ def cmd_pick_lock(color, hold):
     - assumes player is looking at door
     """
     actions = cmd_select_team(color)
-    actions += map_ingame_key_bindings["cmd_menu"]
     # start hold for command
     if hold == "hold":
         actions += action_hold("down")
+    actions += map_ingame_key_bindings["cmd_menu"]
     # todo! check in 1.0
     actions += map_ingame_key_bindings["cmd_2"]
     # end hold for command
@@ -680,10 +684,10 @@ def cmd_ground_options(color, hold, ground_option):
     - assumes player is not looking at person or door
     """
     actions = cmd_select_team(color)
-    actions += map_ingame_key_bindings["cmd_menu"]
     # start hold for command
     if hold == "hold":
         actions += action_hold("down")
+    actions += map_ingame_key_bindings["cmd_menu"]
     match ground_option:
         case "move":
             actions += map_ingame_key_bindings["cmd_1"]
@@ -731,10 +735,10 @@ def cmd_fallin(color, hold, formation):
     - assumes player is not looking at person or door
     """
     actions = cmd_select_team(color)
-    actions += map_ingame_key_bindings["cmd_menu"]
     # start hold for command
     if hold == "hold":
         actions += action_hold("down")
+    actions += map_ingame_key_bindings["cmd_menu"]
     actions += map_ingame_key_bindings["cmd_2"]
     match formation:
         case "single":
@@ -783,11 +787,11 @@ def cmd_use_deployable(color, hold, deployable):
     - assumes player is not looking at person or door
     """
     actions = cmd_select_team(color)
-    actions += map_ingame_key_bindings["cmd_menu"]
-    actions += map_ingame_key_bindings["cmd_5"]
     # start hold for command
     if hold == "hold":
         actions += action_hold("down")
+    actions += map_ingame_key_bindings["cmd_menu"]
+    actions += map_ingame_key_bindings["cmd_5"]
     match deployable:
         case "flashbang":
             actions += map_ingame_key_bindings["cmd_1"]
@@ -795,10 +799,12 @@ def cmd_use_deployable(color, hold, deployable):
             actions += map_ingame_key_bindings["cmd_2"]
         case "gas":
             actions += map_ingame_key_bindings["cmd_3"]
-        case "chemlight":
+        case "ninebang":
             actions += map_ingame_key_bindings["cmd_4"]
-        case "shield":
+        case "chemlight":
             actions += map_ingame_key_bindings["cmd_5"]
+        case "shield":
+            actions += map_ingame_key_bindings["cmd_6"]
     # end hold for command
     if hold == "hold":
         actions += action_hold("up")
